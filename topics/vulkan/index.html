@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Was ist ein Vulkan?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #ffd166 0%, #f59e0b 40%, #c1734f 80%, #6a3a00 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #6a3a00; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  .volcano-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(180deg, #ffd166 0%, #2c1a4e 70%, #1a1a4e 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.3), 0 8px 22px rgba(0,0,0,0.2);
+    margin: 14px 0;
+  }
+  .mountain {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 180px solid transparent;
+    border-right: 180px solid transparent;
+    border-bottom: 240px solid #6a3a00;
+    filter: drop-shadow(0 -8px 20px rgba(0,0,0,0.4));
+  }
+  .crater {
+    position: absolute;
+    bottom: 230px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 30px;
+    background: #2a1410;
+    border-radius: 50%;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.7);
+  }
+  .lava-glow {
+    position: absolute;
+    bottom: 230px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 20px;
+    background: radial-gradient(ellipse, #ffd700, #ff6b00 70%, transparent);
+    border-radius: 50%;
+    animation: lava-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes lava-pulse {
+    0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+    50%      { opacity: 1; transform: translateX(-50%) scale(1.2); }
+  }
+  .erupting .mountain { animation: mountain-shake 0.3s ease-in-out infinite; }
+  @keyframes mountain-shake {
+    0%, 100% { transform: translateX(-50%); }
+    25%      { transform: translateX(calc(-50% - 3px)); }
+    75%      { transform: translateX(calc(-50% + 3px)); }
+  }
+  .lava-bomb {
+    position: absolute;
+    font-size: 28px;
+    pointer-events: none;
+    animation: bomb-fly var(--dur, 2s) ease-out forwards;
+  }
+  @keyframes bomb-fly {
+    0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--dx, 100px), var(--dy, 100px)) rotate(720deg); opacity: 0; }
+  }
+  .smoke {
+    position: absolute;
+    bottom: 250px;
+    left: 50%;
+    font-size: 60px;
+    animation: smoke-rise 3s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes smoke-rise {
+    0%   { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    20%  { opacity: 1; }
+    100% { transform: translate(calc(-50% + 20px), -250px) scale(2); opacity: 0; }
+  }
+  .lava-river {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 60px;
+    height: 0;
+    background: linear-gradient(180deg, #ffd700, #ff6b00 50%, #c0392b);
+    transform: translateX(-50%);
+    transition: height 2s ease-in;
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 0 30px rgba(255,107,0,0.6);
+  }
+  .lava-river.flowing { height: 240px; }
+
+  .erupt-btn {
+    font-size: 24px;
+    padding: 16px 36px;
+    background: linear-gradient(135deg, #ff6b6b, #c0392b) !important;
+    box-shadow: 0 6px 0 #6a0e0e, 0 8px 14px rgba(0,0,0,0.3) !important;
+  }
+  .layers-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 12px 0;
+  }
+  .layer-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 16px;
+    text-align: center;
+    color: #6a3a00;
+    width: 200px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  .layer-card .icon { font-size: 60px; display: block; }
+  .layer-card h3 { color: #c0392b; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌋🔥</div>
+    <h1>Was ist ein Vulkan?</h1>
+    <p>Ein Berg, der <b style="color:#ffd166">FEUER</b> spuckt? 🔥<br/>Aber woher kommt das Feuer? Schau rein in die Erde!</p>
+    <button class="orange" onclick="engine.next()">Komm mit! 🌋</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Die Erde ist innen ganz heiß</h2>
+    <p>Tief, tief unten — viel tiefer als jedes Bohrloch — ist es so heiß, dass <b style="color:#ffd166">Stein flüssig wird</b>! Wie heiße Suppe!</p>
+    <div class="layers-row">
+      <div class="layer-card"><span class="icon">🟢</span><h3>Erdkruste</h3><p style="margin:0;font-size:14px;">Wo wir leben</p></div>
+      <div class="layer-card"><span class="icon">🟠</span><h3>Mantel</h3><p style="margin:0;font-size:14px;">Heiße, weiche Steine</p></div>
+      <div class="layer-card"><span class="icon">🔴</span><h3>Kern</h3><p style="margin:0;font-size:14px;">Ganz tief, super heiß!</p></div>
+    </div>
+    <p>Diese heiße flüssige Suppe heißt <b style="color:#ffd166">Magma</b>!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Ein Vulkan ist wie ein Schornstein</h2>
+    <p>Wenn Magma einen Weg nach oben findet — durch einen Berg —<br/>
+       dann nennen wir das einen <b style="color:#ffd166">Vulkan</b> 🌋. Oben kommt das Magma raus: <b>Lava</b>! 🔥</p>
+    <button class="orange" onclick="engine.next()">Jetzt machen wir einen Ausbruch! ▶️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Drück den Knopf — Vulkan-Ausbruch!</h2>
+    <div class="volcano-stage" id="volcanoStage">
+      <div class="mountain"></div>
+      <div class="crater"></div>
+      <div class="lava-glow"></div>
+      <div class="lava-river" id="lavaRiver"></div>
+    </div>
+    <button class="erupt-btn" onclick="erupt()">🌋 BUMM! Ausbruch!</button>
+    <p style="font-size:18px;margin-top:8px;">Lava ist heißer als 1000 Grad! 🌡️</p>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🏝️</div>
+    <h2>Vulkane können Inseln machen</h2>
+    <p>Manche Inseln wie Hawaii sind aus Vulkanen entstanden! 🌺<br/>
+       Vulkane sind gefährlich — aber auch <b style="color:#ffd166">Erbauer</b> von neuen Ländern!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Ein Berg, der Feuer spuckt? Aber woher kommt das Feuer? Schau rein in die Erde!",
+  "Tief, tief unten in der Erde ist es so heiß, dass Stein flüssig wird, wie heiße Suppe! Die Erde hat drei Schichten: die Kruste, den Mantel und den Kern. Diese heiße flüssige Suppe heißt Magma!",
+  "Ein Vulkan ist wie ein Schornstein! Wenn Magma einen Weg nach oben findet, durch einen Berg, dann nennen wir das einen Vulkan. Oben kommt das Magma raus, und dann heißt es Lava!",
+  "Drück den Knopf und mach einen Vulkan-Ausbruch! Lava ist heißer als tausend Grad!",
+  "Manche Inseln wie Hawaii sind aus Vulkanen entstanden! Vulkane sind gefährlich, aber sie sind auch Erbauer von neuen Ländern!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function erupt() {
+  const stage = document.getElementById('volcanoStage');
+  stage.classList.add('erupting');
+  // Smoke
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      const s = document.createElement('span');
+      s.className = 'smoke';
+      s.textContent = '💨';
+      s.style.opacity = '0.7';
+      stage.appendChild(s);
+      setTimeout(() => s.remove(), 3000);
+    }, i*200);
+  }
+  // Lava bombs
+  for (let i = 0; i < 12; i++) {
+    setTimeout(() => {
+      const b = document.createElement('span');
+      b.className = 'lava-bomb';
+      b.textContent = ['🔥','💥','🟠'][i%3];
+      b.style.left = '50%';
+      b.style.bottom = '255px';
+      const angle = (i/12) * Math.PI - Math.PI/2;
+      const power = 80 + Math.random()*80;
+      b.style.setProperty('--dx', (Math.cos(angle)*power) + 'px');
+      b.style.setProperty('--dy', (-Math.sin(angle)*power*0.7 + 200) + 'px');
+      b.style.setProperty('--dur', (1.5 + Math.random()*0.5) + 's');
+      stage.appendChild(b);
+      setTimeout(() => b.remove(), 2000);
+    }, i*80);
+  }
+  // Lava river
+  setTimeout(() => {
+    document.getElementById('lavaRiver').classList.add('flowing');
+  }, 800);
+  // Sound
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1, ctx.sampleRate*1.5, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const fade = 1 - i/d.length;
+      d[i] = (Math.random()*2-1) * 0.5 * fade;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 300;
+    const g = ctx.createGain(); g.gain.value = 0.3;
+    src.connect(f); f.connect(g); g.connect(ctx.destination); src.start();
+  } catch(e){}
+  setTimeout(() => {
+    stage.classList.remove('erupting');
+    document.getElementById('lavaRiver').classList.remove('flowing');
+  }, 4000);
+}
+</script>
+</body>
+</html>

@@ -15,26 +15,33 @@
     width: min(95vw, 600px);
     height: 200px;
     margin: 14px 0;
-    background: rgba(255,255,255,0.4);
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(180,220,255,0.35));
+    border-radius: 24px;
     overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(116,185,255,0.25), 0 6px 18px rgba(7,74,135,0.12);
   }
   .o2 {
     position: absolute;
     font-size: 32px;
-    animation: drift 6s ease-in-out infinite;
+    font-weight: bold;
+    animation: drift 7s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(116,185,255,0.6));
+    transition: filter 0.2s;
   }
   @keyframes drift {
-    0%, 100% { transform: translate(0,0); }
-    25% { transform: translate(30px, -10px); }
-    50% { transform: translate(60px, 10px); }
-    75% { transform: translate(30px, 0); }
+    0%   { transform: translate(0,0) rotate(0); }
+    20%  { transform: translate(22px, -14px) rotate(15deg); }
+    40%  { transform: translate(48px, 6px)  rotate(-10deg); }
+    60%  { transform: translate(28px, 18px) rotate(8deg); }
+    80%  { transform: translate(8px, 6px)   rotate(-4deg); }
+    100% { transform: translate(0,0) rotate(0); }
   }
 
   /* Lung SVG */
   .lung-wrap {
     width: min(90vw, 500px);
     margin: 14px 0;
+    filter: drop-shadow(0 8px 20px rgba(196,69,105,0.18));
   }
   .lung-svg { width: 100%; height: auto; }
   .lung {
@@ -42,39 +49,69 @@
     stroke: #c44569;
     stroke-width: 3;
     transform-origin: center;
-    transition: transform 1.5s ease-in-out;
+    transition: transform 1.5s cubic-bezier(.45,.05,.55,.95), fill 1.2s ease;
+    animation: lung-rest 4.5s ease-in-out infinite;
   }
-  .lung.inhale { transform: scaleY(1.15) scaleX(1.08); fill: #ffb5bb; }
-  .lung.exhale { transform: scaleY(0.85) scaleX(0.95); fill: #e07880; }
+  @keyframes lung-rest {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.025); }
+  }
+  .lung.inhale { transform: scale(1.13); fill: #ffc5cc; animation: none; }
+  .lung.exhale { transform: scale(0.88); fill: #e07880; animation: none; }
 
   /* Breathing exercise */
   .breath-circle {
     width: 220px;
     height: 220px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #b5e8ff, #88c5ff);
+    background: radial-gradient(circle at 30% 30%, #d4f0ff, #88c5ff 65%, #4a90d9);
     border: 5px solid #074a87;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 60px;
     margin: 18px 0;
-    animation: breathe 8s ease-in-out infinite;
+    animation: breathe 8s ease-in-out infinite, breath-glow 8s ease-in-out infinite;
     box-shadow: 0 0 50px rgba(116,185,255,0.5);
+    position: relative;
+  }
+  .breath-circle::before,
+  .breath-circle::after {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    border: 3px solid rgba(116,185,255,0.45);
+    animation: breath-ring 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .breath-circle::after {
+    animation-delay: 0.8s;
+    border-color: rgba(255,255,255,0.5);
   }
   @keyframes breathe {
-    0%, 100% { transform: scale(0.65); }
-    50% { transform: scale(1.1); }
+    0%, 100% { transform: scale(0.62); }
+    45%, 55% { transform: scale(1.12); }
+  }
+  @keyframes breath-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(116,185,255,0.4), inset 0 0 20px rgba(255,255,255,0.2); }
+    50%      { box-shadow: 0 0 80px rgba(116,185,255,0.9), inset 0 0 30px rgba(255,255,255,0.5); }
+  }
+  @keyframes breath-ring {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50%      { transform: scale(1.5); opacity: 0; }
   }
 
   /* Journey of air */
   .journey-svg {
     width: min(95vw, 800px);
     height: auto;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.1));
   }
   .pulse-path {
     stroke-dasharray: 8;
-    animation: pulse-dash 1.5s linear infinite;
+    animation: pulse-dash 1.2s linear infinite;
+    filter: drop-shadow(0 0 6px currentColor);
   }
   @keyframes pulse-dash { to { stroke-dashoffset: -16; } }
 

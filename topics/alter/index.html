@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum werden Menschen alt?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff5e1 0%, #ffd6b5 50%, #d6a2ff 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .life-cycle {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .age-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .life-cycle .age-card:nth-child(2) { animation-delay: 0.3s; }
+  .life-cycle .age-card:nth-child(3) { animation-delay: 0.6s; }
+  .life-cycle .age-card:nth-child(4) { animation-delay: 0.9s; }
+  .life-cycle .age-card:nth-child(5) { animation-delay: 1.2s; }
+  .age-card:hover { transform: translateY(-6px) scale(1.05); }
+  .age-card .e { font-size: 56px; display: block; }
+  .age-card h3 { color: #6a1b9a; margin: 4px 0; font-size: 17px; }
+  .age-card p { margin: 0; font-size: 14px; }
+
+  .nature-cycle {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .nature-step {
+    text-align: center;
+    background: rgba(255,255,255,0.7);
+    border-radius: 22px;
+    padding: 14px;
+    width: 130px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+  .nature-step .e { font-size: 50px; display: block; }
+  .heart-comfort {
+    background: rgba(255,255,255,0.9);
+    border-radius: 30px;
+    padding: 24px 32px;
+    max-width: 700px;
+    box-shadow: 0 8px 24px rgba(106,27,154,0.15);
+    text-align: center;
+  }
+  .heart-comfort .icon { font-size: 80px; display: block; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👶👧🧑👵</div>
+    <h1>Warum werden wir alt?</h1>
+    <p>Mama und Papa werden älter. Oma und Opa sind schon ganz alt.<br/>Was passiert da eigentlich?</p>
+    <button class="purple" onclick="engine.next()">Komm mit! ⏳</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Alle Sachen werden älter</h2>
+    <p>Auch Pflanzen, Tiere, Häuser, Spielsachen... alles wird mit der Zeit älter.<br/>So ist das im Leben — wie die Jahreszeiten 🌸🌞🍂❄️</p>
+    <div class="nature-cycle">
+      <div class="nature-step"><span class="e">🌱</span><p style="margin:0;font-size:14px">Frisch</p></div>
+      <span style="font-size:28px;">➡️</span>
+      <div class="nature-step"><span class="e">🌿</span><p style="margin:0;font-size:14px">Stark</p></div>
+      <span style="font-size:28px;">➡️</span>
+      <div class="nature-step"><span class="e">🌻</span><p style="margin:0;font-size:14px">Blüht</p></div>
+      <span style="font-size:28px;">➡️</span>
+      <div class="nature-step"><span class="e">🍂</span><p style="margin:0;font-size:14px">Müde</p></div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Auch wir Menschen</h2>
+    <p>Wir Menschen werden auch immer älter — und das ist ganz <b style="color:#6a1b9a">normal</b>:</p>
+    <div class="life-cycle">
+      <div class="age-card"><span class="e">👶</span><h3>Baby</h3><p>Klein und süß</p></div>
+      <div class="age-card"><span class="e">🧒</span><h3>Kind</h3><p>Spielt, lernt</p></div>
+      <div class="age-card"><span class="e">🧑</span><h3>Erwachsen</h3><p>Arbeitet, hilft</p></div>
+      <div class="age-card"><span class="e">👵</span><h3>Oma/Opa</h3><p>Klug & weise</p></div>
+    </div>
+    <p>Älter werden bedeutet: viel <b>erlebt</b>, viel <b>gelernt</b>, viel <b>liebgehabt</b>! 💕</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Und am Ende...</h2>
+    <p>Irgendwann ist der Körper so müde, dass er aufhört zu arbeiten.<br/>
+       Das nennt man <b style="color:#6a1b9a">sterben</b>. Es tut nicht weh — wie ganz, ganz tief schlafen.</p>
+    <p style="font-size:18px;background:rgba(255,255,255,0.7);padding:14px;border-radius:18px;max-width:700px;">
+      Das ist traurig — aber die Person bleibt für immer in unserem <b style="color:#c44569">Herzen</b> ❤️.<br/>
+       Wir denken an sie, lachen über schöne Erinnerungen, und lieben sie weiter.
+    </p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="heart-comfort">
+      <span class="icon pulse">❤️✨</span>
+      <h2 style="margin:0;color:#6a1b9a">Liebe bleibt für immer</h2>
+      <p style="margin:10px 0 0;color:#2a2a4a;font-size:20px;">
+        Du musst keine Angst haben.<br/>
+        Mama und Papa sind noch lange, lange für dich da.<br/>
+        Und wer dich liebt, ist <b>immer</b> in deinem Herzen. 💕
+      </p>
+    </div>
+    <button class="green" onclick="engine.goTo(0)" style="margin-top:14px;">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Mama und Papa werden älter. Oma und Opa sind schon ganz alt. Was passiert da eigentlich?",
+  "Alle Sachen werden älter, auch Pflanzen, Tiere, Häuser und Spielsachen. So ist das im Leben, wie die Jahreszeiten.",
+  "Wir Menschen werden auch immer älter, und das ist ganz normal. Vom Baby zum Kind, zum Erwachsenen, zur Oma oder zum Opa. Älter werden bedeutet: viel erlebt, viel gelernt, viel liebgehabt!",
+  "Und am Ende? Irgendwann ist der Körper so müde, dass er aufhört zu arbeiten. Das nennt man sterben. Es tut nicht weh, wie ganz, ganz tief schlafen. Das ist traurig, aber die Person bleibt für immer in unserem Herzen. Wir denken an sie und lieben sie weiter.",
+  "Du musst keine Angst haben. Mama und Papa sind noch lange, lange für dich da. Und wer dich liebt, ist immer in deinem Herzen. Liebe bleibt für immer."
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+</script>
+</body>
+</html>

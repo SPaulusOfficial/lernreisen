@@ -29,12 +29,14 @@
     padding: 20px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.8s ease;
+    transform: translateY(20px) scale(0.985);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.22,1,.36,1);
     text-align: center;
   }
   .scene.active {
     opacity: 1;
     pointer-events: auto;
+    transform: translateY(0) scale(1);
   }
   h1 {
     font-size: clamp(28px, 5vw, 56px);
@@ -75,8 +77,8 @@
     transition: all 0.15s;
     font-weight: bold;
   }
-  button:hover { transform: translateY(-2px); }
-  button:active { transform: translateY(4px); box-shadow: 0 2px 0 #8e2c4e; }
+  button:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 9px 0 #8e2c4e, 0 12px 18px rgba(0,0,0,0.22); }
+  button:active { transform: translateY(4px) scale(0.98); box-shadow: 0 2px 0 #8e2c4e; }
   button.secondary {
     background: linear-gradient(135deg, #74b9ff, #0984e3);
     box-shadow: 0 6px 0 #074a87, 0 8px 14px rgba(0,0,0,0.2);
@@ -98,22 +100,50 @@
 
   /* Scene 1 - Welcome */
   .floaty {
-    animation: floaty 3s ease-in-out infinite;
+    animation: floaty 3.4s cubic-bezier(.45,.05,.55,.95) infinite;
   }
   @keyframes floaty {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+    0%   { transform: translateY(0) rotate(-1.5deg); }
+    25%  { transform: translateY(-12px) rotate(1deg); }
+    50%  { transform: translateY(-22px) rotate(2deg); }
+    75%  { transform: translateY(-12px) rotate(-1deg); }
+    100% { transform: translateY(0) rotate(-1.5deg); }
   }
   .twinkle {
-    animation: twinkle 1.5s ease-in-out infinite;
+    animation: twinkle 1.8s ease-in-out infinite;
   }
   @keyframes twinkle {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
+    0%, 100% { opacity: 1;    transform: scale(1)    rotate(0); filter: drop-shadow(0 0 6px rgba(255,247,0,0.6)); }
+    40%      { opacity: 0.55; transform: scale(0.78) rotate(8deg); }
+    60%      { opacity: 1;    transform: scale(1.15) rotate(-6deg); filter: drop-shadow(0 0 12px rgba(255,247,0,0.9)); }
   }
 
   /* Scene 2 - Eye */
-  .eye-svg { width: min(80vw, 600px); height: auto; }
+  .eye-svg {
+    width: min(80vw, 600px);
+    height: auto;
+    filter: drop-shadow(0 10px 24px rgba(106,27,154,0.18));
+  }
+  .eye-svg circle[fill="#74b9ff"] {
+    animation: iris-pulse 3s ease-in-out infinite;
+    transform-origin: 200px 200px;
+  }
+  @keyframes iris-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.04); }
+  }
+  .eye-svg circle[cx="180"] { animation: glint 3s ease-in-out infinite; }
+  @keyframes glint {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.6; }
+  }
+  .eye-svg line[stroke="#fdcb6e"] {
+    stroke-dasharray: 6;
+    animation: light-dash 1.2s linear infinite;
+  }
+  @keyframes light-dash {
+    to { stroke-dashoffset: -12; }
+  }
 
   /* Scene 3/4 - Characters */
   .char-row {
@@ -123,11 +153,31 @@
     justify-content: center;
     align-items: center;
   }
-  .char-svg { width: clamp(120px, 18vw, 200px); height: auto; }
-  .wobble { animation: wobble 2s ease-in-out infinite; transform-origin: bottom center; }
+  .char-svg {
+    width: clamp(120px, 18vw, 200px);
+    height: auto;
+    filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+  }
+  .wobble {
+    animation: wobble 2.4s cubic-bezier(.45,.05,.55,.95) infinite, bob 3.6s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
   @keyframes wobble {
-    0%, 100% { transform: rotate(-4deg); }
-    50% { transform: rotate(4deg); }
+    0%, 100% { transform: rotate(-5deg) translateY(0); }
+    25%      { transform: rotate(2deg) translateY(-2px); }
+    50%      { transform: rotate(5deg) translateY(0); }
+    75%      { transform: rotate(-2deg) translateY(-2px); }
+  }
+  @keyframes bob {
+    0%, 100% { margin-top: 0; }
+    50%      { margin-top: -8px; }
+  }
+  /* Hover bonus on the characters */
+  .char-svg:hover { animation: char-jump 0.6s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes char-jump {
+    0%   { transform: translateY(0) scale(1); }
+    50%  { transform: translateY(-20px) scale(1.1); }
+    100% { transform: translateY(0) scale(1); }
   }
 
   /* Scene 5 - Day/Night */
@@ -142,10 +192,39 @@
   .compare-card {
     flex: 1;
     min-width: 280px;
-    background: rgba(255,255,255,0.6);
-    border-radius: 20px;
+    background: rgba(255,255,255,0.65);
+    border-radius: 22px;
     padding: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+  }
+  .compare-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 14px 28px rgba(0,0,0,0.18); }
+  /* Day scene butterfly flap */
+  #dayScene g[transform*="200,130"] {
+    animation: butter-bob 3s ease-in-out infinite;
+    transform-origin: 200px 130px;
+  }
+  @keyframes butter-bob {
+    0%, 100% { transform: translate(200px,130px) scale(1); }
+    50%      { transform: translate(200px,120px) scale(0.95); }
+  }
+  /* Sun in day scene */
+  #dayScene circle[cx="340"][cy="60"] {
+    animation: sun-shine 22s linear infinite;
+    transform-origin: 340px 60px;
+  }
+  @keyframes sun-shine {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
+  }
+  /* Night scene stars twinkle */
+  #nightScene text { animation: night-twinkle 2s ease-in-out infinite; }
+  #nightScene text:nth-of-type(2) { animation-delay: 0.5s; }
+  #nightScene text:nth-of-type(3) { animation-delay: 1s; }
+  #nightScene text:nth-of-type(4) { animation-delay: 1.5s; }
+  @keyframes night-twinkle {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
   }
   .compare-card h3 {
     font-size: clamp(18px, 2.5vw, 26px);
@@ -213,11 +292,12 @@
     border-radius: 50%;
     background: rgba(255,255,255,0.5);
     border: 2px solid #6a1b9a;
-    transition: all 0.3s;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1), background 0.3s, box-shadow 0.3s;
   }
   .dot.active {
     background: #d81b60;
-    transform: scale(1.4);
+    transform: scale(1.5);
+    box-shadow: 0 0 12px rgba(216,27,96,0.6), 0 0 4px rgba(255,255,255,0.8);
   }
 
   .stars {

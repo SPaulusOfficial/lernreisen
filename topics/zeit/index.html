@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Was ist Zeit?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #ffeaa7 0%, #b5e8ff 50%, #d6a2ff 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .clock-host {
+    position: relative;
+    margin: 14px 0;
+  }
+  .clock-svg {
+    width: min(70vw, 280px);
+    height: auto;
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.15));
+  }
+  .hand-hour {
+    transform-origin: 100px 100px;
+    animation: hour-tick 60s linear infinite;
+  }
+  .hand-min {
+    transform-origin: 100px 100px;
+    animation: min-tick 5s linear infinite;
+  }
+  @keyframes hour-tick { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+  @keyframes min-tick { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  .three-times {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .t-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .t-card.past { background: linear-gradient(135deg, rgba(214,162,255,0.4), rgba(186,73,200,0.3)); }
+  .t-card.now { background: linear-gradient(135deg, rgba(255,235,59,0.4), rgba(255,152,0,0.3)); transform: scale(1.05); }
+  .t-card.future { background: linear-gradient(135deg, rgba(116,185,255,0.4), rgba(9,132,227,0.3)); }
+  .t-card .e { font-size: 70px; display: block; }
+  .t-card h3 { color: #6a1b9a; margin: 4px 0; }
+
+  .timeline-bar {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 80px;
+    margin: 14px 0;
+  }
+  .timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #d6a2ff 0%, #fdcb6e 50%, #74b9ff 100%);
+    border-radius: 4px;
+    transform: translateY(-50%);
+  }
+  .tl-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .tl-marker:hover { transform: translate(-50%, -50%) scale(1.15); }
+  .tl-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.9);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #6a1b9a;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-top: 8px;
+  }
+  .scope-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 10px 0;
+  }
+  .scope {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .scope-row .scope:nth-child(2) { animation-delay: 0.25s; }
+  .scope-row .scope:nth-child(3) { animation-delay: 0.5s; }
+  .scope-row .scope:nth-child(4) { animation-delay: 0.75s; }
+  .scope-row .scope:nth-child(5) { animation-delay: 1s; }
+  .scope .e { font-size: 50px; display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">⏰📅</div>
+    <h1>Was ist Zeit?</h1>
+    <p>Gestern, heute, morgen.<br/>Bald, gleich, vor langer Zeit.<br/>Was ist diese Sache, die Zeit?</p>
+    <button class="orange" onclick="engine.next()">Find ich raus! 🕰️</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Zeit läuft — wie ein Fluss</h2>
+    <p>Zeit kann man nicht sehen oder anfassen. Aber sie geht immer in eine Richtung: <b style="color:#6a1b9a">nach vorne</b>! ➡️</p>
+    <div class="clock-host">
+      <svg class="clock-svg" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="90" fill="#fff" stroke="#6a1b9a" stroke-width="6"/>
+        <text x="100" y="35" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">12</text>
+        <text x="170" y="108" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">3</text>
+        <text x="100" y="180" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">6</text>
+        <text x="30" y="108" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">9</text>
+        <line class="hand-hour" x1="100" y1="100" x2="100" y2="50" stroke="#6a1b9a" stroke-width="8" stroke-linecap="round"/>
+        <line class="hand-min" x1="100" y1="100" x2="100" y2="25" stroke="#d81b60" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="100" cy="100" r="8" fill="#6a1b9a"/>
+      </svg>
+    </div>
+    <p>Die Uhr zeigt uns die Zeit — Sekunde für Sekunde, Stunde für Stunde.</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Gestern — Heute — Morgen</h2>
+    <div class="three-times">
+      <div class="t-card past"><span class="e">👈</span><h3>Gestern</h3><p style="margin:0;font-size:14px">War schon. Erinnerungen!</p></div>
+      <div class="t-card now"><span class="e">⭐</span><h3>Jetzt!</h3><p style="margin:0;font-size:14px">Genau in diesem Moment!</p></div>
+      <div class="t-card future"><span class="e">👉</span><h3>Morgen</h3><p style="margin:0;font-size:14px">Kommt noch. Vorfreude!</p></div>
+    </div>
+    <p style="font-size:18px;">Du lebst immer im <b style="color:#f59e0b">Jetzt</b> — Gestern und Morgen sind nur in deinem Kopf!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Zeit in Stücken</h2>
+    <p>Wir teilen die Zeit in <b>Schubladen</b> auf:</p>
+    <div class="scope-row">
+      <div class="scope"><span class="e">⚡</span><p style="margin:0;font-weight:bold">Sekunde</p><p style="margin:0;font-size:13px">Blink mit den Augen!</p></div>
+      <div class="scope"><span class="e">⏱️</span><p style="margin:0;font-weight:bold">Minute</p><p style="margin:0;font-size:13px">60 Sekunden</p></div>
+      <div class="scope"><span class="e">⏰</span><p style="margin:0;font-weight:bold">Stunde</p><p style="margin:0;font-size:13px">60 Minuten</p></div>
+      <div class="scope"><span class="e">📅</span><p style="margin:0;font-weight:bold">Tag</p><p style="margin:0;font-size:13px">24 Stunden</p></div>
+      <div class="scope"><span class="e">🌍</span><p style="margin:0;font-weight:bold">Jahr</p><p style="margin:0;font-size:13px">365 Tage!</p></div>
+    </div>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">⏳✨</div>
+    <h2>Zeit ist Geschenk!</h2>
+    <p>Du hast nur <b>dein Jetzt</b>. Mach es schön — lach, spiel, kuschel.<br/>Genieß jeden Moment — das ist das echte Geheimnis der Zeit! 💕</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Gestern, heute, morgen. Bald, gleich, vor langer Zeit. Was ist diese Sache, die Zeit?",
+  "Zeit kann man nicht sehen oder anfassen. Aber sie geht immer in eine Richtung: nach vorne! Die Uhr zeigt uns die Zeit, Sekunde für Sekunde, Stunde für Stunde.",
+  "Gestern, heute, morgen! Gestern war schon, das sind deine Erinnerungen. Morgen kommt noch, da kannst du dich drauf freuen! Und im Jetzt, in diesem Moment, lebst du. Du lebst immer im Jetzt, Gestern und Morgen sind nur in deinem Kopf!",
+  "Wir teilen die Zeit in Stücke auf: Eine Sekunde, das ist ein Blinzeln. Sechzig Sekunden sind eine Minute. Sechzig Minuten sind eine Stunde. Vierundzwanzig Stunden sind ein Tag. Und dreihundertfünfundsechzig Tage sind ein ganzes Jahr!",
+  "Zeit ist ein Geschenk! Du hast nur dein Jetzt. Mach es schön: lach, spiel, kuschel. Genieß jeden Moment, das ist das echte Geheimnis der Zeit!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+</script>
+</body>
+</html>

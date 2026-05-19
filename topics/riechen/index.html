@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie riechst du?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff5f0 0%, #ffd6e8 50%, #ffeaa7 100%); }
+  h1, h2 { color: #c44569; text-shadow: 2px 2px 0 #fff; }
+
+  .nose-anatomy { width: min(80vw, 380px); height: auto; }
+  .smell-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .smell {
+    background: rgba(255,255,255,0.9);
+    border: 4px solid transparent;
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .smell:hover { transform: translateY(-6px) scale(1.05); border-color: #ff6b9d; }
+  .smell .emoji { font-size: 56px; display: block; transition: transform 0.3s; }
+  .smell:hover .emoji { transform: scale(1.2); }
+  .smell.good { background: linear-gradient(135deg, rgba(85,239,196,0.3), rgba(0,184,148,0.2)); }
+  .smell.bad { background: linear-gradient(135deg, rgba(116,185,255,0.3), rgba(7,74,135,0.2)); }
+  .smell h3 { color: #c44569; margin: 4px 0; font-size: 16px; }
+
+  .reaction-stage {
+    position: relative;
+    width: min(80vw, 360px);
+    height: 240px;
+    margin: 14px 0;
+  }
+  .reaction-face {
+    font-size: clamp(140px, 28vw, 200px);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    display: inline-block;
+  }
+  .smell-wave {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,107,157,0.5);
+    animation: wave-out 1.5s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes wave-out {
+    0%   { opacity: 1; width: 30px; height: 30px; }
+    100% { opacity: 0; width: 200px; height: 200px; transform: translate(-90px, -90px); }
+  }
+
+  .smell-msg {
+    background: rgba(255,255,255,0.9);
+    padding: 14px 26px;
+    border-radius: 20px;
+    color: #c44569;
+    font-weight: bold;
+    font-size: 22px;
+    min-height: 36px;
+    margin: 8px 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👃✨</div>
+    <h1>Wie riechst du?</h1>
+    <p>Mmm, Kuchen! 🍰 Bäh, Müll! 🗑️<br/>Deine Nase kann tausende Sachen erkennen. Wie macht sie das?</p>
+    <button class="secondary" onclick="engine.next()">Schnüffeln! 👃</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Geruchs-Teilchen in der Luft</h2>
+    <p>Wenn was riecht, sind <b style="color:#c44569">winzige Teilchen</b> in der Luft.<br/>Du atmest sie ein — und sie kitzeln deine Nase!</p>
+    <svg class="nose-anatomy" viewBox="0 0 380 260">
+      <path d="M 100 60 Q 140 50 170 90 Q 200 130 200 180 Q 200 220 150 220 L 100 220 Q 80 220 70 200 Q 50 180 60 140 Q 60 100 100 60 Z" fill="#ffd3b6" stroke="#a04040" stroke-width="3"/>
+      <ellipse cx="100" cy="200" rx="14" ry="8" fill="#1a1a2e"/>
+      <ellipse cx="160" cy="200" rx="14" ry="8" fill="#1a1a2e"/>
+      <text x="200" y="50" font-size="22" fill="#c44569" font-weight="bold">Geruch 🌸</text>
+      <path d="M 250 90 Q 200 120 180 150" stroke="#c44569" stroke-width="3" fill="none" stroke-dasharray="5"/>
+      <circle cx="240" cy="80" r="5" fill="#ff6b9d"/>
+      <circle cx="220" cy="100" r="4" fill="#ff6b9d"/>
+      <circle cx="200" cy="125" r="3" fill="#ff6b9d"/>
+    </svg>
+    <p>In deiner Nase oben sind <b>Geruchs-Sensoren</b> — sie sagen dem Gehirn: "Riecht nach Blume!" 🌸</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Probier mal — was riecht das?</h2>
+    <div class="reaction-stage">
+      <span class="reaction-face" id="face">😐</span>
+    </div>
+    <div class="smell-msg" id="msg">Klick einen Geruch und schau, wie die Nase reagiert!</div>
+    <div class="smell-grid">
+      <div class="smell good" onclick="smell('🌹 Rose — mmmh!', '😊')"><span class="emoji">🌹</span><h3>Rose</h3></div>
+      <div class="smell good" onclick="smell('🍰 Kuchen — leckerrr!', '🤤')"><span class="emoji">🍰</span><h3>Kuchen</h3></div>
+      <div class="smell good" onclick="smell('🍞 Brot — Hunger!', '😋')"><span class="emoji">🍞</span><h3>Frisches Brot</h3></div>
+      <div class="smell bad" onclick="smell('🧦 Stinkesocke — bäh!', '🤢')"><span class="emoji">🧦</span><h3>Stinkesocke</h3></div>
+      <div class="smell bad" onclick="smell('🗑️ Müll — Iiih!', '😖')"><span class="emoji">🗑️</span><h3>Müll</h3></div>
+      <div class="smell bad" onclick="smell('🧅 Zwiebel — Tränen!', '😭')"><span class="emoji">🧅</span><h3>Zwiebel</h3></div>
+    </div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Riechen schützt dich!</h2>
+    <p>Deine Nase warnt dich, wenn Essen <b style="color:#c44569">schlecht</b> ist 🤢, oder wenn es <b style="color:#c44569">brennt</b> 🔥.<br/>
+       Sie ist ein super-Bodyguard für deinen Körper! 🛡️</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">👃💖</div>
+    <h2>Schnüffel-Geschichten</h2>
+    <p>Manche Gerüche bringen Erinnerungen zurück! 🧠✨<br/>
+       Mamas Parfüm, Omas Küche, frischer Regen... was riechst du am liebsten?</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Mmm, Kuchen! Bäh, Müll! Deine Nase kann tausende Sachen erkennen. Wie macht sie das?",
+  "Wenn was riecht, sind winzige Teilchen in der Luft. Du atmest sie ein, und sie kitzeln deine Nase! In deiner Nase oben sind Geruchs-Sensoren. Sie sagen dem Gehirn: Riecht nach Blume!",
+  "Klick einen Geruch und schau, wie die Nase reagiert! Manche Gerüche sind toll, andere sind eklig.",
+  "Riechen schützt dich! Deine Nase warnt dich, wenn Essen schlecht ist, oder wenn es brennt. Sie ist ein super Bodyguard für deinen Körper!",
+  "Manche Gerüche bringen Erinnerungen zurück! Mamas Parfüm, Omas Küche, frischer Regen. Was riechst du am liebsten?"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function smell(text, emoji) {
+  document.getElementById('msg').textContent = text;
+  const face = document.getElementById('face');
+  face.textContent = emoji;
+  face.style.transform = 'scale(1.15)';
+  setTimeout(() => face.style.transform = 'scale(1)', 600);
+  // Spawn smell waves
+  const stage = face.parentElement;
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const w = document.createElement('span');
+      w.className = 'smell-wave';
+      w.style.left = '40%';
+      w.style.top = '50%';
+      stage.appendChild(w);
+      setTimeout(() => w.remove(), 1500);
+    }, i*200);
+  }
+}
+</script>
+</body>
+</html>

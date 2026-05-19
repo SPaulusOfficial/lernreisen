@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie schmeckst du?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff8c8 0%, #ffd6e8 50%, #ff9eb1 100%); }
+  h1, h2 { color: #c44569; text-shadow: 2px 2px 0 #fff; }
+
+  .tongue-svg { width: min(80vw, 360px); height: auto; }
+  .tongue-bud { transition: fill 0.3s ease, transform 0.3s ease; cursor: pointer; transform-origin: center; }
+  .tongue-bud:hover { transform: scale(1.2); }
+
+  .taste-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .taste {
+    background: rgba(255,255,255,0.9);
+    border: 4px solid transparent;
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .taste:hover { transform: translateY(-6px) scale(1.05); }
+  .taste.sweet:hover { border-color: #ff6b9d; }
+  .taste.salty:hover { border-color: #74b9ff; }
+  .taste.sour:hover { border-color: #fdcb6e; }
+  .taste.bitter:hover { border-color: #00b894; }
+  .taste .emoji { font-size: 56px; display: block; }
+  .taste h3 { color: #c44569; margin: 4px 0; font-size: 16px; }
+
+  .face-stage {
+    position: relative;
+    margin: 14px 0;
+  }
+  .face-big {
+    font-size: clamp(140px, 28vw, 200px);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    display: inline-block;
+  }
+  .taste-msg {
+    background: rgba(255,255,255,0.9);
+    padding: 12px 24px;
+    border-radius: 18px;
+    color: #c44569;
+    font-weight: bold;
+    font-size: 22px;
+    min-height: 36px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👅✨</div>
+    <h1>Wie schmeckst du?</h1>
+    <p>Süß wie Schokolade 🍫, sauer wie Zitrone 🍋...<br/>Wie weiß deine Zunge das alles?</p>
+    <button class="secondary" onclick="engine.next()">Probiers! 👅</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Deine Zunge hat Mini-Helfer</h2>
+    <p>Auf deiner Zunge sind <b style="color:#c44569">tausende kleine Knöspchen</b> — die Geschmacksknospen.<br/>
+       Jede schmeckt etwas anderes!</p>
+    <svg class="tongue-svg" viewBox="0 0 360 280">
+      <ellipse cx="180" cy="160" rx="140" ry="100" fill="#ff9eb1" stroke="#c44569" stroke-width="4"/>
+      <ellipse cx="180" cy="170" rx="110" ry="70" fill="#ffc5cc"/>
+      <!-- Taste buds -->
+      <g>
+        <circle class="tongue-bud" cx="100" cy="140" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="140" cy="120" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="180" cy="120" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="220" cy="120" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="260" cy="140" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="130" cy="170" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="180" cy="170" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="230" cy="170" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="110" cy="200" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="180" cy="210" r="9" fill="#fff"/>
+        <circle class="tongue-bud" cx="250" cy="200" r="9" fill="#fff"/>
+      </g>
+    </svg>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Die 5 Geschmacks-Familien</h2>
+    <p>Klick und probier — wie reagiert das Gesicht?</p>
+    <div class="face-stage">
+      <span class="face-big" id="face">😋</span>
+    </div>
+    <div class="taste-msg" id="msg">Klick einen Geschmack!</div>
+    <div class="taste-grid">
+      <div class="taste sweet" onclick="taste('🍫 Süß — yummi!', '😋')"><span class="emoji">🍫</span><h3>Süß</h3></div>
+      <div class="taste salty" onclick="taste('🧂 Salzig — Pommes!', '😎')"><span class="emoji">🍟</span><h3>Salzig</h3></div>
+      <div class="taste sour" onclick="taste('🍋 Sauer — Zitrone!', '😖')"><span class="emoji">🍋</span><h3>Sauer</h3></div>
+      <div class="taste bitter" onclick="taste('🥦 Bitter — Brokkoli!', '🤢')"><span class="emoji">🥦</span><h3>Bitter</h3></div>
+      <div class="taste" onclick="taste('🍄 Umami — herzhaft, lecker!', '🥰')"><span class="emoji">🧀</span><h3>Umami</h3></div>
+    </div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Zunge & Nase = Team! 👃👅</h2>
+    <p>Wusstest du? Wenn du die Nase zuhältst 🤧, schmeckst du fast nichts mehr!<br/>
+       Riechen und Schmecken arbeiten <b>zusammen</b>!</p>
+    <div style="display:flex;gap:24px;align-items:center;font-size:80px;justify-content:center;margin:14px 0;">
+      <span class="pulse">👃</span>
+      <span style="font-size:50px;">➕</span>
+      <span class="pulse" style="animation-delay:0.3s">👅</span>
+      <span style="font-size:50px;">=</span>
+      <span class="pulse" style="animation-delay:0.6s">🤤</span>
+    </div>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🍓🍫🍋</div>
+    <h2>Probieren ist toll!</h2>
+    <p>Manchmal schmeckt etwas erst komisch — aber wenn du es mehrmals probierst, magst du es plötzlich! 😍<br/>
+       Trau dich, neue Sachen zu probieren!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Süß wie Schokolade, sauer wie Zitrone! Wie weiß deine Zunge das alles?",
+  "Auf deiner Zunge sind tausende kleine Knöspchen, die Geschmacksknospen. Jede schmeckt etwas anderes!",
+  "Es gibt fünf Geschmacks-Familien: Süß wie Schokolade, salzig wie Pommes, sauer wie Zitrone, bitter wie Brokkoli, und Umami, das ist der herzhafte Geschmack wie bei Käse oder Suppe. Klick und probier!",
+  "Wusstest du? Wenn du die Nase zuhältst, schmeckst du fast nichts mehr! Riechen und Schmecken arbeiten zusammen!",
+  "Manchmal schmeckt etwas erst komisch, aber wenn du es mehrmals probierst, magst du es plötzlich! Trau dich, neue Sachen zu probieren!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function taste(text, emoji) {
+  document.getElementById('msg').textContent = text;
+  const face = document.getElementById('face');
+  face.textContent = emoji;
+  face.style.transform = 'scale(1.18)';
+  setTimeout(() => face.style.transform = 'scale(1)', 600);
+}
+</script>
+</body>
+</html>

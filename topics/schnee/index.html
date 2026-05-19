@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie entsteht Schnee?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #e8f4ff 0%, #b5e8ff 50%, #d4ecff 100%); color: #074a87; }
+  h1, h2 { color: #0984e3; text-shadow: 2px 2px 0 #fff; }
+
+  .snow-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d4ecff 50%, #f0f8ff 80%, #fff 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(116,185,255,0.3), 0 8px 20px rgba(7,74,135,0.15);
+    margin: 14px 0;
+  }
+  .snow-ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(180deg, #fff 0%, #e8f4ff 100%);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .snow-tree {
+    position: absolute;
+    bottom: 30px;
+    font-size: 80px;
+  }
+  .snow-house {
+    position: absolute;
+    bottom: 30px;
+    font-size: 70px;
+  }
+  .flake {
+    position: absolute;
+    font-size: 22px;
+    animation: snow-fall var(--dur, 5s) linear forwards;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(116,185,255,0.5);
+  }
+  @keyframes snow-fall {
+    0%   { transform: translateY(-30px) rotate(0); opacity: 1; }
+    100% { transform: translateY(300px) translateX(var(--dx, 30px)) rotate(360deg); opacity: 0; }
+  }
+
+  /* Snowflake builder */
+  .builder-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    align-items: start;
+    max-width: 700px;
+    width: 95vw;
+  }
+  .builder-canvas {
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, #1a1a4e 0%, #074a87 80%);
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(116,185,255,0.5), inset 0 0 30px rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .builder-canvas svg {
+    width: 100%;
+    height: 100%;
+  }
+  .builder-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .flake-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 32px;
+    padding: 0;
+  }
+  .flake-btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  .step {
+    background: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 12px 16px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    width: 130px;
+    animation: floaty 3.5s ease-in-out infinite;
+  }
+  .steps .step:nth-child(2) { animation-delay: 0.35s; }
+  .steps .step:nth-child(3) { animation-delay: 0.7s; }
+  .step .e { font-size: 50px; display: block; }
+  .step-arrow { font-size: 28px; color: #0984e3; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">❄️⛄</div>
+    <h1>Wie entsteht Schnee?</h1>
+    <p>Schnee ist wie Zauberei — kleine Sterne fallen vom Himmel ⭐❄️<br/>Aber wie macht der Himmel das?</p>
+    <button class="secondary" onclick="engine.next()">Komm mit! ❄️</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Schnee ist gefrorenes Wasser</h2>
+    <p>Oben in den Wolken ☁️ ist Wasser. Wenn es <b style="color:#0984e3">eisig kalt</b> ist, friert das Wasser zu winzigen <b>Eiskristallen</b>!</p>
+    <div class="steps">
+      <div class="step"><span class="e">💧</span><p style="margin:0">Wasser-Tröpfchen</p></div>
+      <span class="step-arrow">➡️</span>
+      <div class="step"><span class="e">🧊</span><p style="margin:0">friert ein</p></div>
+      <span class="step-arrow">➡️</span>
+      <div class="step"><span class="e">❄️</span><p style="margin:0">Schneeflocke!</p></div>
+    </div>
+    <p>Jede Schneeflocke ist <b style="color:#0984e3">einzigartig</b> — keine ist gleich!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Bau dir deine eigene Schneeflocke!</h2>
+    <p>Klick die Knöpfe und mach eine ganz besondere Flocke ❄️</p>
+    <div class="builder-grid">
+      <div class="builder-canvas">
+        <svg id="flakeCanvas" viewBox="-50 -50 100 100">
+          <g id="flakeGroup"></g>
+        </svg>
+      </div>
+      <div class="builder-controls">
+        <div class="flake-btn-row">
+          <button class="flake-btn secondary" onclick="addArm('line')">─</button>
+          <button class="flake-btn secondary" onclick="addArm('Y')">Y</button>
+          <button class="flake-btn secondary" onclick="addArm('star')">✦</button>
+          <button class="flake-btn secondary" onclick="addArm('cross')">✚</button>
+        </div>
+        <button class="small green" onclick="addRing()">⭕ Ring</button>
+        <button class="small purple" onclick="randomFlake()">🎲 Zufalls-Flocke</button>
+        <button class="small" onclick="clearFlake()">🗑️ Neu starten</button>
+      </div>
+    </div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:10px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Schnee fällt!</h2>
+    <p>Wenn die Schneeflocken schwer genug sind, fallen sie aus der Wolke runter.<br/>Auf den Boden, auf Häuser, auf dich!</p>
+    <div class="snow-stage" id="snowStage">
+      <span class="snow-tree" style="left:10%">🌲</span>
+      <span class="snow-tree" style="left:25%;font-size:60px">🌲</span>
+      <span class="snow-house" style="left:50%">🏠</span>
+      <span class="snow-tree" style="right:10%">🌲</span>
+      <div class="snow-ground"></div>
+    </div>
+    <p>So entsteht <b>Schnee-Landschaft</b> — wunderschön zum Toben! ⛷️</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">⛄❄️</div>
+    <h2>Was kannst du im Schnee machen?</h2>
+    <div style="display:flex;gap:20px;font-size:60px;flex-wrap:wrap;justify-content:center;">
+      <span class="floaty">⛄</span>
+      <span class="floaty" style="animation-delay:0.3s">🛷</span>
+      <span class="floaty" style="animation-delay:0.6s">⛸️</span>
+      <span class="floaty" style="animation-delay:0.9s">🎿</span>
+    </div>
+    <p style="font-size:18px;">Schnee = Zauber-Wasser, das du anfassen kannst! 💙</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Schnee ist wie Zauberei: kleine Sterne fallen vom Himmel! Aber wie macht der Himmel das?",
+  "Schnee ist gefrorenes Wasser! Oben in den Wolken ist Wasser. Wenn es eisig kalt ist, friert das Wasser zu winzigen Eiskristallen. Und jede Schneeflocke ist einzigartig, keine ist gleich!",
+  "Bau dir deine eigene Schneeflocke! Klick die Knöpfe und mach eine ganz besondere Flocke. Sechs Arme hat jede echte Schneeflocke!",
+  "Wenn die Schneeflocken schwer genug sind, fallen sie aus der Wolke runter. Auf den Boden, auf Häuser, auf dich! So entsteht eine wunderschöne Schnee-Landschaft.",
+  "Im Schnee kannst du tolle Sachen machen: Schneemann bauen, schlitten fahren, Schlittschuh laufen, Ski fahren! Schnee ist Zauber-Wasser, das du anfassen kannst!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 3) startSnow(); else stopSnow(); } });
+
+// Snowflake builder
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function addArm(type) {
+  const g = document.getElementById('flakeGroup');
+  for (let i = 0; i < 6; i++) {
+    const arm = document.createElementNS(SVG_NS, 'g');
+    arm.setAttribute('transform', 'rotate(' + (i*60) + ')');
+    if (type === 'line') {
+      const l = document.createElementNS(SVG_NS, 'line');
+      l.setAttribute('x1', '0'); l.setAttribute('y1', '0');
+      l.setAttribute('x2', '0'); l.setAttribute('y2', '-40');
+      l.setAttribute('stroke', '#b5e8ff'); l.setAttribute('stroke-width', '2');
+      l.setAttribute('stroke-linecap', 'round');
+      arm.appendChild(l);
+    } else if (type === 'Y') {
+      const l1 = document.createElementNS(SVG_NS, 'line');
+      l1.setAttribute('x1', '0'); l1.setAttribute('y1', '-25');
+      l1.setAttribute('x2', '-10'); l1.setAttribute('y2', '-35');
+      l1.setAttribute('stroke', '#b5e8ff'); l1.setAttribute('stroke-width', '2');
+      arm.appendChild(l1);
+      const l2 = document.createElementNS(SVG_NS, 'line');
+      l2.setAttribute('x1', '0'); l2.setAttribute('y1', '-25');
+      l2.setAttribute('x2', '10'); l2.setAttribute('y2', '-35');
+      l2.setAttribute('stroke', '#b5e8ff'); l2.setAttribute('stroke-width', '2');
+      arm.appendChild(l2);
+    } else if (type === 'star') {
+      const c = document.createElementNS(SVG_NS, 'circle');
+      c.setAttribute('cx', '0'); c.setAttribute('cy', '-30');
+      c.setAttribute('r', '4');
+      c.setAttribute('fill', '#fff');
+      arm.appendChild(c);
+    } else if (type === 'cross') {
+      const l1 = document.createElementNS(SVG_NS, 'line');
+      l1.setAttribute('x1', '-7'); l1.setAttribute('y1', '-30');
+      l1.setAttribute('x2', '7'); l1.setAttribute('y2', '-30');
+      l1.setAttribute('stroke', '#b5e8ff'); l1.setAttribute('stroke-width', '2');
+      arm.appendChild(l1);
+    }
+    arm.style.opacity = '0';
+    arm.style.transition = 'opacity 0.5s ease ' + (i*0.05) + 's';
+    g.appendChild(arm);
+    setTimeout(() => arm.style.opacity = '1', 30);
+  }
+}
+function addRing() {
+  const g = document.getElementById('flakeGroup');
+  const c = document.createElementNS(SVG_NS, 'circle');
+  c.setAttribute('cx', '0'); c.setAttribute('cy', '0');
+  c.setAttribute('r', String(8 + Math.random()*30));
+  c.setAttribute('fill', 'none');
+  c.setAttribute('stroke', '#b5e8ff');
+  c.setAttribute('stroke-width', '2');
+  c.style.opacity = '0';
+  c.style.transition = 'opacity 0.5s';
+  g.appendChild(c);
+  setTimeout(() => c.style.opacity = '1', 30);
+}
+function clearFlake() {
+  document.getElementById('flakeGroup').innerHTML = '';
+}
+function randomFlake() {
+  clearFlake();
+  const types = ['line','Y','star','cross'];
+  for (let i = 0; i < 2 + Math.floor(Math.random()*3); i++) {
+    addArm(types[Math.floor(Math.random()*4)]);
+  }
+  if (Math.random() > 0.5) addRing();
+}
+randomFlake();
+
+let snowTimer = null;
+function startSnow() {
+  const stage = document.getElementById('snowStage');
+  function spawnFlake() {
+    const f = document.createElement('span');
+    f.className = 'flake';
+    f.textContent = ['❄','❅','❆','*'][Math.floor(Math.random()*4)];
+    f.style.left = (Math.random()*100) + '%';
+    f.style.top = '0';
+    f.style.fontSize = (14 + Math.random()*14) + 'px';
+    f.style.setProperty('--dur', (3 + Math.random()*3) + 's');
+    f.style.setProperty('--dx', ((Math.random()-0.5)*60) + 'px');
+    stage.appendChild(f);
+    setTimeout(() => f.remove(), 6000);
+  }
+  for (let i = 0; i < 15; i++) setTimeout(spawnFlake, i*120);
+  snowTimer = setInterval(spawnFlake, 250);
+}
+function stopSnow() {
+  if (snowTimer) clearInterval(snowTimer);
+  snowTimer = null;
+}
+</script>
+</body>
+</html>

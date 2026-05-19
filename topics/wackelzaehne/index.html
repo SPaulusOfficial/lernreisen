@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum fallen Milchzähne aus?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #ffe5e0 0%, #ffd6e8 50%, #b5e8ff 100%); }
+  h1, h2 { color: #c44569; text-shadow: 2px 2px 0 #fff; }
+
+  .mouth-stage {
+    position: relative;
+    width: min(90vw, 480px);
+    margin: 14px 0;
+  }
+  .tooth-row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    background: linear-gradient(180deg, #ff9eb1, #c44569);
+    padding: 18px 10px;
+    border-radius: 30px 30px 100px 100px;
+    box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2), 0 8px 20px rgba(196,69,105,0.3);
+  }
+  .tooth {
+    background: linear-gradient(180deg, #fff 0%, #f4f4f4 100%);
+    border-radius: 6px 6px 12px 12px;
+    aspect-ratio: 0.6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.15s;
+    position: relative;
+  }
+  .tooth:hover { transform: translateY(-4px); }
+  .tooth.wiggling { animation: wiggle 0.3s ease-in-out infinite; cursor: grab; background: linear-gradient(180deg, #fff 60%, #ffd6e8 100%); }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+  }
+  .tooth.gone { background: transparent; box-shadow: none; transform: translateY(40px) scale(0.3); opacity: 0; transition: all 0.5s; }
+  .tooth.new { background: linear-gradient(180deg, #ffe5b4 0%, #fdd84d 100%); animation: pop-in 0.6s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes pop-in {
+    0%   { transform: translateY(20px) scale(0); }
+    70%  { transform: translateY(-4px) scale(1.15); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  .info-bubble {
+    background: rgba(255,255,255,0.9);
+    padding: 12px 24px;
+    border-radius: 20px;
+    color: #c44569;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  .counter {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 8px 0;
+  }
+  .counter .stat {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 20px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #c44569;
+  }
+
+  .floating-tooth {
+    position: fixed;
+    font-size: 50px;
+    pointer-events: none;
+    z-index: 1000;
+    animation: tooth-fly 2s ease-out forwards;
+  }
+  @keyframes tooth-fly {
+    0%   { transform: scale(1) rotate(0); opacity: 1; }
+    100% { transform: translate(40px, -200px) scale(1.5) rotate(720deg); opacity: 0; }
+  }
+
+  .pillow-scene {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .pillow {
+    font-size: 100px;
+    animation: floaty 3s ease-in-out infinite;
+  }
+  .tooth-fairy {
+    font-size: 80px;
+    animation: float-pendulum 4s ease-in-out infinite;
+  }
+  @keyframes float-pendulum {
+    0%, 100% { transform: translateX(0) rotate(-3deg); }
+    50%      { transform: translateX(30px) rotate(5deg); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🦷</div>
+    <h1>Wackelzähne!</h1>
+    <p>"Mama, mein Zahn wackelt!" 🦷<br/>Und ein paar Tage später — plopp! — fällt er raus.<br/>Warum macht der Mund das?</p>
+    <button class="purple" onclick="engine.next()">Find ich raus! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Deine 20 Milchzähne</h2>
+    <p>Als Baby hattest du noch keine Zähne. Dann kamen sie — alle 20!</p>
+    <div class="mouth-stage">
+      <div class="tooth-row">
+        <div class="tooth"></div><div class="tooth"></div><div class="tooth"></div><div class="tooth"></div><div class="tooth"></div>
+        <div class="tooth"></div><div class="tooth"></div><div class="tooth"></div><div class="tooth"></div><div class="tooth"></div>
+      </div>
+    </div>
+    <p>Diese ersten Zähne nennt man <b style="color:#c44569">Milchzähne</b>. Sie sind klein und perfekt für ein Kind.</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Doch dein Mund wird größer!</h2>
+    <p>Wenn du wächst, wird dein Mund größer 📏 — die kleinen Milchzähne passen bald nicht mehr.<br/>
+       Unter ihnen warten schon die <b>neuen, großen Zähne</b>!</p>
+    <div style="font-size:70px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:14px 0;">
+      <div style="text-align:center;"><span>🦷</span><br/><small>Milchzahn</small></div>
+      <span>⬇️</span>
+      <div style="text-align:center;"><span style="font-size:90px;">🦷</span><br/><small>Bleibender Zahn</small></div>
+    </div>
+    <p>Die großen drücken die kleinen raus — darum wackeln sie!</p>
+    <button class="purple" onclick="engine.next()">Probier mal! ▶️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Wackel den Zahn!</h2>
+    <p>Klick auf einen Zahn — er fängt an zu wackeln. Klick noch mal — und er fällt raus!</p>
+    <div class="mouth-stage">
+      <div class="tooth-row" id="interactiveTeeth">
+        <div class="tooth" data-tooth="0"></div>
+        <div class="tooth" data-tooth="1"></div>
+        <div class="tooth" data-tooth="2"></div>
+        <div class="tooth" data-tooth="3"></div>
+        <div class="tooth" data-tooth="4"></div>
+        <div class="tooth" data-tooth="5"></div>
+        <div class="tooth" data-tooth="6"></div>
+        <div class="tooth" data-tooth="7"></div>
+        <div class="tooth" data-tooth="8"></div>
+        <div class="tooth" data-tooth="9"></div>
+      </div>
+    </div>
+    <div class="counter">
+      <span class="stat">🦷 Ausgefallen: <span id="lostCount">0</span></span>
+      <span class="stat">✨ Nachgewachsen: <span id="grownCount">0</span></span>
+    </div>
+    <div class="info-bubble" id="bubble">Klick auf einen weißen Zahn!</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:10px;">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Die Zahnfee 🧚</h2>
+    <p>Manche legen den verlorenen Zahn unters Kopfkissen — und über Nacht kommt die Zahnfee!<br/>Sie tauscht den Zahn gegen eine kleine Überraschung.</p>
+    <div class="pillow-scene">
+      <span class="pillow">🛏️</span>
+      <span class="tooth-fairy">🧚‍♀️</span>
+      <span class="floaty" style="font-size:60px;animation-delay:0.5s">🪙</span>
+    </div>
+    <p style="font-size:18px;background:rgba(255,255,255,0.7);padding:14px;border-radius:14px;max-width:600px;">
+      💡 <b>Wichtig:</b> Putz deine neuen Zähne gut — die musst du dein ganzes Leben behalten!
+    </p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Mama, mein Zahn wackelt! Und ein paar Tage später, plopp, fällt er raus. Warum macht der Mund das?",
+  "Als Baby hattest du noch keine Zähne. Dann kamen sie, alle zwanzig! Diese ersten Zähne nennt man Milchzähne. Sie sind klein und perfekt für ein Kind.",
+  "Wenn du wächst, wird dein Mund größer. Die kleinen Milchzähne passen bald nicht mehr. Unter ihnen warten schon die neuen, großen Zähne! Die großen drücken die kleinen raus, darum wackeln sie.",
+  "Klick auf einen Zahn, er fängt an zu wackeln. Klick noch mal, und er fällt raus! Schau, wie der neue Zahn nachwächst.",
+  "Manche legen den verlorenen Zahn unters Kopfkissen, und über Nacht kommt die Zahnfee! Sie tauscht den Zahn gegen eine kleine Überraschung. Wichtig: Putz deine neuen Zähne gut, die musst du dein ganzes Leben behalten!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+let lost = 0, grown = 0;
+const bubble = document.getElementById('bubble');
+
+document.querySelectorAll('#interactiveTeeth .tooth').forEach(tooth => {
+  tooth.addEventListener('click', () => {
+    if (tooth.classList.contains('gone') || tooth.classList.contains('new')) return;
+    if (!tooth.classList.contains('wiggling')) {
+      tooth.classList.add('wiggling');
+      bubble.textContent = '🦷 Wackel-wackel! Klick nochmal, um ihn zu ziehen!';
+    } else {
+      // Pull out
+      const rect = tooth.getBoundingClientRect();
+      const fly = document.createElement('span');
+      fly.className = 'floating-tooth';
+      fly.textContent = '🦷';
+      fly.style.left = rect.left + 'px';
+      fly.style.top = rect.top + 'px';
+      document.body.appendChild(fly);
+      setTimeout(() => fly.remove(), 2000);
+      tooth.classList.remove('wiggling');
+      tooth.classList.add('gone');
+      lost++;
+      document.getElementById('lostCount').textContent = String(lost);
+      bubble.textContent = '🎉 Ausgefallen! Gleich wächst ein neuer.';
+      setTimeout(() => {
+        tooth.classList.remove('gone');
+        tooth.classList.add('new');
+        grown++;
+        document.getElementById('grownCount').textContent = String(grown);
+        bubble.textContent = '✨ Ein neuer großer Zahn ist da!';
+      }, 1500);
+    }
+  });
+});
+</script>
+</body>
+</html>

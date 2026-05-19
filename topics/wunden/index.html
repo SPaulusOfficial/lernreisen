@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie heilen Wunden?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff5f0 0%, #ffd3b6 50%, #ff9eb1 100%); }
+  h1, h2 { color: #c0392b; text-shadow: 2px 2px 0 #fff; }
+
+  .knee-stage {
+    position: relative;
+    width: min(90vw, 480px);
+    height: 380px;
+    background: radial-gradient(circle at center, #ffd3b6 30%, #f4a261 70%, #d28b5b 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 -20px 40px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.15);
+    margin: 14px 0;
+    overflow: hidden;
+  }
+  .wound-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .blood-drop {
+    position: absolute;
+    font-size: 26px;
+    animation: drip 2s ease-in forwards;
+  }
+  @keyframes drip {
+    0% { transform: translateY(-10px) scale(0.5); opacity: 0; }
+    20% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(150px) scale(0.8); opacity: 0; }
+  }
+  .platelet {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle, #ff6b6b, #c0392b);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(192,57,43,0.6);
+  }
+  .platelet.moving { animation: platelet-move 2s ease-out forwards; }
+  @keyframes platelet-move {
+    0% { opacity: 0; transform: scale(0.3); }
+    20% { opacity: 1; transform: scale(1); }
+    100% { transform: var(--target); opacity: 1; }
+  }
+
+  .phase-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  .phase-info {
+    background: rgba(255,255,255,0.9);
+    padding: 12px 28px;
+    border-radius: 20px;
+    color: #c0392b;
+    font-weight: bold;
+    font-size: 22px;
+    min-width: 280px;
+  }
+  /* Wound visual states (controlled via .wound class on knee-stage) */
+  .wound-mark { position: absolute; top:45%; left:35%; }
+  .wound-cut, .wound-blood, .wound-clot, .wound-scab, .wound-healed { display: none; }
+  .knee-stage[data-phase="cut"]    .wound-cut    { display: block; }
+  .knee-stage[data-phase="blood"]  .wound-cut    { display: block; }
+  .knee-stage[data-phase="blood"]  .wound-blood  { display: block; }
+  .knee-stage[data-phase="clot"]   .wound-cut    { display: block; }
+  .knee-stage[data-phase="clot"]   .wound-clot   { display: block; }
+  .knee-stage[data-phase="scab"]   .wound-scab   { display: block; }
+  .knee-stage[data-phase="healed"] .wound-healed { display: block; }
+
+  .heart-pulse-svg { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🩹💪</div>
+    <h1>Wie heilen Wunden?</h1>
+    <p>Du bist hingefallen — autsch! Aber nach ein paar Tagen ist die Wunde wieder weg.<br/>Wie macht dein Körper das? Wie eine echte Superkraft! ✨</p>
+    <button class="secondary" onclick="engine.next()">Wow, zeig mir! 🦸</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Klick auf das Knie und schau zu!</h2>
+    <p>Drücke die Knöpfe und sieh, wie sich die Wunde heilt:</p>
+    <div class="knee-stage" id="kneeStage" data-phase="cut">
+      <svg class="wound-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+        <!-- Healed -->
+        <g class="wound-healed">
+          <text x="200" y="220" text-anchor="middle" font-size="80">✨</text>
+        </g>
+        <!-- Cut (red line) -->
+        <g class="wound-cut">
+          <path d="M 130 180 Q 200 190 270 175" stroke="#c0392b" stroke-width="10" fill="none" stroke-linecap="round"/>
+        </g>
+        <!-- Blood drops -->
+        <g class="wound-blood" id="bloodGroup">
+          <!-- populated by JS -->
+        </g>
+        <!-- Clot mesh -->
+        <g class="wound-clot" id="clotGroup">
+          <!-- populated by JS -->
+        </g>
+        <!-- Scab -->
+        <g class="wound-scab">
+          <path d="M 125 175 Q 200 185 275 170" stroke="#6a3a00" stroke-width="14" fill="none" stroke-linecap="round"/>
+          <ellipse cx="200" cy="180" rx="74" ry="9" fill="#7a4a20"/>
+          <circle cx="155" cy="180" r="5" fill="#3a2510"/>
+          <circle cx="200" cy="180" r="5" fill="#3a2510"/>
+          <circle cx="245" cy="180" r="5" fill="#3a2510"/>
+        </g>
+      </svg>
+    </div>
+    <div class="phase-buttons">
+      <button class="small secondary" onclick="setPhase('cut')">1. Autsch! 😣</button>
+      <button class="small secondary" onclick="setPhase('blood')">2. Blut kommt 🩸</button>
+      <button class="small secondary" onclick="setPhase('clot')">3. Pflaster vom Körper 🛡️</button>
+      <button class="small secondary" onclick="setPhase('scab')">4. Schorf 🟫</button>
+      <button class="small green" onclick="setPhase('healed')">5. Geheilt! ✨</button>
+    </div>
+    <div class="phase-info" id="phaseInfo">Klick auf einen Knopf, um die Heilung zu sehen!</div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:10px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Die Helfer in deinem Blut</h2>
+    <p>In deinem Blut leben winzige <b style="color:#c0392b">Blutplättchen</b> — wie kleine Mini-Bauarbeiter 🛠️.</p>
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <span style="font-size:60px;" class="pulse">🧬</span>
+        <p style="margin:6px 0;font-size:16px;">Blutplättchen rasen zur Wunde</p>
+      </div>
+      <span style="font-size:40px;">➡️</span>
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <span style="font-size:60px;" class="pulse" style="animation-delay:0.3s">🕸️</span>
+        <p style="margin:6px 0;font-size:16px;">Sie bauen ein Netz</p>
+      </div>
+      <span style="font-size:40px;">➡️</span>
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <span style="font-size:60px;" class="pulse" style="animation-delay:0.6s">🛡️</span>
+        <p style="margin:6px 0;font-size:16px;">Wunde ist zu!</p>
+      </div>
+    </div>
+    <p>Das ist schneller als ein Pflaster! 💪</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Drunter wird neue Haut gebaut</h2>
+    <p>Unter dem Schorf 🟫 arbeitet dein Körper wie ein <b>kleiner Baumeister</b>:<br/>
+       Er macht neue Haut, neue Blutbahnen — alles wieder ganz!</p>
+    <div style="font-size:50px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <span class="floaty">🏗️</span>
+      <span class="floaty" style="animation-delay:0.3s">🧱</span>
+      <span class="floaty" style="animation-delay:0.6s">✨</span>
+      <span class="floaty" style="animation-delay:0.9s">💪</span>
+    </div>
+    <p>Nach ein paar Tagen oder Wochen fällt der Schorf ab — und drunter ist alles neu!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🦸‍♀️</div>
+    <h2>Dein Körper ist ein Superheld!</h2>
+    <p>Er heilt sich ganz von selbst.<br/>
+       <b>Wichtig:</b> Schorf nicht abkratzen — der schützt die neue Haut! 🛡️</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Du bist hingefallen, autsch! Aber nach ein paar Tagen ist die Wunde wieder weg. Wie macht dein Körper das? Wie eine echte Superkraft!",
+  "Klick auf die Knöpfe und schau, wie sich die Wunde Schritt für Schritt heilt!",
+  "In deinem Blut leben winzige Blutplättchen, wie kleine Mini-Bauarbeiter. Wenn du dich verletzt, rasen sie zur Wunde, bauen ein Netz, und verschließen die Wunde. Das ist schneller als ein Pflaster!",
+  "Unter dem Schorf arbeitet dein Körper wie ein kleiner Baumeister: Er macht neue Haut, neue Blutbahnen, alles wieder ganz! Nach ein paar Tagen oder Wochen fällt der Schorf ab, und drunter ist alles neu!",
+  "Dein Körper ist ein Superheld! Er heilt sich ganz von selbst. Wichtig: Schorf nicht abkratzen, der schützt die neue Haut!"
+];
+const PHASE_INFO = {
+  'cut':    '😣 Autsch! Eine kleine Wunde.',
+  'blood':  '🩸 Blut kommt raus — es wäscht Schmutz weg!',
+  'clot':   '🛡️ Blutplättchen bauen ein Netz und stoppen das Blut.',
+  'scab':   '🟫 Der Schorf bildet sich. Drunter heilt es weiter!',
+  'healed': '✨ Alles geheilt! Neue Haut, wie neu!'
+};
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function setPhase(p) {
+  const stage = document.getElementById('kneeStage');
+  stage.dataset.phase = p;
+  document.getElementById('phaseInfo').textContent = PHASE_INFO[p];
+  // Effects
+  if (p === 'blood') spawnBlood();
+  if (p === 'clot') spawnClot();
+}
+function spawnBlood() {
+  const g = document.getElementById('bloodGroup');
+  g.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', String(150 + i*22));
+    t.setAttribute('y', String(190 + (i%2)*8));
+    t.setAttribute('font-size', '24');
+    t.textContent = '🩸';
+    t.style.opacity = '0';
+    t.style.animation = 'drip 2s ease-in forwards';
+    t.style.animationDelay = (i*0.15) + 's';
+    g.appendChild(t);
+  }
+}
+function spawnClot() {
+  const g = document.getElementById('clotGroup');
+  g.innerHTML = '';
+  // Network of platelets across the cut
+  const cx = 200, cy = 180;
+  for (let i = 0; i < 14; i++) {
+    const angle = (i / 14) * Math.PI * 2;
+    const x = cx + Math.cos(angle) * (35 + Math.random()*15);
+    const y = cy + Math.sin(angle) * (8 + Math.random()*4);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', String(x));
+    c.setAttribute('cy', String(y));
+    c.setAttribute('r', '5');
+    c.setAttribute('fill', '#c0392b');
+    c.setAttribute('opacity', '0');
+    c.style.animation = 'pulse 0.6s ease-out forwards';
+    c.style.animationDelay = (i*0.05) + 's';
+    g.appendChild(c);
+    setTimeout(() => c.setAttribute('opacity', '1'), 600 + i*50);
+  }
+  // Lines connecting platelets
+  for (let i = 0; i < 8; i++) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', String(140 + i*18));
+    line.setAttribute('y1', String(180));
+    line.setAttribute('x2', String(150 + i*18));
+    line.setAttribute('y2', String(180 + (i%2 ? -8 : 8)));
+    line.setAttribute('stroke', '#8b0000');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('opacity', '0');
+    setTimeout(() => line.setAttribute('opacity', '0.6'), 800 + i*60);
+    g.appendChild(line);
+  }
+}
+</script>
+</body>
+</html>

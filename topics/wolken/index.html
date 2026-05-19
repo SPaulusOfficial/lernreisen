@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Was sind Wolken?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 50%, #fff 100%); }
+  h1, h2 { color: #074a87; text-shadow: 2px 2px 0 #fff; }
+
+  .cloud-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    width: min(95vw, 900px);
+    margin: 14px 0;
+  }
+  .cloud-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    cursor: pointer;
+  }
+  .cloud-card:hover { transform: translateY(-8px) scale(1.04); }
+  .cloud-card .emoji { font-size: 70px; display: block; }
+  .cloud-card h3 { color: #074a87; margin: 4px 0; }
+
+  .sky-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: linear-gradient(180deg, #74b9ff 0%, #87ceeb 60%, #b5e8ff 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 8px 20px rgba(0,0,0,0.15);
+  }
+  .sky-cloud {
+    position: absolute;
+    font-size: 80px;
+    animation: float-cloud var(--dur, 20s) linear infinite;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .sky-cloud:hover { transform: scale(1.2); }
+  @keyframes float-cloud {
+    from { transform: translateX(-150px); }
+    to   { transform: translateX(calc(100vw + 150px)); }
+  }
+  .vapor-builder {
+    background: rgba(255,255,255,0.18);
+    padding: 14px 24px;
+    border-radius: 20px;
+    color: #074a87;
+    font-weight: bold;
+    margin-top: 8px;
+    backdrop-filter: blur(4px);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">☁️</div>
+    <h1>Was sind Wolken?</h1>
+    <p>Wolken sehen aus wie weiche Kissen — aber kannst du auf einer Wolke laufen?<br/>Schau, woraus sie wirklich gemacht sind!</p>
+    <button class="secondary" onclick="engine.next()">Komm mit! ☁️</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wolken sind Wasser-Tröpfchen</h2>
+    <p>Eine Wolke ist eigentlich nur ganz, ganz viel <b style="color:#0984e3">Wasser</b> — aber in winzigen Tröpfchen!</p>
+    <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;font-size:60px;">
+      <span class="pulse">💧</span>
+      <span style="font-size:50px;">×</span>
+      <span style="font-size:80px;">Million</span>
+      <span style="font-size:50px;">=</span>
+      <span class="pulse" style="animation-delay:0.5s">☁️</span>
+    </div>
+    <p>Eine Wolke ist KEIN Kissen — du würdest <b>durchfallen</b>! 🪂</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Wolken-Typen</h2>
+    <p>Es gibt viele verschiedene Wolken! Klick auf eine:</p>
+    <div class="cloud-types">
+      <div class="cloud-card" onclick="showCloud('haufen')"><span class="emoji">☁️</span><h3>Haufen-Wolke</h3><p style="margin:0;font-size:14px;color:#888">Wie weiße Schäfchen</p></div>
+      <div class="cloud-card" onclick="showCloud('schicht')"><span class="emoji">🌫️</span><h3>Schicht-Wolke</h3><p style="margin:0;font-size:14px;color:#888">Grau und flach</p></div>
+      <div class="cloud-card" onclick="showCloud('regen')"><span class="emoji">🌧️</span><h3>Regen-Wolke</h3><p style="margin:0;font-size:14px;color:#888">Dunkel, voll Wasser</p></div>
+      <div class="cloud-card" onclick="showCloud('gewitter')"><span class="emoji">⛈️</span><h3>Gewitter</h3><p style="margin:0;font-size:14px;color:#888">Achtung Blitz!</p></div>
+      <div class="cloud-card" onclick="showCloud('feder')"><span class="emoji">🥶</span><h3>Feder-Wolke</h3><p style="margin:0;font-size:14px;color:#888">Hoch oben, dünn wie Federn</p></div>
+    </div>
+    <div class="vapor-builder" id="cloudInfo">Klick auf eine Wolke, um mehr zu erfahren!</div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Wolken-Tiere finden!</h2>
+    <p>Wenn du am Himmel guckst, kannst du <b>Tiere und Formen</b> entdecken!</p>
+    <div class="sky-stage" id="skyStage">
+      <span class="sky-cloud" style="top:20%;font-size:70px;animation-duration:25s" onclick="celebrateCloud()">🐰</span>
+      <span class="sky-cloud" style="top:50%;animation-duration:18s;animation-delay:-8s;font-size:90px" onclick="celebrateCloud()">🐉</span>
+      <span class="sky-cloud" style="top:30%;animation-duration:30s;animation-delay:-15s;font-size:80px" onclick="celebrateCloud()">🐘</span>
+      <span class="sky-cloud" style="top:65%;animation-duration:22s;animation-delay:-3s;font-size:75px" onclick="celebrateCloud()">🦄</span>
+    </div>
+    <p style="font-size:18px;">Klick eine Wolke, wenn du eine Tier-Form findest! 🐰🦄</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">☁️🌧️</div>
+    <h2>Wolken sind Wasser auf Reisen</h2>
+    <p>Sie wandern über die Erde, regnen ab, verdampfen wieder... und alles fängt von vorne an! 💧🔄</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Wolken sehen aus wie weiche Kissen, aber kannst du auf einer Wolke laufen? Schau, woraus sie wirklich gemacht sind!",
+  "Eine Wolke ist eigentlich nur ganz, ganz viel Wasser, aber in winzigen Tröpfchen! Eine Wolke ist kein Kissen, du würdest durchfallen!",
+  "Es gibt viele verschiedene Wolken! Haufen-Wolken sind weiß und sehen aus wie Schäfchen. Schicht-Wolken sind grau und flach. Regen-Wolken sind dunkel und voll Wasser. Gewitter-Wolken bringen Blitze. Feder-Wolken sind ganz hoch und dünn wie Federn.",
+  "Wenn du am Himmel guckst, kannst du Tiere und Formen entdecken! Schau, welche Tier-Wolken hier vorbeifliegen. Klick eine, wenn du was Tolles siehst!",
+  "Wolken sind Wasser auf Reisen. Sie wandern über die Erde, regnen ab, verdampfen wieder, und alles fängt von vorne an!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+const INFO = {
+  'haufen':   '☁️ Haufen-Wolken sehen aus wie weiße Schäfchen. Bedeutet meist: Schönes Wetter!',
+  'schicht':  '🌫️ Schicht-Wolken sind flach und grau. Bedeutet: Bedeckter Himmel.',
+  'regen':    '🌧️ Regen-Wolken sind dunkel und schwer. Bedeutet: Regen kommt!',
+  'gewitter': '⛈️ Gewitter-Wolken sind ganz groß und dunkel. Achtung: Blitze!',
+  'feder':    '🥶 Feder-Wolken sind ganz hoch im Himmel. Dünn wie Federn — aus Eis!'
+};
+function showCloud(t) { document.getElementById('cloudInfo').textContent = INFO[t]; }
+
+function celebrateCloud() {
+  const stage = document.getElementById('skyStage');
+  const e = document.createElement('span');
+  e.textContent = '⭐';
+  e.style.position = 'absolute';
+  e.style.left = (Math.random()*80 + 10) + '%';
+  e.style.top = (Math.random()*80 + 10) + '%';
+  e.style.fontSize = '40px';
+  e.style.animation = 'pulse 0.8s ease-in-out 2';
+  stage.appendChild(e);
+  setTimeout(() => e.remove(), 1600);
+}
+</script>
+</body>
+</html>

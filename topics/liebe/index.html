@@ -21,28 +21,39 @@
   .floating-hearts span {
     position: absolute;
     font-size: 30px;
-    animation: float-up 8s linear infinite;
-    opacity: 0.3;
+    animation: float-up 8s linear infinite, heart-sway 3s ease-in-out infinite;
+    opacity: 0.35;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
   }
   @keyframes float-up {
-    0% { bottom: -50px; opacity: 0; }
-    10% { opacity: 0.4; }
-    90% { opacity: 0.4; }
+    0%   { bottom: -50px; opacity: 0; }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.5; }
     100% { bottom: 100vh; opacity: 0; }
   }
+  @keyframes heart-sway {
+    0%, 100% { transform: translateX(0) rotate(-6deg); }
+    50%      { transform: translateX(30px) rotate(6deg); }
+  }
 
-  /* Heart pulse */
+  /* Heart pulse — true double-thump like a real heart */
   .heart-big {
     font-size: clamp(120px, 22vw, 200px);
     line-height: 1;
-    animation: heart-beat 1.4s ease-in-out infinite;
+    animation: heart-beat 1.2s cubic-bezier(.45,.05,.55,.95) infinite;
     filter: drop-shadow(0 0 30px rgba(255,100,150,0.7));
+    display: inline-block;
   }
   @keyframes heart-beat {
-    0%, 100% { transform: scale(1); }
-    20% { transform: scale(1.15); }
-    40% { transform: scale(1); }
-    60% { transform: scale(1.1); }
+    0%, 70%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(255,100,150,0.6)); }
+    12%           { transform: scale(1.22); filter: drop-shadow(0 0 50px rgba(255,100,150,1)); }
+    20%           { transform: scale(0.96); }
+    32%           { transform: scale(1.16); filter: drop-shadow(0 0 44px rgba(255,100,150,0.9)); }
+    44%           { transform: scale(1); }
+  }
+  /* Halo behind heart on title scene */
+  .heart-big::after {
+    content: '';
   }
 
   /* Love categories */
@@ -60,8 +71,26 @@
     text-align: center;
     color: #d6336c;
     box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+    animation: cat-float 4s ease-in-out infinite;
   }
-  .category .emoji { font-size: 64px; display: block; margin-bottom: 4px; }
+  .category-grid .category:nth-child(2) { animation-delay: 0.3s; }
+  .category-grid .category:nth-child(3) { animation-delay: 0.6s; }
+  .category-grid .category:nth-child(4) { animation-delay: 0.9s; }
+  .category-grid .category:nth-child(5) { animation-delay: 1.2s; }
+  .category-grid .category:nth-child(6) { animation-delay: 1.5s; }
+  .category:hover { transform: translateY(-8px) scale(1.04); box-shadow: 0 14px 24px rgba(214,51,108,0.3); }
+  @keyframes cat-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  .category .emoji {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 4px;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .category:hover .emoji { transform: scale(1.2) rotate(-8deg); }
   .category h3 { color: #d6336c; font-size: 22px; margin-bottom: 4px; }
   .category p { color: #5a5a5a; font-size: 15px; margin: 0; }
 
@@ -74,14 +103,31 @@
     margin: 14px 0;
   }
   .way {
-    background: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.75);
     border-radius: 24px;
     padding: 18px 22px;
     text-align: center;
     color: #d6336c;
     width: 180px;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+    animation: way-bob 3.6s ease-in-out infinite;
   }
-  .way .emoji { font-size: 60px; display: block; }
+  .ways-row .way:nth-child(2) { animation-delay: 0.25s; }
+  .ways-row .way:nth-child(3) { animation-delay: 0.5s; }
+  .ways-row .way:nth-child(4) { animation-delay: 0.75s; }
+  .ways-row .way:nth-child(5) { animation-delay: 1s; }
+  .ways-row .way:nth-child(6) { animation-delay: 1.25s; }
+  .way:hover { transform: translateY(-8px) rotate(-2deg); box-shadow: 0 14px 24px rgba(214,51,108,0.3); }
+  @keyframes way-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
+  }
+  .way .emoji {
+    font-size: 60px;
+    display: block;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .way:hover .emoji { transform: scale(1.2) rotate(8deg); }
   .way .label { font-weight: bold; font-size: 18px; margin: 4px 0; }
   .way p { color: #5a5a5a; font-size: 14px; margin: 0; }
 
@@ -100,14 +146,30 @@
     position: absolute;
     font-size: 80px;
     cursor: pointer;
-    transition: transform 0.3s;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
     user-select: none;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    animation: target-idle 4s ease-in-out infinite;
   }
-  .target:hover { transform: scale(1.15) rotate(-5deg); }
+  .sender-stage .target:nth-of-type(2) { animation-delay: 0.4s; }
+  .sender-stage .target:nth-of-type(3) { animation-delay: 0.8s; }
+  .sender-stage .target:nth-of-type(4) { animation-delay: 1.2s; }
+  .sender-stage .target:nth-of-type(5) { animation-delay: 1.6s; }
+  .sender-stage .target:nth-of-type(6) { animation-delay: 2s; }
+  @keyframes target-idle {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-6px) rotate(2deg); }
+  }
+  .target:hover { transform: scale(1.2) rotate(-6deg) !important; animation: none; }
   .target.lit {
-    animation: heart-beat 0.8s ease-in-out 2;
+    animation: target-celebrate 0.9s cubic-bezier(.34,1.56,.64,1) 2;
     filter: drop-shadow(0 0 30px rgba(255,255,255,0.9)) drop-shadow(0 0 60px rgba(255,200,200,0.6));
+  }
+  @keyframes target-celebrate {
+    0%, 100% { transform: scale(1) rotate(0); }
+    25%      { transform: scale(1.25) rotate(-8deg); }
+    50%      { transform: scale(0.95) rotate(4deg); }
+    75%      { transform: scale(1.18) rotate(-4deg); }
   }
   .target-label {
     position: absolute;
@@ -127,6 +189,11 @@
     transform: translateX(-50%);
     font-size: 80px;
     z-index: 3;
+    animation: self-breathe 2.4s ease-in-out infinite;
+  }
+  @keyframes self-breathe {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50%      { transform: translateX(-50%) scale(1.06); }
   }
   .heart-particle {
     position: absolute;

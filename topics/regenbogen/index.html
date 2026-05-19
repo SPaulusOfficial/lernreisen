@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie entsteht ein Regenbogen?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #a8e6ff 0%, #ffeaa7 50%, #ffb88c 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .rainbow-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 340px;
+    background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 60%, #7ec850 60%, #4a8030 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.1), 0 8px 22px rgba(0,0,0,0.12);
+    margin: 14px 0;
+  }
+  .rainbow-arc {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 300px;
+    opacity: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+  }
+  .rainbow-arc.show { opacity: 1; }
+  .arc-band {
+    position: absolute;
+    inset: 0;
+    border: 20px solid;
+    border-bottom: 0;
+    border-radius: 300px 300px 0 0;
+  }
+  .raindrop {
+    position: absolute;
+    font-size: 22px;
+    animation: rain-fall 1.5s linear infinite;
+    color: #74b9ff;
+  }
+  @keyframes rain-fall {
+    0%   { transform: translateY(-30px); opacity: 1; }
+    100% { transform: translateY(350px); opacity: 0; }
+  }
+  .sun-stage {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 60px;
+    filter: drop-shadow(0 0 25px rgba(255,200,80,0.7));
+    animation: spin-slow 22s linear infinite;
+  }
+
+  .color-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 10px 0;
+    border-radius: 14px;
+    overflow: hidden;
+    width: min(90vw, 600px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  }
+  .color-strip span {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+  }
+
+  .drop-zoom-host {
+    position: relative;
+    width: min(80vw, 500px);
+    height: 280px;
+    margin: 10px 0;
+  }
+  .water-drop-big {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(180,220,255,0.5), rgba(116,185,255,0.3));
+    margin: 0 auto;
+    box-shadow: inset -20px -20px 30px rgba(0,0,0,0.1), 0 6px 20px rgba(116,185,255,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .light-in, .light-out {
+    position: absolute;
+    height: 4px;
+    transform-origin: left center;
+  }
+  .light-in {
+    background: linear-gradient(90deg, #fff, transparent);
+    top: 50%;
+    left: -100px;
+    width: 150px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌈✨</div>
+    <h1>Der Regenbogen</h1>
+    <p>Manchmal — nach dem Regen, wenn die Sonne kommt — siehst du einen <b>Regenbogen</b>! 🌈<br/>Wie macht der Himmel diesen Zauber?</p>
+    <button class="purple" onclick="engine.next()">Find ich raus! 🌈</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Zwei Zutaten: Regen + Sonne</h2>
+    <p>Ein Regenbogen braucht beides gleichzeitig:</p>
+    <div style="display:flex;gap:30px;font-size:80px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;">
+      <span class="floaty">🌧️</span>
+      <span style="font-size:50px;">➕</span>
+      <span class="floaty" style="animation-delay:0.5s">☀️</span>
+      <span style="font-size:50px;">=</span>
+      <span class="floaty" style="animation-delay:1s">🌈</span>
+    </div>
+    <p>Die Sonne scheint durch die <b style="color:#0984e3">Regen-Tröpfchen</b> und die spalten das Licht in alle Farben auf!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Die 7 Farben</h2>
+    <p>Ein Regenbogen hat immer die selben Farben — und immer in der selben Reihenfolge:</p>
+    <div class="color-strip">
+      <span style="background:#ff0000">🔴 Rot</span>
+      <span style="background:#ff8800">🟠 Orange</span>
+      <span style="background:#ffee00;color:#5a5a00">🟡 Gelb</span>
+      <span style="background:#00cc00">🟢 Grün</span>
+      <span style="background:#0088ff">🔵 Blau</span>
+      <span style="background:#3a0080">🟣 Indigo</span>
+      <span style="background:#7700ff">🟣 Violett</span>
+    </div>
+    <p style="font-size:18px;">Merkspruch: <b>Rot, Orange, Gelb, Grün, Blau, Indigo, Violett</b> 🎨</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Mach deinen Regenbogen!</h2>
+    <p>Drück den Knopf — lass die Sonne durch den Regen scheinen!</p>
+    <div class="rainbow-stage" id="rainbowStage">
+      <span class="sun-stage" id="sunStage" style="display:none">☀️</span>
+      <div class="rainbow-arc" id="arc">
+        <div class="arc-band" style="border-color:#ff0000;"></div>
+        <div class="arc-band" style="border-color:#ff8800;border-width:18px;inset:18px;"></div>
+        <div class="arc-band" style="border-color:#ffee00;border-width:18px;inset:36px;"></div>
+        <div class="arc-band" style="border-color:#00cc00;border-width:18px;inset:54px;"></div>
+        <div class="arc-band" style="border-color:#0088ff;border-width:18px;inset:72px;"></div>
+        <div class="arc-band" style="border-color:#3a0080;border-width:18px;inset:90px;"></div>
+        <div class="arc-band" style="border-color:#7700ff;border-width:18px;inset:108px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button class="secondary" onclick="rain()">🌧️ Regen!</button>
+      <button class="orange" onclick="sunny()">☀️ Sonne!</button>
+      <button class="green" onclick="rainbow()">🌈 BEIDES = Regenbogen!</button>
+    </div>
+    <button class="purple" onclick="engine.next()" style="margin-top:10px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🦄🌈</div>
+    <h2>Du kannst nie an einen Regenbogen kommen</h2>
+    <p>Egal wie weit du läufst — der Regenbogen rennt mit dir mit! 🏃‍♀️<br/>
+       Er ist kein <b>Ding</b>, sondern nur <b>Licht</b>! ✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Manchmal, nach dem Regen, wenn die Sonne kommt, siehst du einen Regenbogen! Wie macht der Himmel diesen Zauber?",
+  "Ein Regenbogen braucht zwei Zutaten gleichzeitig: Regen und Sonne! Die Sonne scheint durch die Regen-Tröpfchen, und die spalten das Licht in alle Farben auf!",
+  "Ein Regenbogen hat immer die selben Farben, und immer in der selben Reihenfolge: Rot, Orange, Gelb, Grün, Blau, Indigo und Violett.",
+  "Mach deinen Regenbogen! Drück auf Regen, dann auf Sonne, und dann auf beides! Erst wenn beide da sind, kommt der Regenbogen.",
+  "Egal wie weit du läufst, du kommst nie an einen Regenbogen. Er rennt mit dir mit, weil er kein Ding ist, sondern nur Licht!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+let rainTimer = null;
+function rain() {
+  document.getElementById('arc').classList.remove('show');
+  document.getElementById('sunStage').style.display = 'none';
+  startRain();
+}
+function sunny() {
+  if (rainTimer) { clearInterval(rainTimer); rainTimer = null; }
+  document.querySelectorAll('.raindrop').forEach(r => r.remove());
+  document.getElementById('arc').classList.remove('show');
+  document.getElementById('sunStage').style.display = 'inline-block';
+}
+function rainbow() {
+  startRain();
+  document.getElementById('sunStage').style.display = 'inline-block';
+  setTimeout(() => document.getElementById('arc').classList.add('show'), 500);
+}
+function startRain() {
+  if (rainTimer) clearInterval(rainTimer);
+  const stage = document.getElementById('rainbowStage');
+  function spawn() {
+    const r = document.createElement('span');
+    r.className = 'raindrop';
+    r.textContent = '💧';
+    r.style.left = (Math.random()*100) + '%';
+    r.style.top = '0';
+    r.style.animationDelay = (Math.random()*0.5) + 's';
+    stage.appendChild(r);
+    setTimeout(() => r.remove(), 2000);
+  }
+  for (let i = 0; i < 20; i++) setTimeout(spawn, i*50);
+  rainTimer = setInterval(spawn, 100);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum miauen Katzen?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff8c8 0%, #ffd6e8 60%, #c8a8ff 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .cat-stage {
+    position: relative;
+    margin: 14px 0;
+  }
+  .cat-big {
+    font-size: clamp(160px, 30vw, 240px);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    user-select: none;
+    display: inline-block;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.2));
+  }
+  .cat-big:hover { transform: scale(1.08) rotate(-3deg); }
+  .cat-big.meowing { animation: cat-meow 0.5s ease-in-out 2; }
+  @keyframes cat-meow {
+    0%, 100% { transform: scale(1) rotate(0); }
+    50%      { transform: scale(1.12) rotate(4deg); }
+  }
+
+  .meow-bubble {
+    position: absolute;
+    background: rgba(255,255,255,0.95);
+    border: 4px solid #6a1b9a;
+    padding: 10px 22px;
+    border-radius: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #6a1b9a;
+    pointer-events: none;
+    animation: meow-pop 1.5s ease-out forwards;
+  }
+  @keyframes meow-pop {
+    0%   { transform: scale(0); opacity: 0; }
+    20%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1) translateY(-80px); opacity: 0; }
+  }
+
+  .reasons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    width: min(95vw, 800px);
+    margin: 12px 0;
+  }
+  .reason {
+    background: rgba(255,255,255,0.85);
+    border: 4px solid transparent;
+    border-radius: 22px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+  }
+  .reason:hover {
+    transform: translateY(-6px) scale(1.05);
+    border-color: #d6a2ff;
+  }
+  .reason .emoji { font-size: 60px; display: block; }
+  .reason h3 { color: #6a1b9a; font-size: 18px; margin: 4px 0; }
+  .reason p { font-size: 14px; color: #5a5a5a; margin: 0; }
+
+  .sound-status {
+    background: rgba(255,255,255,0.85);
+    padding: 14px 24px;
+    border-radius: 20px;
+    color: #6a1b9a;
+    font-weight: bold;
+    font-size: 22px;
+    margin: 8px 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🐱</div>
+    <h1>Warum miauen Katzen?</h1>
+    <p>Wenn eine Katze ankommt — MIAU! 🐱<br/>Aber was will sie damit sagen?</p>
+    <button class="purple" onclick="engine.next()">Find ich raus! 🐈</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Katzen reden mit uns!</h2>
+    <p>Junge Katzen miauen ihre <b style="color:#6a1b9a">Katzen-Mama</b> an. Erwachsene Katzen aber miauen nur die Menschen an!<br/>
+       Miauen heißt: "Hallo, ich brauch was!"</p>
+    <div class="cat-stage">
+      <span class="cat-big" id="cat" onclick="meow()">🐱</span>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Was will die Katze?</h2>
+    <p>Klick einen Grund — und hör, was die Katze sagt!</p>
+    <div class="cat-stage">
+      <span class="cat-big" id="cat2" onclick="meow(true)">🐱</span>
+    </div>
+    <div class="sound-status" id="status">Klick auf einen Grund!</div>
+    <div class="reasons-grid">
+      <div class="reason" onclick="askCat('hungrig','🍽️ Ich hab Hunger!','high')"><span class="emoji">🍽️</span><h3>Hunger</h3><p>"Gib mir Futter!"</p></div>
+      <div class="reason" onclick="askCat('streicheln','🥰 Streichel mich!','soft')"><span class="emoji">🤗</span><h3>Kuscheln</h3><p>"Streichel mich!"</p></div>
+      <div class="reason" onclick="askCat('tür','🚪 Lass mich raus!','urgent')"><span class="emoji">🚪</span><h3>Tür auf!</h3><p>"Ich will raus!"</p></div>
+      <div class="reason" onclick="askCat('spielen','🎾 Spiel mit mir!','playful')"><span class="emoji">🧶</span><h3>Spielen</h3><p>"Komm spielen!"</p></div>
+      <div class="reason" onclick="askCat('aufmerksam','👀 Schau mich an!','soft')"><span class="emoji">👀</span><h3>Hallo!</h3><p>"Sieh mich!"</p></div>
+      <div class="reason" onclick="askCat('schimpfen','😾 Lass mich in Ruhe!','low')"><span class="emoji">😾</span><h3>Schimpfen</h3><p>"Hör auf!"</p></div>
+    </div>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Schnurren — Glücks-Maschine!</h2>
+    <p>Wenn eine Katze <b style="color:#6a1b9a">schnurrt</b> 😻, ist sie glücklich.<br/>
+       Aber Achtung: Katzen schnurren auch, wenn sie Angst haben — um sich selbst zu beruhigen!</p>
+    <div style="font-size:120px;" class="pulse">😻</div>
+    <p style="font-size:18px;">Schnurren ist wie eine eigene <b>Katzen-Musik</b> 🎵</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🐱❤️</div>
+    <h2>Katzen verstehen ist Liebe</h2>
+    <p>Wenn du gut hinhörst, weißt du, was deine Katze braucht.<br/>
+       Mach immer langsam und sanft — Katzen mögen das! 🥰</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Wenn eine Katze ankommt: Miau! Aber was will sie damit sagen?",
+  "Katzen reden mit uns! Junge Katzen miauen ihre Katzen-Mama an. Erwachsene Katzen aber miauen nur die Menschen an! Miauen heißt: Hallo, ich brauche was! Klick die Katze und hör selbst!",
+  "Was will die Katze? Klick einen Grund und hör, wie die Katze klingt!",
+  "Wenn eine Katze schnurrt, ist sie glücklich. Aber Achtung: Katzen schnurren auch, wenn sie Angst haben, um sich selbst zu beruhigen! Schnurren ist wie eine eigene Katzen-Musik.",
+  "Wenn du gut hinhörst, weißt du, was deine Katze braucht. Mach immer langsam und sanft, Katzen mögen das!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function playMeow(type) {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'triangle';
+    const t = ctx.currentTime;
+    if (type === 'high')      { o.frequency.setValueAtTime(800, t); o.frequency.linearRampToValueAtTime(1100, t+0.2); o.frequency.exponentialRampToValueAtTime(500, t+0.5); }
+    else if (type === 'soft') { o.frequency.setValueAtTime(550, t); o.frequency.linearRampToValueAtTime(700, t+0.2); o.frequency.exponentialRampToValueAtTime(450, t+0.6); }
+    else if (type === 'urgent') { o.frequency.setValueAtTime(900, t); o.frequency.linearRampToValueAtTime(700, t+0.15); o.frequency.linearRampToValueAtTime(950, t+0.3); o.frequency.exponentialRampToValueAtTime(400, t+0.6); }
+    else if (type === 'playful') { o.frequency.setValueAtTime(700, t); o.frequency.linearRampToValueAtTime(900, t+0.1); o.frequency.linearRampToValueAtTime(750, t+0.25); o.frequency.exponentialRampToValueAtTime(500, t+0.5); }
+    else if (type === 'low')  { o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(180, t+0.5); o.type = 'sawtooth'; }
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.25, t+0.05);
+    g.gain.linearRampToValueAtTime(0, t+0.7);
+    o.start(t); o.stop(t+0.75);
+  } catch(e){}
+}
+
+function meow(useCat2) {
+  playMeow('soft');
+  const cat = document.getElementById(useCat2 ? 'cat2' : 'cat');
+  cat.classList.remove('meowing');
+  void cat.offsetWidth;
+  cat.classList.add('meowing');
+  const stage = cat.parentElement;
+  const b = document.createElement('span');
+  b.className = 'meow-bubble';
+  b.textContent = 'Miau!';
+  b.style.left = '50%';
+  b.style.top = '20%';
+  b.style.transform = 'translateX(-50%)';
+  stage.appendChild(b);
+  setTimeout(() => b.remove(), 1500);
+}
+function askCat(reason, text, sound) {
+  document.getElementById('status').textContent = text;
+  playMeow(sound);
+  const cat = document.getElementById('cat2');
+  cat.classList.remove('meowing');
+  void cat.offsetWidth;
+  cat.classList.add('meowing');
+}
+</script>
+</body>
+</html>

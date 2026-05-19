@@ -15,6 +15,10 @@
     width: min(90vw, 700px);
     height: 220px;
     margin: 20px 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(253,121,168,0.18));
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(216,27,96,0.15);
   }
   .wave-circle {
     position: absolute;
@@ -26,11 +30,12 @@
     border: 3px solid #d81b60;
     opacity: 0;
     transform: translate(-50%, -50%);
-    animation: wave-expand 2s ease-out infinite;
+    animation: wave-expand 2s cubic-bezier(.25,.1,.25,1) infinite;
   }
   @keyframes wave-expand {
-    0% { width: 30px; height: 30px; opacity: 1; border-width: 6px; }
-    100% { width: 500px; height: 500px; opacity: 0; border-width: 1px; }
+    0%   { width: 30px;  height: 30px;  opacity: 1;    border-width: 6px; border-color: #ff5e94; }
+    70%  { opacity: 0.5; border-color: #d81b60; }
+    100% { width: 540px; height: 540px; opacity: 0;    border-width: 1px; border-color: #6a1b9a; }
   }
   .speaker {
     position: absolute;
@@ -39,6 +44,14 @@
     transform: translateY(-50%);
     font-size: 80px;
     z-index: 2;
+    animation: speaker-shake 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(216,27,96,0.35));
+  }
+  @keyframes speaker-shake {
+    0%, 100% { transform: translateY(-50%) rotate(-3deg) scale(1); }
+    25%      { transform: translateY(-50%) rotate(2deg)  scale(1.04); }
+    50%      { transform: translateY(-50%) rotate(-2deg) scale(0.98); }
+    75%      { transform: translateY(-50%) rotate(3deg)  scale(1.03); }
   }
   .ear-target {
     position: absolute;
@@ -47,6 +60,7 @@
     transform: translateY(-50%);
     font-size: 80px;
     z-index: 2;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
   }
 
   /* Ear anatomy diagram */
@@ -72,9 +86,22 @@
     marker-end: url(#arrowhead);
     stroke-dasharray: 6;
     animation: dash 1s linear infinite;
+    filter: drop-shadow(0 0 4px rgba(216,27,96,0.7));
   }
   @keyframes dash {
     to { stroke-dashoffset: -12; }
+  }
+  .tip {
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    animation: tip-bob 3.4s ease-in-out infinite;
+  }
+  .tips-row .tip:nth-child(2) { animation-delay: 0.4s; }
+  .tips-row .tip:nth-child(3) { animation-delay: 0.8s; }
+  .tips-row .tip:nth-child(4) { animation-delay: 1.2s; }
+  .tip:hover { transform: translateY(-6px) scale(1.05); }
+  @keyframes tip-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
   }
 
   /* Eardrum vibrate scene */
@@ -82,21 +109,40 @@
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    background: radial-gradient(circle, #ffd3b6, #f4a261);
+    background: radial-gradient(circle at 30% 30%, #ffe4cc, #f4a261 65%, #c1734f);
     border: 6px solid #6a3a00;
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.25), inset -10px -10px 30px rgba(0,0,0,0.18), 0 8px 20px rgba(106,58,0,0.25);
     margin: 20px 0;
     cursor: pointer;
-    transition: transform 0.05s;
+    transition: transform 0.05s, box-shadow 0.2s;
+    animation: drum-rest 3.4s ease-in-out infinite;
+    position: relative;
+  }
+  .eardrum::after {
+    content: '🥁';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    opacity: 0.7;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+  }
+  .eardrum:hover { transform: scale(1.04); box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 12px 28px rgba(106,58,0,0.35); }
+  @keyframes drum-rest {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.02); }
   }
   .eardrum.vibrating {
-    animation: drum-vibrate 0.15s ease-in-out 6;
+    animation: drum-vibrate 0.13s ease-in-out 8;
   }
   @keyframes drum-vibrate {
-    0%, 100% { transform: scale(1); }
-    25% { transform: scale(1.05) translateX(2px); }
-    50% { transform: scale(0.96) translateX(-2px); }
-    75% { transform: scale(1.04) translateX(1px); }
+    0%, 100% { transform: scale(1) translateX(0); }
+    20%      { transform: scale(1.08) translateX(4px) skewX(2deg); }
+    40%      { transform: scale(0.94) translateX(-4px) skewX(-2deg); }
+    60%      { transform: scale(1.06) translateX(3px) skewX(1deg); }
+    80%      { transform: scale(0.97) translateX(-2px) skewX(-1deg); }
   }
 
   /* Sound lab */
@@ -122,7 +168,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1) !important;
   }
+  .pitch-btn:hover { transform: scale(1.15) rotate(-6deg) !important; }
+  .pitch-btn:active { transform: scale(0.92) !important; }
   .visualizer {
     width: 100%;
     height: 100px;

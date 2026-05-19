@@ -21,14 +21,29 @@
     margin: 20px 0;
   }
   .need {
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.85);
     border-radius: 30px;
     padding: 22px;
     width: 200px;
     text-align: center;
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+    animation: need-float 4.5s ease-in-out infinite;
   }
-  .need .icon { font-size: 80px; display: block; margin-bottom: 10px; }
+  .needs-row .need:nth-child(2) { animation-delay: 0.45s; }
+  .needs-row .need:nth-child(3) { animation-delay: 0.9s; }
+  .need:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 16px 24px rgba(27,94,32,0.25); }
+  @keyframes need-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+  .need .icon {
+    font-size: 80px;
+    display: block;
+    margin-bottom: 10px;
+    transition: transform 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .need:hover .icon { transform: scale(1.2) rotate(-10deg); }
   .need h3 { color: #1b5e20; margin-bottom: 6px; font-size: 22px; }
   .need p { font-size: 16px; margin: 0; }
 
@@ -53,6 +68,12 @@
     width: 100%;
     height: 100%;
   }
+  /* Smooth size transitions for plant growth */
+  #stem, #leaf-left, #leaf-right, #leaf-left2, #leaf-right2, #flowerCenter {
+    transition: all 0.7s cubic-bezier(.34,1.56,.64,1);
+  }
+  #flower { transition: opacity 0.6s ease; }
+  .plant-stage { transition: background 0.6s ease; }
   .stage-name {
     position: absolute;
     top: 12px;
@@ -107,19 +128,71 @@
     right: 16px;
     font-size: 50px;
     opacity: 0.4;
-    transition: opacity 0.5s, transform 0.5s;
+    transition: opacity 0.5s, transform 0.5s, filter 0.5s;
+    filter: drop-shadow(0 0 0 transparent);
   }
-  .sun-bg.active { opacity: 1; animation: spin-slow 8s linear infinite; }
+  .sun-bg.active {
+    opacity: 1;
+    animation: sun-shine 8s linear infinite;
+    filter: drop-shadow(0 0 20px rgba(255,220,80,0.95));
+  }
+  @keyframes sun-shine {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
+  }
+  .sun-bg.active::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,235,80,0.4), transparent 60%);
+    animation: sun-pulse 2.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes sun-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50%      { transform: scale(1.4); opacity: 1; }
+  }
+  .cycle-item {
+    animation: cycle-bob 4s ease-in-out infinite;
+  }
+  .cycle .cycle-item:nth-child(2) { animation-delay: 0.3s; }
+  .cycle .cycle-item:nth-child(3) { animation-delay: 0.6s; }
+  .cycle .cycle-item:nth-child(4) { animation-delay: 0.9s; }
+  .cycle .cycle-item:nth-child(5) { animation-delay: 1.2s; }
+  .cycle .cycle-item:nth-child(6) { animation-delay: 1.5s; }
+  @keyframes cycle-bob {
+    0%, 100% { transform: translate(-50%, -50%); }
+    50%      { transform: translate(-50%, -56%); }
+  }
 
   .water-drop {
     position: absolute;
     font-size: 32px;
-    animation: fall 1.2s ease-in forwards;
+    animation: fall 1.3s cubic-bezier(.55,.05,.85,.55) forwards;
     pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(7,74,135,0.4));
   }
   @keyframes fall {
-    0% { opacity: 1; transform: translateY(-20px); }
-    100% { opacity: 0; transform: translateY(280px); }
+    0%   { opacity: 0; transform: translateY(-30px) scale(0.6); }
+    15%  { opacity: 1; transform: translateY(0) scale(1); }
+    85%  { opacity: 1; transform: translateY(260px) scale(1.1); }
+    95%  { opacity: 1; transform: translateY(275px) scale(1.4, 0.5); }
+    100% { opacity: 0; transform: translateY(280px) scale(0.4); }
+  }
+  .splash {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #74b9ff;
+    border-radius: 50%;
+    animation: splash 0.5s ease-out forwards;
+    pointer-events: none;
+    box-shadow: 0 0 6px rgba(116,185,255,0.7);
+  }
+  @keyframes splash {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx,0), var(--dy,-12px)) scale(0.3); opacity: 0; }
   }
 
   /* Lifecycle scene */
@@ -311,13 +384,32 @@ function resetPlant() {
 }
 function showDrop() {
   const stage = document.getElementById('plantStage');
-  const d = document.createElement('span');
-  d.className = 'water-drop';
-  d.textContent = '💧';
-  d.style.left = (50 + Math.random()*150) + 'px';
-  d.style.top = '20px';
-  stage.appendChild(d);
-  setTimeout(() => d.remove(), 1300);
+  const dropCount = 3 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < dropCount; i++) {
+    const d = document.createElement('span');
+    d.className = 'water-drop';
+    d.textContent = '💧';
+    const left = 50 + Math.random()*150;
+    d.style.left = left + 'px';
+    d.style.top = '20px';
+    d.style.animationDelay = (i * 0.08) + 's';
+    stage.appendChild(d);
+    setTimeout(() => {
+      // splash on landing
+      for (let j = 0; j < 5; j++) {
+        const s = document.createElement('span');
+        s.className = 'splash';
+        s.style.left = (left + (Math.random()-0.5)*8) + 'px';
+        s.style.top = '300px';
+        const angle = (j / 5) * Math.PI - Math.PI/2;
+        s.style.setProperty('--dx', (Math.cos(angle) * 20) + 'px');
+        s.style.setProperty('--dy', (Math.sin(angle) * 18 - 6) + 'px');
+        stage.appendChild(s);
+        setTimeout(() => s.remove(), 600);
+      }
+      d.remove();
+    }, 1250 + i * 80);
+  }
 }
 function update() {
   document.getElementById('waterFill').style.width = water + '%';

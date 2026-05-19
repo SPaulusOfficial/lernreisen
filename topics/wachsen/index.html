@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum werde ich größer?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff5e1 0%, #ffd6e8 50%, #b5e8ff 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .timeline {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 220px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 70%, #4a8030 70%);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 14px 0;
+    border: 3px solid rgba(255,255,255,0.6);
+    box-shadow: inset 0 -10px 20px rgba(0,0,0,0.05), 0 6px 18px rgba(0,0,0,0.1);
+  }
+  .age-person {
+    position: absolute;
+    bottom: 15%;
+    transform: translateX(-50%);
+    transition: left 0.6s cubic-bezier(.34,1.56,.64,1), font-size 0.6s ease;
+    text-align: center;
+    pointer-events: none;
+  }
+  .age-emoji {
+    font-size: 120px;
+    transition: font-size 0.6s ease;
+    display: inline-block;
+    animation: person-bob 2.4s ease-in-out infinite;
+  }
+  @keyframes person-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  .age-label {
+    background: rgba(255,255,255,0.9);
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-weight: bold;
+    color: #6a1b9a;
+    display: block;
+    margin-top: 4px;
+  }
+  .timeline-marks {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .tick {
+    position: absolute;
+    bottom: 0;
+    width: 2px;
+    height: 16px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 1px;
+  }
+  .age-slider-row {
+    width: min(90vw, 700px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.85);
+    padding: 14px 20px;
+    border-radius: 24px;
+    margin-top: 8px;
+  }
+  .age-slider-row input { flex: 1; height: 12px; }
+  .age-num {
+    background: linear-gradient(135deg, #d6a2ff, #6a1b9a);
+    color: #fff;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 18px;
+    min-width: 130px;
+    text-align: center;
+  }
+
+  /* Need cards */
+  .need-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    width: min(95vw, 900px);
+    margin: 14px 0;
+  }
+  .need-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .need-card:hover { transform: translateY(-6px) scale(1.04); }
+  .need-card .icon { font-size: 64px; display: block; margin-bottom: 4px; animation: floaty 3s ease-in-out infinite; }
+  .need-card:nth-child(2) .icon { animation-delay: 0.3s; }
+  .need-card:nth-child(3) .icon { animation-delay: 0.6s; }
+  .need-card:nth-child(4) .icon { animation-delay: 0.9s; }
+
+  .description {
+    background: rgba(255,255,255,0.85);
+    padding: 14px 24px;
+    border-radius: 20px;
+    max-width: 700px;
+    color: #2a2a4a;
+    font-size: 18px;
+    margin-top: 6px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">📏🌱</div>
+    <h1>Warum werde ich größer?</h1>
+    <p>Mama schreibt Striche an der Tür — und du bist schon wieder höher!<br/>Wie schafft dein Körper das?</p>
+    <button class="purple" onclick="engine.next()">Erzähl mir! 📈</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Drei magische Zutaten</h2>
+    <p>Damit du wächst, braucht dein Körper genau das hier:</p>
+    <div class="need-cards">
+      <div class="need-card"><span class="icon">🥦</span><h3 style="color:#1b5e20">Essen</h3><p style="font-size:14px;margin:0;">Bausteine aus Obst, Gemüse, Brot, Milch</p></div>
+      <div class="need-card"><span class="icon">😴</span><h3 style="color:#6a1b9a">Schlaf</h3><p style="font-size:14px;margin:0;">Im Schlaf wächst du am meisten!</p></div>
+      <div class="need-card"><span class="icon">💧</span><h3 style="color:#0984e3">Wasser</h3><p style="font-size:14px;margin:0;">Für alle Zellen</p></div>
+      <div class="need-card"><span class="icon">🏃</span><h3 style="color:#e74c3c">Bewegung</h3><p style="font-size:14px;margin:0;">Macht Knochen und Muskeln stark</p></div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Bewege den Schieber!</h2>
+    <p>Schau, wie du dein ganzes Leben lang wirst:</p>
+    <div class="timeline" id="timeline">
+      <div class="timeline-marks">
+        <div class="tick" style="left:5%"></div>
+        <div class="tick" style="left:25%"></div>
+        <div class="tick" style="left:45%"></div>
+        <div class="tick" style="left:65%"></div>
+        <div class="tick" style="left:85%"></div>
+      </div>
+      <div class="age-person" id="agePerson" style="left:50%">
+        <span class="age-emoji" id="ageEmoji">🧒</span>
+        <span class="age-label" id="ageLabel">5 Jahre</span>
+      </div>
+    </div>
+    <div class="age-slider-row">
+      <span style="font-size:24px;">👶</span>
+      <input type="range" id="ageSlider" min="0" max="100" value="20"/>
+      <span style="font-size:24px;">👴</span>
+      <span class="age-num" id="ageNum">5 Jahre</span>
+    </div>
+    <div class="description" id="ageDesc">Jetzt bist du ein <b style="color:#d81b60">Kind</b> — du lernst, spielst, wächst sehr schnell!</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:14px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Im Schlaf wächst du am meisten!</h2>
+    <p>Wusstest du? Wenn du schläfst, schickt dein Gehirn ein <b style="color:#6a1b9a">Wachstums-Signal</b>:<br/>
+       "Knochen, werd größer! Muskeln, werd stärker!"</p>
+    <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:60px;margin:14px 0;">
+      <span class="floaty">🌙</span>
+      <span style="font-size:40px;">➡️</span>
+      <span class="floaty" style="animation-delay:0.3s">😴</span>
+      <span style="font-size:40px;">➡️</span>
+      <span class="floaty" style="animation-delay:0.6s">📈</span>
+      <span style="font-size:40px;">➡️</span>
+      <span class="floaty" style="animation-delay:0.9s">🧒</span>
+    </div>
+    <p>Darum ist Schlaf so wichtig — und gutes Essen auch!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🌳</div>
+    <h2>Du wirst wie ein Baum</h2>
+    <p>Wachsen geht nicht über Nacht — Schritt für Schritt, Jahr für Jahr.<br/>
+       Aber jeden Tag wirst du ein winziges bisschen größer, klüger und stärker! ✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Mama schreibt Striche an der Tür, und du bist schon wieder höher! Wie schafft dein Körper das?",
+  "Damit du wächst, braucht dein Körper vier magische Zutaten: gutes Essen mit Bausteinen, viel Schlaf, Wasser für alle Zellen, und Bewegung, damit Knochen und Muskeln stark werden!",
+  "Schau mal: Bewege den Schieber und sieh, wie sich Menschen ihr ganzes Leben lang verändern. Vom Baby zum Kind, zum Erwachsenen, bis zur Oma und zum Opa!",
+  "Wusstest du? Wenn du schläfst, schickt dein Gehirn ein Wachstums-Signal. Es sagt: Knochen, werd größer! Muskeln, werd stärker! Darum ist Schlaf so wichtig.",
+  "Wachsen geht nicht über Nacht. Schritt für Schritt, Jahr für Jahr. Aber jeden Tag wirst du ein winziges bisschen größer, klüger und stärker!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i===2) updateAge(); } });
+
+const STAGES = [
+  { max: 5,   emoji: '👶', label: 'Baby',     desc: 'Du bist ein <b>Baby</b> — du schläfst viel und wirst rasend schnell größer!', size: 70 },
+  { max: 12,  emoji: '🧒', label: 'Kind',     desc: 'Jetzt bist du ein <b style="color:#d81b60">Kind</b> — du lernst, spielst, wächst sehr schnell!', size: 100 },
+  { max: 19,  emoji: '🧑', label: 'Teenager', desc: 'Als <b>Teenager</b> wirst du fast so groß wie ein Erwachsener.', size: 130 },
+  { max: 60,  emoji: '👩', label: 'Erwachsen', desc: 'Mit etwa 18 hörst du auf zu wachsen — aber du wirst immer noch klüger!', size: 140 },
+  { max: 200, emoji: '👴', label: 'Oma / Opa', desc: 'Im Alter wirst du wieder kleiner — und ganz weise! 🌟', size: 130 }
+];
+
+const slider = document.getElementById('ageSlider');
+function ageFromValue(v) { return Math.round(v * 0.85); }
+
+function updateAge() {
+  const v = parseFloat(slider.value);
+  const age = ageFromValue(v);
+  let stage = STAGES[0];
+  for (const s of STAGES) {
+    if (age <= s.max) { stage = s; break; }
+  }
+  document.getElementById('ageEmoji').textContent = stage.emoji;
+  document.getElementById('ageEmoji').style.fontSize = stage.size + 'px';
+  document.getElementById('ageLabel').textContent = age <= 1 ? (age + ' Jahr') : (age + ' Jahre');
+  document.getElementById('ageNum').textContent = age <= 1 ? (age + ' Jahr') : (age + ' Jahre');
+  document.getElementById('agePerson').style.left = v + '%';
+  document.getElementById('ageDesc').innerHTML = stage.desc;
+}
+slider.addEventListener('input', updateAge);
+updateAge();
+</script>
+</body>
+</html>

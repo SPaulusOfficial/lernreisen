@@ -20,6 +20,37 @@
   .prism-svg {
     width: 100%;
     height: 100%;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.15));
+  }
+  .prism-svg line[stroke="#ff0000"],
+  .prism-svg line[stroke="#ff8800"],
+  .prism-svg line[stroke="#ffee00"],
+  .prism-svg line[stroke="#00cc00"],
+  .prism-svg line[stroke="#0088ff"],
+  .prism-svg line[stroke="#7700ff"] {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: ray-draw 1.4s ease-out forwards, ray-glow 2.6s ease-in-out 1.4s infinite;
+  }
+  .prism-svg line[stroke="#ff8800"] { animation-delay: 0.08s, 1.48s; }
+  .prism-svg line[stroke="#ffee00"] { animation-delay: 0.16s, 1.56s; }
+  .prism-svg line[stroke="#00cc00"] { animation-delay: 0.24s, 1.64s; }
+  .prism-svg line[stroke="#0088ff"] { animation-delay: 0.32s, 1.72s; }
+  .prism-svg line[stroke="#7700ff"] { animation-delay: 0.40s, 1.80s; }
+  @keyframes ray-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes ray-glow {
+    0%, 100% { filter: drop-shadow(0 0 0 transparent); opacity: 0.85; }
+    50%      { filter: drop-shadow(0 0 6px currentColor); opacity: 1; }
+  }
+  .prism-svg polygon {
+    animation: prism-sparkle 3.2s ease-in-out infinite;
+    transform-origin: 300px 130px;
+  }
+  @keyframes prism-sparkle {
+    0%, 100% { filter: drop-shadow(0 0 6px rgba(255,255,255,0.5)); }
+    50%      { filter: drop-shadow(0 0 18px rgba(255,255,255,0.95)); }
   }
 
   /* Scattering demo */
@@ -27,11 +58,12 @@
     position: relative;
     width: min(90vw, 700px);
     height: 300px;
-    background: rgba(135, 206, 250, 0.4);
+    background: linear-gradient(135deg, rgba(135,206,250,0.4), rgba(180,220,255,0.55));
     border-radius: 24px;
     overflow: hidden;
     margin: 20px 0;
     border: 3px solid #fff;
+    box-shadow: inset 0 0 40px rgba(116,185,255,0.3), 0 8px 22px rgba(9,132,227,0.15);
   }
   .sun-source {
     position: absolute;
@@ -40,6 +72,12 @@
     transform: translateY(-50%);
     font-size: 70px;
     z-index: 3;
+    filter: drop-shadow(0 0 25px rgba(255,220,80,0.85));
+    animation: sun-radiate 3s ease-in-out infinite;
+  }
+  @keyframes sun-radiate {
+    0%, 100% { transform: translateY(-50%) scale(1) rotate(0); filter: drop-shadow(0 0 18px rgba(255,220,80,0.7)); }
+    50%      { transform: translateY(-50%) scale(1.08) rotate(8deg); filter: drop-shadow(0 0 32px rgba(255,220,80,1)); }
   }
   .ray {
     position: absolute;
@@ -53,15 +91,21 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    box-shadow: 0 0 12px currentColor;
+    box-shadow: 0 0 16px currentColor, 0 0 30px currentColor;
   }
   .air-particle {
     position: absolute;
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.5);
-    border: 2px solid rgba(255,255,255,0.8);
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(180,220,255,0.4) 70%);
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+    animation: particle-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes particle-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50%      { transform: scale(1.15); opacity: 1; }
   }
   .eye-watcher {
     position: absolute;
@@ -70,6 +114,11 @@
     transform: translateY(-50%);
     font-size: 60px;
     z-index: 3;
+    animation: eye-blink 4.5s ease-in-out infinite;
+  }
+  @keyframes eye-blink {
+    0%, 92%, 100% { transform: translateY(-50%) scaleY(1); }
+    95%, 97%      { transform: translateY(-50%) scaleY(0.1); }
   }
 
   /* Sun slider scene */
@@ -86,10 +135,15 @@
   .sun-controlled {
     position: absolute;
     font-size: 60px;
-    transition: top 0.4s ease, left 0.4s ease;
+    transition: top 0.5s cubic-bezier(.45,.05,.55,.95), left 0.5s cubic-bezier(.45,.05,.55,.95);
     z-index: 2;
-    filter: drop-shadow(0 0 18px rgba(255,200,80,0.7));
+    filter: drop-shadow(0 0 22px rgba(255,200,80,0.8));
     pointer-events: none;
+    animation: sun-spin 22s linear infinite;
+  }
+  @keyframes sun-spin {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
   }
   .horizon {
     position: absolute;
@@ -104,6 +158,13 @@
     bottom: 30px;
     font-size: 50px;
     z-index: 2;
+    animation: house-bob 4s ease-in-out infinite;
+  }
+  .house:nth-of-type(2) { animation-delay: 0.6s; }
+  .house:nth-of-type(3) { animation-delay: 1.2s; }
+  @keyframes house-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
   }
   .slider-row {
     width: min(95vw, 900px);
@@ -307,12 +368,33 @@ function runScatter() {
     const targetY = target ? target.y : startY;
     const t1 = (targetX - 70) / speedX * 1000;
 
+    let trailTick = 0;
+    function emitTrail(x, y) {
+      const t = document.createElement('div');
+      t.className = 'photon';
+      t.style.width = t.style.height = '8px';
+      t.style.color = photon.style.color;
+      t.style.background = photon.style.color;
+      t.style.opacity = '0.6';
+      t.style.left = (x - 3) + 'px';
+      t.style.top  = (y - 3) + 'px';
+      t.style.pointerEvents = 'none';
+      t.style.transition = 'opacity 0.5s, transform 0.5s';
+      host.appendChild(t);
+      requestAnimationFrame(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'scale(0.2)';
+      });
+      setTimeout(() => t.remove(), 550);
+    }
     function animate(now) {
       const dt = now - startTime;
       if (dt < t1) {
         const p = dt / t1;
         photon.style.left = (70 + (targetX-70)*p) + 'px';
         photon.style.top  = (startY + (targetY-startY)*p) + 'px';
+        trailTick++;
+        if (trailTick % 4 === 0) emitTrail(70 + (targetX-70)*p, startY + (targetY-startY)*p);
         requestAnimationFrame(animate);
       } else if (target) {
         // Bounce off in random direction

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum musst du niesen?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #e8f7ff 0%, #b5e8ff 60%, #74b9ff 100%); }
+  h1, h2 { color: #074a87; text-shadow: 2px 2px 0 #fff; }
+  .nose-svg { width: min(80vw, 380px); height: auto; }
+  .sneeze-cloud {
+    position: relative;
+    font-size: 100px;
+    margin: 14px 0;
+    animation: shake 0.3s ease-in-out;
+  }
+  .particles {
+    position: relative;
+    width: 300px;
+    height: 60px;
+  }
+  .particle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #d2691e;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🤧</div>
+    <h1>Hatschi! Warum nieste du?</h1>
+    <p>Plötzlich — HATSCHI! 🤧<br/>Was passiert da eigentlich in deiner Nase?</p>
+    <button class="secondary" onclick="engine.next()">Finden wir's raus! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Was kitzelt deine Nase?</h2>
+    <p>In der Luft gibt es ganz viele winzige Sachen:</p>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;font-size:60px;margin:14px 0;">
+      <span title="Pollen">🌼</span>
+      <span title="Staub">💨</span>
+      <span title="Pfeffer">🌶️</span>
+      <span title="Tier-Haare">🐱</span>
+      <span title="Bazillen">🦠</span>
+    </div>
+    <p>Pollen, Staub, Pfeffer-Staub, Tier-Haare, Bazillen — und manchmal kitzeln sie!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Dein Nase wird wütend!</h2>
+    <p>Wenn etwas Falsches in deine Nase kommt, sagt sie:<br/><b style="color:#d81b60">"Raus damit! Sofort!"</b></p>
+    <svg class="nose-svg" viewBox="0 0 380 280">
+      <ellipse cx="190" cy="140" rx="100" ry="120" fill="#ffd3b6" stroke="#a04040" stroke-width="3"/>
+      <ellipse cx="170" cy="170" rx="10" ry="18" fill="#1a1a2e"/>
+      <ellipse cx="210" cy="170" rx="10" ry="18" fill="#1a1a2e"/>
+      <text x="60" y="80" font-size="30">🌼</text>
+      <text x="80" y="180" font-size="30">💨</text>
+      <text x="80" y="240" font-size="30">🦠</text>
+      <text x="300" y="80" font-size="30">⚠️</text>
+    </svg>
+    <p>Dein Gehirn schickt einen Befehl an deine Lungen: Atme ganz tief ein...</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>HATSCHI! 💥</h2>
+    <p>...und dann puuuhh — alles wieder raus durch die Nase!</p>
+    <div class="sneeze-cloud">💨🤧💨</div>
+    <p>So schnell wie ein Auto auf der Autobahn — <b style="color:#d81b60">100 km/h</b>!<br/>So flutscht alles wieder aus deiner Nase raus.</p>
+    <p style="font-size:18px;background:rgba(255,255,255,0.7);padding:14px;border-radius:14px;max-width:600px;">
+      🤫 <b>Wichtig:</b> Bitte halt beim Niesen die Hand oder den Arm vor!<br/>Sonst fliegen die Bazillen alle anderen an. 🛡️
+    </p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🛡️🤧</div>
+    <h2>Niesen ist toll!</h2>
+    <p>Niesen ist ein <b style="color:#074a87">Schutz-Trick</b> deines Körpers.<br/>Er macht deine Nase sauber und beschützt dich!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Plötzlich, hatschi! Was passiert da eigentlich in deiner Nase, wenn du niesen musst?",
+  "In der Luft gibt es ganz viele winzige Sachen: Pollen von Blumen, Staub, Pfeffer-Staub, Tier-Haare, kleine Bazillen. Manchmal kitzeln die in deiner Nase!",
+  "Wenn etwas Falsches in deine Nase kommt, sagt deine Nase: Raus damit, sofort! Dein Gehirn schickt einen Befehl an deine Lungen: Atme ganz tief ein!",
+  "Und dann, hatschi! Alles wieder raus durch die Nase! So schnell wie ein Auto auf der Autobahn, fast hundert Kilometer pro Stunde! Wichtig: Halt beim Niesen die Hand oder den Arm vor, damit du keine Bazillen verteilst!",
+  "Niesen ist ein Schutz-Trick deines Körpers. Er macht deine Nase sauber und beschützt dich!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+</script>
+</body>
+</html>

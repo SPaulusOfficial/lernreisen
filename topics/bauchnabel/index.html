@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum hast du einen Bauchnabel?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #ffe5e0 0%, #ffc4b0 60%, #ff9eb1 100%); }
+  h1, h2 { color: #c44569; text-shadow: 2px 2px 0 #fff; }
+  .belly-svg { width: min(80vw, 360px); height: auto; }
+  .womb-svg { width: min(95vw, 700px); height: auto; }
+  .pulse-line { stroke: #ff6b9d; stroke-width: 3; animation: dashflow 1.5s linear infinite; stroke-dasharray: 6; }
+  @keyframes dashflow { to { stroke-dashoffset: -12; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👶✨</div>
+    <h1>Dein Bauchnabel</h1>
+    <p>Schau mal auf deinen Bauch. Da ist eine kleine Vertiefung — der <b>Bauchnabel</b>!<br/>Warum ist die da? Eine wunderschöne Geschichte!</p>
+    <button class="purple" onclick="engine.next()">Erzähl mir! 💕</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Bevor du geboren wurdest</h2>
+    <p>Vor langer Zeit warst du ein winziges Baby — und du hast in Mamas Bauch gelebt!</p>
+    <svg class="womb-svg" viewBox="0 0 700 320">
+      <ellipse cx="200" cy="170" rx="150" ry="120" fill="#ffd3b6" stroke="#c44569" stroke-width="3"/>
+      <ellipse cx="200" cy="180" rx="100" ry="80" fill="#ffe5d4" stroke="#c44569" stroke-width="2"/>
+      <text x="220" y="195" font-size="80">👶</text>
+      <text x="200" y="310" text-anchor="middle" font-size="18" fill="#c44569" font-weight="bold">In Mamas Bauch</text>
+      <text x="500" y="170" font-size="120">🤰</text>
+      <text x="540" y="310" text-anchor="middle" font-size="18" fill="#c44569" font-weight="bold">Mama</text>
+    </svg>
+    <p>Da war es kuschelig warm und sicher — etwa <b>neun Monate</b> lang!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Die Nabelschnur</h2>
+    <p>Damit du essen und atmen konntest, gab es einen besonderen Schlauch:<br/>die <b style="color:#c44569">Nabelschnur</b>!</p>
+    <svg class="womb-svg" viewBox="0 0 700 240" style="max-height:240px;">
+      <text x="80" y="140" font-size="80">👶</text>
+      <path d="M 170 160 Q 280 80 380 130 Q 460 170 540 130" class="pulse-line" fill="none"/>
+      <text x="540" y="140" font-size="80">🤰</text>
+      <text x="350" y="60" text-anchor="middle" font-size="18" fill="#c44569" font-weight="bold">🍎 Essen & 💨 Luft</text>
+    </svg>
+    <p>Die Nabelschnur war wie ein <b>Strohhalm</b> 🥤 — Mama hat dir Essen und Sauerstoff geschickt!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Und dann kamst du auf die Welt!</h2>
+    <p>Als du geboren wurdest, hat dich der Doktor 🥼 vorsichtig von Mama getrennt.<br/>Die Nabelschnur brauchst du jetzt nicht mehr — du kannst selbst atmen und essen!</p>
+    <p style="font-size:60px;">✂️→👶🍼</p>
+    <p>Übrig geblieben ist die kleine <b>Stelle</b> an deinem Bauch — dein <b style="color:#c44569">Bauchnabel</b>!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">💕</div>
+    <h2>Dein kleines Andenken</h2>
+    <p>Dein Bauchnabel ist eine <b style="color:#c44569">Erinnerung</b> daran, wie du mit Mama verbunden warst.<br/>Jeder Mensch hat einen — denn jeder war mal in Mamas Bauch! ✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Schau mal auf deinen Bauch. Da ist eine kleine Vertiefung. Das ist dein Bauchnabel! Warum ist die da? Eine wunderschöne Geschichte!",
+  "Vor langer Zeit warst du ein winziges Baby, und du hast in Mamas Bauch gelebt! Da war es kuschelig warm und sicher, etwa neun Monate lang.",
+  "Damit du essen und atmen konntest, gab es einen besonderen Schlauch: die Nabelschnur! Die Nabelschnur war wie ein Strohhalm. Mama hat dir Essen und Sauerstoff geschickt.",
+  "Als du geboren wurdest, hat dich der Doktor vorsichtig von Mama getrennt. Die Nabelschnur brauchst du jetzt nicht mehr. Du kannst selbst atmen und essen! Übrig geblieben ist die kleine Stelle an deinem Bauch, dein Bauchnabel!",
+  "Dein Bauchnabel ist eine Erinnerung daran, wie du mit Mama verbunden warst. Jeder Mensch hat einen, denn jeder war mal in Mamas Bauch!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+</script>
+</body>
+</html>

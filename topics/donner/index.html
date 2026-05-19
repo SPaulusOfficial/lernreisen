@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Donner und Blitz</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #2c3e7a 0%, #4a5a8a 60%, #1a1a4e 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #1a1a4e; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  .storm-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(180deg, #1a1a4e 0%, #3a3a6a 70%, #2c3e7a 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .storm-cloud {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 150px;
+    cursor: pointer;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+    transition: transform 0.2s;
+    user-select: none;
+  }
+  .storm-cloud:hover { transform: translateX(-50%) scale(1.05); }
+  .storm-cloud.flash { filter: drop-shadow(0 0 60px rgba(255,255,180,1)) drop-shadow(0 0 100px rgba(255,255,100,0.8)); }
+  .ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(180deg, #4a8030, #2c5a1a);
+  }
+  .lightning {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .lightning.flash {
+    animation: flash-strike 0.6s ease-out;
+  }
+  @keyframes flash-strike {
+    0%   { background: rgba(255,255,180,0); opacity: 0; }
+    8%   { background: rgba(255,255,255,0.95); opacity: 1; }
+    16%  { background: rgba(255,255,255,0.2); opacity: 0.4; }
+    25%  { background: rgba(255,255,180,0.8); opacity: 1; }
+    100% { background: rgba(255,255,180,0); opacity: 0; }
+  }
+  .bolt {
+    position: absolute;
+    font-size: 120px;
+    top: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 0 30px gold);
+  }
+  .bolt.flash {
+    animation: bolt-strike 0.5s ease-out;
+  }
+  @keyframes bolt-strike {
+    0%   { opacity: 0; transform: translateX(-50%) scale(0.5); }
+    20%  { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    100% { opacity: 0; transform: translateX(-50%) scale(1); }
+  }
+  .raindrops { position: absolute; inset: 0; pointer-events: none; }
+  .rd {
+    position: absolute;
+    font-size: 22px;
+    color: #b5e8ff;
+    animation: rd-fall 1s linear infinite;
+  }
+  @keyframes rd-fall {
+    0%   { transform: translateY(-20px); opacity: 1; }
+    100% { transform: translateY(400px); opacity: 0; }
+  }
+
+  .timer-display {
+    background: rgba(255,255,255,0.18);
+    padding: 12px 26px;
+    border-radius: 18px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff8c8;
+    margin: 8px 0;
+    backdrop-filter: blur(6px);
+  }
+  .timer-display .big { font-size: 30px; color: #ffd700; }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 700px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .compare-card {
+    background: rgba(255,255,255,0.15);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+  }
+  .compare-card .icon { font-size: 80px; display: block; margin-bottom: 4px; }
+  .compare-card h3 { color: #fff8c8; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">⛈️⚡</div>
+    <h1>Donner & Blitz</h1>
+    <p>FLASH! 💥 BUMM! 🔊<br/>Erst Licht, dann ein Krach — was passiert da am Himmel?</p>
+    <button class="purple" onclick="engine.next()">Zeig mir! ⚡</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>In der Gewitter-Wolke</h2>
+    <p>In einer Gewitter-Wolke ist es wild: Tröpfchen und Eis reiben aneinander und werden <b style="color:#ffd700">elektrisch</b> ⚡<br/>
+       Wenn es zu viel wird — ZACK! — schießt ein Blitz raus!</p>
+    <div style="font-size:80px;margin:14px 0;" class="pulse">⛈️⚡</div>
+    <p>Ein Blitz ist heißer als die Sonne! 🌡️🔥</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Klick die Wolke — mach ein Gewitter!</h2>
+    <p>Tipp auf die Wolke und sieh: Erst kommt der Blitz, dann der Donner!</p>
+    <div class="storm-stage" id="stormStage">
+      <div class="lightning" id="lightning"></div>
+      <span class="storm-cloud" id="cloud" onclick="strike()">☁️</span>
+      <span class="bolt" id="bolt">⚡</span>
+      <div class="raindrops" id="rain"></div>
+      <div class="ground"></div>
+    </div>
+    <div class="timer-display" id="timerDisplay">⏱️ Klick auf die Wolke!</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:10px;">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Warum kommt der Donner später?</h2>
+    <p>Licht ist viel <b style="color:#fff8c8">schneller</b> als Schall!</p>
+    <div class="compare-row">
+      <div class="compare-card">
+        <span class="icon">⚡</span>
+        <h3>Blitz (Licht)</h3>
+        <p style="margin:0;font-size:16px;">Rast schneller als jedes Auto, fast sofort bei dir!</p>
+      </div>
+      <div class="compare-card">
+        <span class="icon">🔊</span>
+        <h3>Donner (Schall)</h3>
+        <p style="margin:0;font-size:16px;">Langsamer — braucht ein bisschen Zeit zu dir.</p>
+      </div>
+    </div>
+    <p style="font-size:18px;">Trick: Zähl die Sekunden — je länger, desto weiter ist das Gewitter weg!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🏠</div>
+    <h2>Im Haus bist du sicher</h2>
+    <p>Bei Gewitter immer rein ins Haus 🏠 oder Auto 🚗.<br/>
+       Vom Fenster aus ist Gewitter wunderschön anzuschauen! ⛈️✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Flash! Bumm! Erst Licht, dann ein Krach. Was passiert da am Himmel?",
+  "In einer Gewitter-Wolke ist es wild: Tröpfchen und Eis reiben aneinander und werden elektrisch! Wenn es zu viel wird, zack, schießt ein Blitz raus! Ein Blitz ist heißer als die Sonne!",
+  "Tipp auf die Wolke und sieh: Erst kommt der Blitz, dann der Donner! Zähl mal, wie lang es dauert!",
+  "Warum kommt der Donner später? Weil Licht viel schneller ist als Schall! Der Blitz ist fast sofort bei dir, aber der Donner braucht ein bisschen Zeit. Trick: Zähl die Sekunden, je länger, desto weiter ist das Gewitter weg!",
+  "Bei Gewitter immer rein ins Haus oder Auto. Vom Fenster aus ist Gewitter wunderschön anzuschauen!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function strike() {
+  const cloud = document.getElementById('cloud');
+  const flash = document.getElementById('lightning');
+  const bolt = document.getElementById('bolt');
+  cloud.classList.remove('flash');
+  flash.classList.remove('flash');
+  bolt.classList.remove('flash');
+  void cloud.offsetWidth;
+  flash.classList.add('flash');
+  bolt.classList.add('flash');
+  cloud.classList.add('flash');
+  // Play flash sound
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // White noise burst for flash crackle
+    const buf = ctx.createBuffer(1, ctx.sampleRate*0.05, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * 0.3;
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.5, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.1);
+    src.connect(g); g.connect(ctx.destination); src.start();
+    setTimeout(() => cloud.classList.remove('flash'), 600);
+  } catch(e){}
+  // Timer
+  const flashTime = performance.now();
+  const display = document.getElementById('timerDisplay');
+  display.innerHTML = '⚡ <span class="big">Blitz!</span> ... warte auf den Donner ...';
+  // Random thunder delay 1-3 seconds
+  const delay = 1500 + Math.random()*2000;
+  setTimeout(() => {
+    try {
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const buf = ctx.createBuffer(1, ctx.sampleRate*1.5, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) {
+        const fade = 1 - i/d.length;
+        d[i] = (Math.random()*2-1) * 0.5 * fade;
+      }
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const g = ctx.createGain(); g.gain.value = 0.4;
+      // Low-pass to make it boomy
+      const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 200;
+      src.connect(f); f.connect(g); g.connect(ctx.destination); src.start();
+    } catch(e){}
+    const sec = (delay/1000).toFixed(1);
+    display.innerHTML = '🔊 <span class="big">BOOOM!</span> Donner kam ' + sec + ' Sekunden später!';
+  }, delay);
+  // Some rain
+  const rainHost = document.getElementById('rain');
+  for (let i = 0; i < 20; i++) {
+    const d = document.createElement('span');
+    d.className = 'rd';
+    d.textContent = '💧';
+    d.style.left = (Math.random()*100) + '%';
+    d.style.top = '40px';
+    d.style.animationDelay = (Math.random()*0.5) + 's';
+    d.style.fontSize = (12 + Math.random()*10) + 'px';
+    rainHost.appendChild(d);
+    setTimeout(() => d.remove(), 2000);
+  }
+}
+</script>
+</body>
+</html>

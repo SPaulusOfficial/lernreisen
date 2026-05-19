@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie funktioniert ein Magnet?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #b5e8ff 0%, #74b9ff 50%, #0984e3 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #074a87; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  .magnet-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 30px rgba(7,74,135,0.15), 0 8px 22px rgba(0,0,0,0.2);
+  }
+  .magnet {
+    position: absolute;
+    width: 120px;
+    height: 80px;
+    cursor: grab;
+    user-select: none;
+    z-index: 10;
+  }
+  .magnet:active { cursor: grabbing; }
+  .magnet-half {
+    width: 60px;
+    height: 80px;
+    display: inline-block;
+    color: #fff;
+    font-weight: bold;
+    font-size: 40px;
+    line-height: 80px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+  }
+  .magnet-half.n { background: linear-gradient(180deg, #e74c3c, #c0392b); border-radius: 12px 0 0 12px; }
+  .magnet-half.s { background: linear-gradient(180deg, #3498db, #2980b9); border-radius: 0 12px 12px 0; }
+
+  .obj {
+    position: absolute;
+    font-size: 50px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.5s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+  .obj.attracted { animation: jump-to-magnet 0.5s ease-out forwards; }
+  @keyframes jump-to-magnet {
+    50% { transform: scale(1.2) rotate(20deg); }
+  }
+
+  .legend {
+    background: rgba(255,255,255,0.18);
+    padding: 14px 24px;
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+    margin: 8px 0;
+  }
+
+  .pole-demo {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 12px 0;
+  }
+  .pole-card {
+    background: rgba(255,255,255,0.18);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    width: 240px;
+  }
+  .pole-card .emoji { font-size: 70px; display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🧲✨</div>
+    <h1>Magie? Nein — Magnete!</h1>
+    <p>Du hältst einen Magnet ans Bügelbrett — KLAPP! Er klebt fest! 🧲<br/>Aber warum?</p>
+    <button class="secondary" onclick="engine.next()">Lass uns testen! 🧪</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Magnete haben unsichtbare Kraft</h2>
+    <p>Ein Magnet hat eine Kraft, die du nicht siehst — aber spüren kannst!<br/>Diese Kraft zieht bestimmte <b style="color:#fff8c8">Metalle</b> an: Eisen und Stahl 🔩.</p>
+    <p style="font-size:18px;background:rgba(255,255,255,0.18);padding:10px 20px;border-radius:14px;">
+      🧲 zieht an: 🔩 🧷 ⛓️<br/>
+      🧲 zieht NICHT an: 🪵 📄 💎 🥄(Plastik)
+    </p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Zwei Pole — N und S</h2>
+    <p>Jeder Magnet hat zwei Seiten: <b style="color:#ffc5cc">Norden (N)</b> und <b style="color:#a8d4ff">Süden (S)</b>.<br/>Sie machen lustige Dinge:</p>
+    <div class="pole-demo">
+      <div class="pole-card">
+        <span class="emoji">🤝</span>
+        <h3>N + S</h3>
+        <p style="margin:0">Verschiedene Pole = <b>ziehen sich an</b>!</p>
+      </div>
+      <div class="pole-card">
+        <span class="emoji">🤺</span>
+        <h3>N + N</h3>
+        <p style="margin:0">Gleiche Pole = <b>stoßen sich weg</b>!</p>
+      </div>
+    </div>
+    <button class="secondary" onclick="engine.next()">Probier es! 🧲</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Magnet-Labor!</h2>
+    <p>Bewege den Magnet — was wird angezogen?</p>
+    <div class="magnet-stage" id="magnetStage">
+      <div class="magnet" id="magnet" style="left:50px;top:50px">
+        <span class="magnet-half n">N</span><span class="magnet-half s">S</span>
+      </div>
+      <span class="obj" data-magnetic="true" style="left:300px;top:60px">🔩</span>
+      <span class="obj" data-magnetic="true" style="left:480px;top:90px">📎</span>
+      <span class="obj" data-magnetic="true" style="left:550px;top:200px">🧷</span>
+      <span class="obj" data-magnetic="false" style="left:350px;top:200px">🪵</span>
+      <span class="obj" data-magnetic="false" style="left:200px;top:230px">📄</span>
+      <span class="obj" data-magnetic="false" style="left:600px;top:50px">💎</span>
+    </div>
+    <div class="legend">🔴 = Magnetisch (Eisen/Stahl) &nbsp;|&nbsp; ⚪ = Nicht magnetisch</div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🧭🌍</div>
+    <h2>Sogar die Erde ist ein Magnet!</h2>
+    <p>Ja wirklich! Tief in der Erde drin ist Eisen, und das macht die ganze Erde zu einem Riesen-Magneten.<br/>
+       Darum funktioniert ein <b style="color:#fff8c8">Kompass</b> 🧭 — die Nadel zeigt immer nach Norden!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Du hältst einen Magnet ans Bügelbrett, klapp, er klebt fest! Aber warum? Heute lernen wir Magnete kennen!",
+  "Ein Magnet hat eine Kraft, die du nicht siehst, aber spüren kannst! Diese Kraft zieht bestimmte Metalle an: Eisen und Stahl. Aber Holz, Papier, Plastik oder Edelsteine zieht der Magnet nicht an.",
+  "Jeder Magnet hat zwei Seiten: Norden und Süden. Verschiedene Pole, also N und S, ziehen sich an. Gleiche Pole, also N und N, stoßen sich weg!",
+  "Bewege den Magnet im Labor! Schau, welche Sachen sich an den Magnet hängen, und welche nicht!",
+  "Sogar die Erde ist ein Magnet! Tief in der Erde drin ist Eisen, und das macht die ganze Erde zu einem Riesen-Magneten. Darum funktioniert ein Kompass: die Nadel zeigt immer nach Norden!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+// Magnet drag interaction
+const magnet = document.getElementById('magnet');
+const stage = document.getElementById('magnetStage');
+let dragging = false, offX = 0, offY = 0;
+
+magnet.addEventListener('pointerdown', (e) => {
+  dragging = true;
+  const r = magnet.getBoundingClientRect();
+  offX = e.clientX - r.left;
+  offY = e.clientY - r.top;
+  magnet.setPointerCapture(e.pointerId);
+});
+magnet.addEventListener('pointerup', () => dragging = false);
+magnet.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  const sr = stage.getBoundingClientRect();
+  let x = e.clientX - sr.left - offX;
+  let y = e.clientY - sr.top - offY;
+  x = Math.max(0, Math.min(sr.width - 120, x));
+  y = Math.max(0, Math.min(sr.height - 80, y));
+  magnet.style.left = x + 'px';
+  magnet.style.top = y + 'px';
+  checkAttract();
+});
+
+function checkAttract() {
+  const mr = magnet.getBoundingClientRect();
+  const mx = mr.left + mr.width/2;
+  const my = mr.top + mr.height/2;
+  document.querySelectorAll('.obj').forEach(obj => {
+    if (obj.dataset.magnetic !== 'true') return;
+    const r = obj.getBoundingClientRect();
+    const dx = mx - (r.left + r.width/2);
+    const dy = my - (r.top + r.height/2);
+    const d = Math.hypot(dx, dy);
+    if (d < 130) {
+      // Attract toward magnet
+      const sr = stage.getBoundingClientRect();
+      const targetX = mx - sr.left - 25 + (Math.random()-0.5)*40;
+      const targetY = my - sr.top - 25 + (Math.random()-0.5)*40;
+      obj.style.left = targetX + 'px';
+      obj.style.top = targetY + 'px';
+      obj.classList.add('attracted');
+      setTimeout(() => obj.classList.remove('attracted'), 500);
+    }
+  });
+}
+</script>
+</body>
+</html>

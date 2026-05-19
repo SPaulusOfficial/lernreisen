@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Woher kommt der Wind?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #b5e8ff 0%, #88c5ff 60%, #74b9ff 100%); }
+  h1, h2 { color: #074a87; text-shadow: 2px 2px 0 #fff; }
+
+  .wind-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 350px;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d4ecff 60%, #7ec850 60%, #4a8030 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 40px rgba(7,74,135,0.15), 0 8px 22px rgba(7,74,135,0.18);
+  }
+  .windmill {
+    position: absolute;
+    bottom: 35%;
+    right: 12%;
+    font-size: 80px;
+    animation: windmill-spin var(--spin, 4s) linear infinite;
+    transform-origin: center 60%;
+  }
+  @keyframes windmill-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+  .tree {
+    position: absolute;
+    bottom: 32%;
+    left: 18%;
+    font-size: 80px;
+    transform-origin: bottom center;
+    animation: tree-sway var(--sway, 3s) ease-in-out infinite;
+  }
+  @keyframes tree-sway {
+    0%, 100% { transform: rotate(-3deg); }
+    50%      { transform: rotate(3deg); }
+  }
+  .balloon {
+    position: absolute;
+    bottom: 38%;
+    left: 50%;
+    font-size: 60px;
+    animation: balloon-bob var(--bob, 3s) ease-in-out infinite;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+  @keyframes balloon-bob {
+    0%, 100% { transform: translate(0, 0) rotate(-4deg); }
+    50%      { transform: translate(40px, -10px) rotate(4deg); }
+  }
+  .leaf {
+    position: absolute;
+    font-size: 28px;
+    animation: leaf-blow var(--leaf-dur, 5s) linear infinite;
+  }
+  @keyframes leaf-blow {
+    0%   { transform: translateX(0) rotate(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateX(800px) rotate(720deg); opacity: 0; }
+  }
+  .cloud {
+    position: absolute;
+    font-size: 60px;
+    animation: cloud-drift var(--cloud-dur, 12s) linear infinite;
+  }
+  @keyframes cloud-drift {
+    from { transform: translateX(-200px); }
+    to   { transform: translateX(900px); }
+  }
+
+  .wind-slider {
+    width: min(80vw, 700px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.85);
+    padding: 14px 20px;
+    border-radius: 24px;
+  }
+  .wind-slider input { flex: 1; height: 12px; }
+  .wind-level {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: #fff;
+    font-weight: bold;
+    padding: 8px 18px;
+    border-radius: 18px;
+    min-width: 150px;
+    text-align: center;
+  }
+
+  .air-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: min(90vw, 700px);
+    margin: 14px 0;
+  }
+  .air-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+  }
+  .air-card.warm { background: linear-gradient(135deg, rgba(255,193,7,0.4), rgba(255,87,34,0.3)); }
+  .air-card.cold { background: linear-gradient(135deg, rgba(116,185,255,0.5), rgba(9,132,227,0.3)); }
+  .air-card .emoji { font-size: 70px; display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌬️🍃</div>
+    <h1>Woher kommt der Wind?</h1>
+    <p>Du kannst Wind nicht sehen — aber du merkst ihn überall!<br/>
+       Die Blätter rascheln 🍂, die Haare fliegen — was ist das?</p>
+    <button class="secondary" onclick="engine.next()">Find ich raus! 💨</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wind ist Luft, die sich bewegt</h2>
+    <p>Wind ist <b style="color:#0984e3">Luft</b> — die einfach von einem Ort zum anderen reist!</p>
+    <div style="display:flex;gap:30px;font-size:80px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;">
+      <span class="pulse">☁️</span>
+      <span style="font-size:50px;">➡️➡️➡️</span>
+      <span class="pulse" style="animation-delay:0.5s">🍃</span>
+    </div>
+    <p>Aber warum bewegt sie sich? Das hat mit <b>warm und kalt</b> zu tun!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Warme Luft steigt — kalte fließt nach</h2>
+    <div class="air-grid">
+      <div class="air-card warm">
+        <span class="emoji">🔥</span>
+        <h3 style="color:#e65100">Warme Luft</h3>
+        <p style="margin:0;font-size:16px;">ist leicht und steigt hoch ⬆️</p>
+      </div>
+      <div class="air-card cold">
+        <span class="emoji">🧊</span>
+        <h3 style="color:#0984e3">Kalte Luft</h3>
+        <p style="margin:0;font-size:16px;">ist schwer und fließt nach ⬇️</p>
+      </div>
+    </div>
+    <p>Und genau diese Bewegung — das ist <b style="color:#074a87">Wind</b>!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Dein Wind-Regler 🎛️</h2>
+    <p>Schieb den Knopf und mach Wind!</p>
+    <div class="wind-stage" id="windStage">
+      <span class="cloud" style="top:15%;left:0;animation-delay:-3s">☁️</span>
+      <span class="cloud" style="top:8%;left:30%;animation-delay:-8s;font-size:50px">☁️</span>
+      <span class="tree" id="tree">🌳</span>
+      <span class="windmill" id="windmill">🌬️</span>
+      <span class="balloon" id="balloon">🎈</span>
+    </div>
+    <div class="wind-slider">
+      <span style="font-size:24px;">😌</span>
+      <input type="range" id="windSlider" min="0" max="100" value="30"/>
+      <span style="font-size:24px;">🌪️</span>
+      <span class="wind-level" id="windLevel">Brise</span>
+    </div>
+    <p id="windDesc" style="font-size:18px;background:rgba(255,255,255,0.7);padding:10px 20px;border-radius:14px;max-width:600px;">
+      Eine leichte Brise — perfekt zum Drachensteigen! 🪁
+    </p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🌬️🪁</div>
+    <h2>Wind ist nützlich!</h2>
+    <p>Mit Wind kannst du Drachen steigen, Windmühlen drehen ⚙️ und Schiffe fahren ⛵.<br/>
+       Sogar Strom wird mit Wind gemacht — Windräder! 💡</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Du kannst Wind nicht sehen, aber du merkst ihn überall! Die Blätter rascheln, die Haare fliegen. Was ist das eigentlich?",
+  "Wind ist Luft, die sich bewegt! Sie reist einfach von einem Ort zum anderen. Aber warum? Das hat mit warm und kalt zu tun!",
+  "Warme Luft ist leicht und steigt hoch. Kalte Luft ist schwer und fließt nach. Und genau diese Bewegung ist Wind!",
+  "Schieb den Knopf und mach Wind! Schau, wie sich der Baum, das Windrad und der Ballon verändern.",
+  "Mit Wind kannst du Drachen steigen, Windmühlen drehen und Schiffe fahren. Sogar Strom wird mit Wind gemacht: Windräder!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i===3) updateWind(); } });
+
+const slider = document.getElementById('windSlider');
+const stage = document.getElementById('windStage');
+let leafTimer = null;
+
+function updateWind() {
+  const v = parseFloat(slider.value);
+  const speed = 8 - (v/100) * 7.5; // 8s slow → 0.5s fast
+  const sway = Math.max(0.4, 4 - v/30);
+  document.getElementById('windmill').style.setProperty('--spin', speed + 's');
+  document.getElementById('tree').style.setProperty('--sway', sway + 's');
+  document.getElementById('balloon').style.setProperty('--bob', (sway*0.9) + 's');
+  // Cloud drift speed
+  document.querySelectorAll('.cloud').forEach(c => c.style.setProperty('--cloud-dur', Math.max(2, 18 - v/8) + 's'));
+  // Leaf spawn rate
+  if (leafTimer) clearInterval(leafTimer);
+  const rate = v < 10 ? 4000 : Math.max(80, 1200 - v*10);
+  leafTimer = setInterval(spawnLeaf, rate);
+
+  let level, desc;
+  if (v < 20)       { level = '😌 Ganz still'; desc = 'Fast kein Wind — kein Blatt bewegt sich.'; }
+  else if (v < 40)  { level = '🍃 Brise';      desc = 'Eine leichte Brise — perfekt zum Drachensteigen! 🪁'; }
+  else if (v < 65)  { level = '💨 Wind';       desc = 'Richtiger Wind — Bäume biegen sich, Mütze festhalten!'; }
+  else if (v < 85)  { level = '🌬️ Sturm';     desc = 'Starker Sturm — Vorsicht draußen!'; }
+  else              { level = '🌪️ Orkan';     desc = 'Riesen-Sturm! Lieber drinnen bleiben.'; }
+  document.getElementById('windLevel').textContent = level;
+  document.getElementById('windDesc').textContent = desc;
+}
+function spawnLeaf() {
+  const l = document.createElement('span');
+  l.className = 'leaf';
+  l.textContent = ['🍃','🍂','🍁'][Math.floor(Math.random()*3)];
+  l.style.left = '-30px';
+  l.style.top = (10 + Math.random()*70) + '%';
+  l.style.setProperty('--leaf-dur', (Math.max(1.5, 6 - parseFloat(slider.value)/20)) + 's');
+  stage.appendChild(l);
+  setTimeout(() => l.remove(), 7000);
+}
+slider.addEventListener('input', updateWind);
+</script>
+</body>
+</html>

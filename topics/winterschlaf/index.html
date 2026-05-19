@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wo schlafen Tiere im Winter?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #c4d4ea 0%, #88a4cc 60%, #4a6a9a 100%); }
+  h1, h2 { color: #1a3a6a; text-shadow: 2px 2px 0 #fff; }
+
+  .winter-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: linear-gradient(180deg, #c4d4ea 0%, #f0f8ff 50%, #d4c5a4 70%, #6b5a3a 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.15);
+  }
+  .snow-floor {
+    position: absolute;
+    bottom: 35%;
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(180deg, #fff 0%, #e8f4ff 100%);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .underground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 35%;
+    background: linear-gradient(180deg, #6b5a3a, #3e2723);
+  }
+  .winter-flake {
+    position: absolute;
+    font-size: 20px;
+    color: #fff;
+    animation: snow-drift 6s linear infinite;
+  }
+  @keyframes snow-drift {
+    0%   { transform: translateY(-20px); }
+    100% { transform: translateY(350px); }
+  }
+  .burrow {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(ellipse at 50% 30%, #5a3a1a 0%, #3e2723 70%);
+    border-radius: 50% 50% 30% 30%;
+    bottom: 5%;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .burrow:hover { transform: scale(1.05); }
+  .burrow span {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 50px;
+    transition: opacity 0.5s;
+  }
+  .burrow.revealed span { opacity: 1; }
+  .burrow:not(.revealed) span { opacity: 0.3; }
+  .burrow-label {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    background: rgba(255,255,255,0.9);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: #1a3a6a;
+    white-space: nowrap;
+  }
+
+  .winter-info {
+    background: rgba(255,255,255,0.9);
+    padding: 14px 28px;
+    border-radius: 20px;
+    color: #1a3a6a;
+    font-weight: bold;
+    font-size: 20px;
+    margin: 10px 0;
+    min-height: 30px;
+  }
+
+  .strategy-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+  }
+  .strat {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: floaty 3.6s ease-in-out infinite;
+  }
+  .strategy-cards .strat:nth-child(2) { animation-delay: 0.3s; }
+  .strategy-cards .strat:nth-child(3) { animation-delay: 0.6s; }
+  .strat .emoji { font-size: 60px; display: block; }
+  .strat h3 { color: #1a3a6a; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🐻❄️</div>
+    <h1>Tiere im Winter</h1>
+    <p>Wenn es draußen kalt und weiß ist 🌨️ — wo sind dann all die Tiere?<br/>Komm, wir schauen unter den Schnee!</p>
+    <button class="secondary" onclick="engine.next()">Schauen wir! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Drei Winter-Tricks</h2>
+    <p>Tiere haben verschiedene Tricks, um den Winter zu überleben:</p>
+    <div class="strategy-cards">
+      <div class="strat"><span class="emoji">😴</span><h3>Winterschlaf</h3><p style="margin:0;font-size:14px">Tief schlafen wie der Bär</p></div>
+      <div class="strat"><span class="emoji">🦌</span><h3>Wach bleiben</h3><p style="margin:0;font-size:14px">Dickeres Fell anziehen</p></div>
+      <div class="strat"><span class="emoji">🐦‍⬛</span><h3>Fliegen</h3><p style="margin:0;font-size:14px">In den Süden ziehen</p></div>
+    </div>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Klick die Höhlen — finde die Schläfer!</h2>
+    <div class="winter-stage" id="winterStage">
+      <span class="winter-flake" style="left:10%;animation-delay:0s">❄</span>
+      <span class="winter-flake" style="left:30%;animation-delay:1s">❅</span>
+      <span class="winter-flake" style="left:50%;animation-delay:2s">❆</span>
+      <span class="winter-flake" style="left:70%;animation-delay:3s">❄</span>
+      <span class="winter-flake" style="left:90%;animation-delay:1.5s">❅</span>
+      <div class="snow-floor"></div>
+      <div class="underground"></div>
+      <div class="burrow" style="left:5%" onclick="reveal(this, 'Bär')"><span>🐻</span><span class="burrow-label">Bärenhöhle</span></div>
+      <div class="burrow" style="left:30%" onclick="reveal(this, 'Igel')"><span>🦔</span><span class="burrow-label">Laubhaufen</span></div>
+      <div class="burrow" style="left:55%" onclick="reveal(this, 'Hamster')"><span>🐹</span><span class="burrow-label">Bau im Boden</span></div>
+      <div class="burrow" style="left:80%" onclick="reveal(this, 'Frosch')"><span>🐸</span><span class="burrow-label">Im Schlamm</span></div>
+    </div>
+    <div class="winter-info" id="winterInfo">Tipp eine Höhle an!</div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Was passiert im Winterschlaf?</h2>
+    <p>Im Winterschlaf <b style="color:#1a3a6a">verlangsamen</b> sich alle Sachen im Körper:</p>
+    <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;">
+      <div style="text-align:center;"><span style="font-size:60px;">❤️</span><br/><small>Langsamer Herzschlag</small></div>
+      <div style="text-align:center;"><span style="font-size:60px;">🌡️</span><br/><small>Kühlerer Körper</small></div>
+      <div style="text-align:center;"><span style="font-size:60px;">🍯</span><br/><small>Vom Fett leben</small></div>
+    </div>
+    <p>So sparen sie Energie — bis der Frühling kommt! 🌷</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🌷</div>
+    <h2>Frühling, ich komme!</h2>
+    <p>Wenn die Sonne wärmer wird, wachen die Tiere langsam auf 🌅<br/>
+       Sie haben den ganzen Winter überlebt — wow!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Wenn es draußen kalt und weiß ist, wo sind dann all die Tiere? Komm, wir schauen unter den Schnee!",
+  "Tiere haben verschiedene Tricks, um den Winter zu überleben. Manche machen Winterschlaf, wie der Bär. Manche bleiben wach und ziehen ein dickeres Fell an, wie der Hirsch. Und manche fliegen in den Süden, wo es warm ist!",
+  "Klick die Höhlen und finde, wer da schläft! Im Winter sind ganz viele Tiere versteckt.",
+  "Was passiert im Winterschlaf? Alles im Körper wird langsamer: Der Herzschlag wird langsamer, der Körper wird kühler, und die Tiere leben von ihrem Fett, das sie im Sommer gesammelt haben. So sparen sie Energie, bis der Frühling kommt!",
+  "Wenn die Sonne wärmer wird, wachen die Tiere langsam auf. Sie haben den ganzen Winter überlebt, wow!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+const FACTS = {
+  'Bär':     '🐻 Der Bär macht echten Winterschlaf — bis zu 6 Monate!',
+  'Igel':    '🦔 Der Igel kuschelt sich in einen Laubhaufen.',
+  'Hamster': '🐹 Der Hamster wacht alle paar Tage auf zum Essen.',
+  'Frosch':  '🐸 Der Frosch versteckt sich im Schlamm — fast eingefroren!'
+};
+function reveal(el, name) {
+  el.classList.add('revealed');
+  document.getElementById('winterInfo').textContent = FACTS[name];
+}
+</script>
+</body>
+</html>

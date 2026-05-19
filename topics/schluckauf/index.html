@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Was ist Schluckauf?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #e8f4ff 0%, #c6f0c6 60%, #aae4aa 100%); }
+  h1, h2 { color: #1b5e20; text-shadow: 2px 2px 0 #fff; }
+
+  .diaphragm-stage {
+    position: relative;
+    width: min(80vw, 360px);
+    height: 360px;
+    margin: 14px 0;
+  }
+  .diaphragm-svg { width: 100%; height: 100%; }
+  .diaphragm {
+    fill: #ff9aa2;
+    stroke: #c44569;
+    stroke-width: 3;
+    transition: transform 0.3s ease;
+    transform-origin: center;
+  }
+  .diaphragm.hic {
+    animation: hic-shake 0.3s ease-out;
+  }
+  @keyframes hic-shake {
+    0%   { transform: translateY(0) scaleY(1); }
+    30%  { transform: translateY(-25px) scaleY(0.85); }
+    50%  { transform: translateY(8px)  scaleY(1.1); }
+    100% { transform: translateY(0) scaleY(1); }
+  }
+  .hic-bubble {
+    position: absolute;
+    font-size: 50px;
+    font-weight: bold;
+    color: #d81b60;
+    background: rgba(255,255,255,0.9);
+    padding: 6px 18px;
+    border-radius: 24px;
+    animation: hic-bubble 1s ease-out forwards;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  @keyframes hic-bubble {
+    0%   { transform: scale(0) translateY(0); opacity: 0; }
+    30%  { transform: scale(1.2) translateY(-30px); opacity: 1; }
+    70%  { transform: scale(1) translateY(-60px); opacity: 1; }
+    100% { transform: scale(0.9) translateY(-120px); opacity: 0; }
+  }
+
+  .cause-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    max-width: 800px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .cause {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    animation: floaty 3.5s ease-in-out infinite;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .cause:nth-child(2) { animation-delay: 0.4s; }
+  .cause:nth-child(3) { animation-delay: 0.8s; }
+  .cause:nth-child(4) { animation-delay: 1.2s; }
+  .cause:hover { transform: scale(1.08) rotate(-3deg); }
+  .cause .icon { font-size: 50px; display: block; margin-bottom: 4px; }
+
+  .trick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    max-width: 800px;
+    width: 95vw;
+    margin: 10px 0;
+  }
+  .trick-btn {
+    background: linear-gradient(135deg, #55efc4, #00b894);
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 18px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 6px 0 #006a52;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
+  }
+  .trick-btn:hover { transform: translateY(-3px) scale(1.04); }
+  .trick-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #006a52; }
+  .trick-btn .icon { font-size: 36px; display: block; margin-bottom: 4px; }
+
+  .status-box {
+    background: rgba(255,255,255,0.9);
+    padding: 14px 26px;
+    border-radius: 20px;
+    font-weight: bold;
+    color: #c44569;
+    margin-top: 10px;
+    font-size: 22px;
+  }
+  .status-box.success { color: #00b894; background: rgba(85,239,196,0.3); }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">😅</div>
+    <h1>Hicks! Schluckauf!</h1>
+    <p>Plötzlich — HICKS! 🤭 — und es hört nicht auf!<br/>Was ist das eigentlich, der Schluckauf?</p>
+    <button class="green" onclick="engine.next()">Erzähl mir! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Dein Zwerchfell zuckt</h2>
+    <p>Unter deinen Lungen ist ein Muskel — das <b style="color:#1b5e20">Zwerchfell</b>.<br/>Beim Schluckauf zuckt es plötzlich — und du machst HICKS!</p>
+    <div class="diaphragm-stage">
+      <svg class="diaphragm-svg" viewBox="0 0 300 360">
+        <!-- Body outline -->
+        <path d="M 60 30 Q 60 0 100 0 L 200 0 Q 240 0 240 30 L 240 320 Q 240 350 200 350 L 100 350 Q 60 350 60 320 Z" fill="#ffd3b6" stroke="#a04040" stroke-width="3"/>
+        <!-- Lungs -->
+        <ellipse cx="120" cy="100" rx="32" ry="50" fill="#ff9aa2" stroke="#c44569" stroke-width="2"/>
+        <ellipse cx="180" cy="100" rx="32" ry="50" fill="#ff9aa2" stroke="#c44569" stroke-width="2"/>
+        <!-- Diaphragm (the muscle below lungs) -->
+        <path class="diaphragm" id="diaphragm" d="M 65 175 Q 150 200 235 175 L 235 195 Q 150 220 65 195 Z"/>
+        <text x="150" y="220" text-anchor="middle" font-size="16" fill="#c44569" font-weight="bold">Zwerchfell</text>
+        <!-- Stomach -->
+        <ellipse cx="150" cy="260" rx="60" ry="40" fill="#fdcb6e" stroke="#92560b" stroke-width="2"/>
+        <text x="150" y="265" text-anchor="middle" font-size="14" fill="#6a3a00">Magen</text>
+      </svg>
+    </div>
+    <button class="small secondary" onclick="hiccup()">▶️ Mach ein HICKS!</button>
+    <button class="green" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Wann kommt Schluckauf?</h2>
+    <p>Schluckauf kommt oft, wenn du:</p>
+    <div class="cause-grid">
+      <div class="cause"><span class="icon">🍽️</span><p>Zu schnell isst</p></div>
+      <div class="cause"><span class="icon">🥶</span><p>Was Kaltes trinkst</p></div>
+      <div class="cause"><span class="icon">😂</span><p>Viel gelacht hast</p></div>
+      <div class="cause"><span class="icon">😮</span><p>Erschrocken bist</p></div>
+    </div>
+    <p>Dein Zwerchfell ist dann <b>verwirrt</b> 😵 und zuckt komisch herum.</p>
+    <button class="green" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Trick-Box gegen Schluckauf!</h2>
+    <p>Probier diese Tricks — vielleicht hilft einer!</p>
+    <div class="trick-grid">
+      <button class="trick-btn" onclick="tryTrick('breath')"><span class="icon">😤</span>Luft anhalten</button>
+      <button class="trick-btn" onclick="tryTrick('water')"><span class="icon">💧</span>Wasser trinken</button>
+      <button class="trick-btn" onclick="tryTrick('scare')"><span class="icon">👻</span>BUH! erschrecken</button>
+      <button class="trick-btn" onclick="tryTrick('count')"><span class="icon">🔢</span>Rückwärts zählen</button>
+    </div>
+    <div class="status-box" id="statusBox">Drück einen Knopf und probier es!</div>
+    <button class="green" onclick="engine.next()" style="margin-top:10px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">😌</div>
+    <h2>Geduld hilft auch!</h2>
+    <p>Meistens hört Schluckauf von alleine wieder auf — nach ein paar Minuten.<br/>
+       Er tut nicht weh und ist ganz <b style="color:#00b894">harmlos</b>! 💚</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Plötzlich, hicks! Und es hört nicht auf! Was ist das eigentlich, der Schluckauf?",
+  "Unter deinen Lungen ist ein Muskel, das Zwerchfell. Beim Schluckauf zuckt es plötzlich und du machst hicks! Drück auf den Knopf und schau, wie es aussieht.",
+  "Schluckauf kommt oft, wenn du zu schnell isst, was Kaltes trinkst, viel gelacht hast, oder erschrocken bist. Dein Zwerchfell ist dann verwirrt und zuckt komisch herum.",
+  "Probier diese Tricks gegen Schluckauf: Luft anhalten, Wasser trinken, sich erschrecken lassen, oder rückwärts zählen. Vielleicht hilft einer!",
+  "Meistens hört Schluckauf von alleine wieder auf, nach ein paar Minuten. Er tut nicht weh und ist ganz harmlos!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+function hiccup() {
+  const d = document.getElementById('diaphragm');
+  d.classList.remove('hic');
+  void d.offsetWidth;
+  d.classList.add('hic');
+  const stage = document.querySelector('.diaphragm-stage');
+  const bubble = document.createElement('span');
+  bubble.className = 'hic-bubble';
+  bubble.textContent = 'HICKS!';
+  bubble.style.left = '50%';
+  bubble.style.top = '60px';
+  bubble.style.transform = 'translateX(-50%)';
+  stage.appendChild(bubble);
+  setTimeout(() => bubble.remove(), 1100);
+  // tiny sound
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.setValueAtTime(400, ctx.currentTime); o.frequency.exponentialRampToValueAtTime(120, ctx.currentTime+0.15);
+    g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.2);
+    o.start(); o.stop(ctx.currentTime+0.25);
+  } catch(e){}
+}
+
+const TRICK_MSGS = {
+  'breath': '😤 Luft anhalten... 1, 2, 3... Vielleicht klappt es!',
+  'water': '💧 Schluck-schluck! Wasser beruhigt das Zwerchfell.',
+  'scare': '👻 BUH! Ein kleiner Schreck stoppt manchmal das Zucken!',
+  'count': '🔢 10, 9, 8, 7... Dein Gehirn vergisst den Schluckauf!'
+};
+function tryTrick(t) {
+  const box = document.getElementById('statusBox');
+  box.textContent = TRICK_MSGS[t];
+  box.classList.remove('success');
+  setTimeout(() => {
+    if (Math.random() > 0.4) {
+      box.textContent = '🎉 Geschafft! Kein Schluckauf mehr!';
+      box.classList.add('success');
+    } else {
+      box.textContent = '🤭 Nochmal probieren — manchmal hilft ein anderer Trick!';
+    }
+  }, 1500);
+}
+</script>
+</body>
+</html>
