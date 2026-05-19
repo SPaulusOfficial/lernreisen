@@ -615,7 +615,7 @@ function stopSpeech() {
 function speak(audioKey, fallbackText) {
   if (!speechOn) return;
   stopSpeech();
-  audioEl.src = 'audio/' + audioKey + '.m4a';
+  audioEl.src = 'audio/' + audioKey + '.m4a?v=2';
   const p = audioEl.play();
   if (p && p.catch) {
     p.catch(() => speakBrowser(fallbackText));
