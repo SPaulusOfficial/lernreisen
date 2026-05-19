@@ -59,9 +59,12 @@ class TopicEngine {
   }
 
   _setupBootstrap() {
-    document.addEventListener('click', () => {
+    // First user gesture unlocks audio. Skip auto scene-0 if they click a
+    // navigation control (avoids double-playing scene 0 then scene 1).
+    document.addEventListener('click', (e) => {
       this._pickVoice();
-      if (this.speechOn && this.current === 0) this.speakCurrentScene();
+      const isNav = e.target.closest('button, a.home-btn, .sound-btn');
+      if (this.speechOn && this.current === 0 && !isNav) this.speakCurrentScene();
     }, { once: true });
   }
 
@@ -85,7 +88,8 @@ class TopicEngine {
   speak(audioKey, fallbackText) {
     if (!this.speechOn) return;
     this.stopSpeech();
-    this.audioEl.src = this.audioPath + '/' + audioKey + '.m4a';
+    // Cache-bust so refreshed audio files always replace old ones.
+    this.audioEl.src = this.audioPath + '/' + audioKey + '.m4a?v=2';
     const p = this.audioEl.play();
     if (p && p.catch) p.catch(() => this._speakBrowser(fallbackText));
   }

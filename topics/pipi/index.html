@@ -130,10 +130,21 @@
     <p>Das Pipi sammelt sich in einem kleinen Beutel: deiner <b style="color:#d2691e">Blase</b> 🎈.<br/>Klick auf das Glas und füll sie!</p>
     <div class="bladder-wrap" id="bladderWrap">
       <svg width="160" height="220" viewBox="0 0 160 220">
-        <ellipse cx="80" cy="150" rx="60" ry="55" fill="#fff5e0" stroke="#d2691e" stroke-width="4"/>
+        <defs>
+          <clipPath id="bladderClip">
+            <ellipse cx="80" cy="150" rx="56" ry="51"/>
+          </clipPath>
+          <linearGradient id="pipiGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#fdd84d"/>
+            <stop offset="1" stop-color="#f4a261"/>
+          </linearGradient>
+        </defs>
+        <!-- bladder shell -->
         <rect x="70" y="40" width="20" height="60" fill="#fff5e0" stroke="#d2691e" stroke-width="3"/>
+        <ellipse cx="80" cy="150" rx="60" ry="55" fill="#fff5e0" stroke="#d2691e" stroke-width="4"/>
+        <!-- fill that grows up from the bottom, clipped to the ellipse interior -->
+        <rect id="bladderFill" x="24" y="201" width="112" height="0" fill="url(#pipiGrad)" clip-path="url(#bladderClip)"/>
       </svg>
-      <div class="bladder-fill-bar" id="bladderFill" style="height:0;width:106px;border-radius:0 0 50px 50px;bottom:32px;"></div>
     </div>
     <div class="stats-row">
       <span class="stat">💧 Tropfen: <span id="dropCount">0</span></span>
@@ -177,7 +188,9 @@ function drinkWater() {
   const pct = Math.min(100, drops * 14);
   document.getElementById('bladderPct').textContent = String(pct);
   const fill = document.getElementById('bladderFill');
-  fill.style.height = Math.min(110, pct * 1.1) + 'px';
+  const h = pct * 1.02; // ellipse interior is ~102 SVG units tall
+  fill.setAttribute('height', String(h));
+  fill.setAttribute('y', String(201 - h));
   // Spawn drop animation
   const wrap = document.getElementById('bladderWrap');
   const d = document.createElement('span');

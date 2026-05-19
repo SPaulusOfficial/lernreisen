@@ -119,41 +119,12 @@
     0%, 100% { transform: translateX(-50%) translateY(0); }
     50%      { transform: translateX(-50%) translateY(3px); }
   }
-  .cycle-mountain {
-    animation: mountain-bob 6s ease-in-out infinite;
-  }
-  @keyframes mountain-bob {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-2px); }
-  }
-  .cycle-river {
-    overflow: hidden;
-  }
-  .cycle-river::after {
-    content: '';
+  .cycle-scenery {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: river-flow 1.6s linear infinite;
-  }
-  @keyframes river-flow {
-    0%   { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-  }
-  .cycle-mountain {
-    position: absolute;
-    bottom: 28%;
-    right: 5%;
-    font-size: 130px;
-  }
-  .cycle-river {
-    position: absolute;
-    bottom: 28%;
-    right: 6%;
-    width: 30px;
-    height: 80px;
-    background: linear-gradient(180deg, #b5e8ff, #74b9ff);
-    border-radius: 0 0 20px 20px;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
   .cycle-label {
     position: absolute;
@@ -336,8 +307,13 @@
     <div class="cycle-stage" id="cycle">
       <span class="cycle-sun" onclick="evaporate()" title="Klick für Verdunstung">☀️</span>
       <span class="cycle-cloud" id="cloud" onclick="rain()" title="Klick für Regen">☁️</span>
-      <span class="cycle-mountain">⛰️</span>
-      <div class="cycle-river"></div>
+      <svg class="cycle-scenery" viewBox="0 0 800 400" preserveAspectRatio="none" aria-hidden="true">
+        <!-- Mountain sitting on the water line (y=284, which is 71% of 400) -->
+        <polygon points="540,284 700,84 720,140 760,100 780,284" fill="#5a7a4a" stroke="#3a5a30" stroke-width="3"/>
+        <polygon points="640,180 700,84 730,170" fill="#fff" stroke="#cccccc" stroke-width="1.5"/>
+        <!-- Tiny waterfall trickling from the mountain to the sea -->
+        <path d="M 700 188 Q 696 220 702 250 Q 706 270 700 284" stroke="#b5e8ff" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </svg>
       <div class="cycle-label">🌊 Meer 🌊</div>
     </div>
     <div class="cycle-stats">
