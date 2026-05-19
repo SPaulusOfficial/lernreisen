@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Was ist Liebe?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffd6e8 0%, #ff9eb1 30%, #ff6b9d 70%, #d6336c 100%); }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #d6336c; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  /* Floating background hearts */
+  .floating-hearts {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .floating-hearts span {
+    position: absolute;
+    font-size: 30px;
+    animation: float-up 8s linear infinite;
+    opacity: 0.3;
+  }
+  @keyframes float-up {
+    0% { bottom: -50px; opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { bottom: 100vh; opacity: 0; }
+  }
+
+  /* Heart pulse */
+  .heart-big {
+    font-size: clamp(120px, 22vw, 200px);
+    line-height: 1;
+    animation: heart-beat 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px rgba(255,100,150,0.7));
+  }
+  @keyframes heart-beat {
+    0%, 100% { transform: scale(1); }
+    20% { transform: scale(1.15); }
+    40% { transform: scale(1); }
+    60% { transform: scale(1.1); }
+  }
+
+  /* Love categories */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    width: min(95vw, 900px);
+    margin: 14px 0;
+  }
+  .category {
+    background: rgba(255,255,255,0.85);
+    border-radius: 30px;
+    padding: 18px;
+    text-align: center;
+    color: #d6336c;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  .category .emoji { font-size: 64px; display: block; margin-bottom: 4px; }
+  .category h3 { color: #d6336c; font-size: 22px; margin-bottom: 4px; }
+  .category p { color: #5a5a5a; font-size: 15px; margin: 0; }
+
+  /* Show love ways */
+  .ways-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .way {
+    background: rgba(255,255,255,0.7);
+    border-radius: 24px;
+    padding: 18px 22px;
+    text-align: center;
+    color: #d6336c;
+    width: 180px;
+  }
+  .way .emoji { font-size: 60px; display: block; }
+  .way .label { font-weight: bold; font-size: 18px; margin: 4px 0; }
+  .way p { color: #5a5a5a; font-size: 14px; margin: 0; }
+
+  /* Love sender game */
+  .sender-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 380px;
+    border-radius: 30px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.2));
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    margin: 10px 0;
+  }
+  .target {
+    position: absolute;
+    font-size: 80px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    user-select: none;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  }
+  .target:hover { transform: scale(1.15) rotate(-5deg); }
+  .target.lit {
+    animation: heart-beat 0.8s ease-in-out 2;
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.9)) drop-shadow(0 0 60px rgba(255,200,200,0.6));
+  }
+  .target-label {
+    position: absolute;
+    font-size: 16px;
+    color: #d6336c;
+    font-weight: bold;
+    background: rgba(255,255,255,0.85);
+    padding: 4px 10px;
+    border-radius: 12px;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .sender-self {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 80px;
+    z-index: 3;
+  }
+  .heart-particle {
+    position: absolute;
+    font-size: 30px;
+    pointer-events: none;
+    animation: heart-fly 1.5s ease-out forwards;
+  }
+  @keyframes heart-fly {
+    0% { opacity: 1; transform: scale(0.5); }
+    20% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(0.8); }
+  }
+  .sender-stats {
+    background: rgba(255,255,255,0.85);
+    border-radius: 18px;
+    padding: 8px 22px;
+    color: #d6336c;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 6px;
+  }
+  .achievement {
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #5a3a00;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 8px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .achievement.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Closing */
+  .you-loved {
+    background: rgba(255,255,255,0.92);
+    color: #d6336c;
+    padding: 30px 40px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    max-width: 700px;
+  }
+  .you-loved h2 { color: #d6336c; }
+  .you-loved p { color: #2a2a4a; font-size: 22px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <div class="floating-hearts" id="bgHearts"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="heart-big">❤️</div>
+    <h1>Was ist Liebe?</h1>
+    <p style="font-size:24px;">Manchmal fühlst du etwas Warmes in deiner Brust.<br/>
+       Wenn Mama dich kuschelt, wenn dein Hund dich anschaut, wenn du lachst...<br/>
+       Das ist <b style="color:#fff8c8">Liebe</b>!</p>
+    <button class="purple" onclick="engine.next()">Komm mit ins Herz! ❤️</button>
+  </section>
+
+  <!-- Scene 1: Liebe ist ein Gefühl -->
+  <section class="scene" data-scene="1">
+    <h2>Liebe ist ein Gefühl</h2>
+    <p>Du kannst Liebe nicht sehen — aber du kannst sie <b>fühlen</b>.<br/>
+       Wie ein warmes Sonnenstrahl in deinem Herzen ☀️</p>
+    <div style="display:flex;align-items:center;gap:30px;flex-wrap:wrap;justify-content:center;margin:20px 0;">
+      <span style="font-size:80px;">😊</span>
+      <span style="font-size:60px;">➕</span>
+      <span style="font-size:80px;" class="heart-big" style="font-size:80px;">❤️</span>
+      <span style="font-size:60px;">➡️</span>
+      <span style="font-size:80px;">🤗</span>
+    </div>
+    <p style="font-size:20px;">Liebe macht uns <b style="color:#fff8c8">glücklich</b>, <b style="color:#fff8c8">mutig</b> und <b style="color:#fff8c8">stark</b>.</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Wen kann man lieben -->
+  <section class="scene" data-scene="2">
+    <h2>Wen kannst du lieben?</h2>
+    <p>Liebe ist überall — und es gibt ganz viele Arten:</p>
+    <div class="category-grid">
+      <div class="category">
+        <span class="emoji">👨‍👩‍👧</span>
+        <h3>Familie</h3>
+        <p>Mama, Papa, Geschwister, Oma, Opa</p>
+      </div>
+      <div class="category">
+        <span class="emoji">👯‍♀️</span>
+        <h3>Freunde</h3>
+        <p>Mit denen du gerne spielst</p>
+      </div>
+      <div class="category">
+        <span class="emoji">🐕</span>
+        <h3>Tiere</h3>
+        <p>Haustiere, Tiere im Wald</p>
+      </div>
+      <div class="category">
+        <span class="emoji">🪞</span>
+        <h3>Dich selbst</h3>
+        <p>Ja! Auch sich selbst lieb haben ist wichtig.</p>
+      </div>
+      <div class="category">
+        <span class="emoji">🌍</span>
+        <h3>Die Natur</h3>
+        <p>Bäume, Blumen, das Meer</p>
+      </div>
+      <div class="category">
+        <span class="emoji">🎨</span>
+        <h3>Dinge, die du gerne magst</h3>
+        <p>Malen, Tanzen, Bücher, dein Kuscheltier</p>
+      </div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Wie zeigt man Liebe -->
+  <section class="scene" data-scene="3">
+    <h2>Wie zeigst du Liebe?</h2>
+    <p>Liebe muss man zeigen, nicht nur fühlen!</p>
+    <div class="ways-row">
+      <div class="way"><span class="emoji">🤗</span><div class="label">Kuscheln</div><p>Eine feste Umarmung</p></div>
+      <div class="way"><span class="emoji">💬</span><div class="label">Nett reden</div><p>"Ich hab dich lieb!"</p></div>
+      <div class="way"><span class="emoji">🤝</span><div class="label">Helfen</div><p>Wenn jemand traurig ist</p></div>
+      <div class="way"><span class="emoji">🎁</span><div class="label">Schenken</div><p>Selbst gemalte Bilder z.B.</p></div>
+      <div class="way"><span class="emoji">⏰</span><div class="label">Zeit</div><p>Zusammen sein und spielen</p></div>
+      <div class="way"><span class="emoji">👂</span><div class="label">Zuhören</div><p>Wenn jemand erzählt</p></div>
+    </div>
+    <button class="purple" onclick="engine.next()">Jetzt Liebe senden! 💕</button>
+  </section>
+
+  <!-- Scene 4: Send love game -->
+  <section class="scene" data-scene="4">
+    <h2>Sende Liebe! 💕</h2>
+    <p>Tippe auf die Bilder und sende Herzen!</p>
+    <div class="sender-stage" id="senderStage">
+      <span class="target" data-name="Mama" style="top:30px;left:15%;">👩</span>
+      <span class="target-label" style="top:118px;left:calc(15% + 40px);">Mama</span>
+      <span class="target" data-name="Papa" style="top:30px;right:15%;">👨</span>
+      <span class="target-label" style="top:118px;right:calc(15% + 40px);">Papa</span>
+      <span class="target" data-name="Freund" style="top:130px;left:8%;">👧</span>
+      <span class="target-label" style="top:220px;left:calc(8% + 40px);">Freund</span>
+      <span class="target" data-name="Haustier" style="top:130px;right:8%;">🐶</span>
+      <span class="target-label" style="top:220px;right:calc(8% + 40px);">Haustier</span>
+      <span class="target" data-name="Oma" style="top:40px;left:50%;transform:translateX(-50%);">👵</span>
+      <span class="target-label" style="top:128px;left:50%;">Oma</span>
+      <span class="target" data-name="Natur" style="top:130px;left:50%;transform:translateX(-50%);">🌳</span>
+      <span class="target-label" style="top:220px;left:50%;">Natur</span>
+      <span class="sender-self">🧒</span>
+    </div>
+    <div class="sender-stats">💕 Herzen gesendet: <span id="heartCount">0</span></div>
+    <div class="achievement" id="achievement">🌟 Du verteilst SO viel Liebe! Wow!</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:14px;">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: You are loved -->
+  <section class="scene" data-scene="5">
+    <div class="you-loved">
+      <div style="font-size:80px;" class="heart-big">💝</div>
+      <h2>Du bist geliebt</h2>
+      <p>
+        Egal, was passiert — ganz viele Menschen lieben dich.<br/>
+        Deine Familie. Deine Freunde. Manchmal auch Menschen, die du noch nicht kennst.<br/><br/>
+        Und du selbst <b style="color:#d6336c">darfst dich auch lieben</b>.<br/>
+        Du bist wundervoll, genau so wie du bist! ✨
+      </p>
+    </div>
+    <button class="green" onclick="engine.goTo(0)" style="margin-top:14px;">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Manchmal fühlst du etwas Warmes in deiner Brust. Wenn Mama dich kuschelt, wenn dein Hund dich anschaut, wenn du lachst. Das ist Liebe!",
+  "Du kannst Liebe nicht sehen, aber du kannst sie fühlen. Wie ein warmer Sonnenstrahl in deinem Herzen. Liebe macht uns glücklich, mutig und stark.",
+  "Wen kannst du lieben? Liebe ist überall! Deine Familie, deine Freunde, Tiere, die Natur, und sogar dich selbst! Ja, sich selbst lieb zu haben ist auch wichtig.",
+  "Liebe muss man zeigen, nicht nur fühlen! Du kannst kuscheln, nett reden, helfen, schenken, Zeit verbringen oder einfach gut zuhören.",
+  "Jetzt darfst du Liebe senden! Tippe auf die Bilder von Mama, Papa, deinen Freunden, deinem Haustier, der Oma oder einem Baum. Und schau, wie deine Liebe sie erreicht!",
+  "Egal was passiert, ganz viele Menschen lieben dich. Deine Familie, deine Freunde, und manchmal auch Menschen, die du noch nicht kennst. Und du selbst darfst dich auch lieben! Du bist wundervoll, genau so wie du bist!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS
+});
+
+// Floating bg hearts
+const bg = document.getElementById('bgHearts');
+const heartEmojis = ['💕','💗','💖','💝','❤️','💛','💚','💙','💜'];
+for (let i = 0; i < 15; i++) {
+  const s = document.createElement('span');
+  s.textContent = heartEmojis[i%heartEmojis.length];
+  s.style.left = (Math.random()*100) + '%';
+  s.style.animationDelay = (Math.random()*8) + 's';
+  s.style.animationDuration = (6 + Math.random()*4) + 's';
+  bg.appendChild(s);
+}
+
+// Love sender game
+let heartCount = 0;
+const stage = document.getElementById('senderStage');
+const targets = stage.querySelectorAll('.target');
+const sentSet = new Set();
+
+targets.forEach(target => {
+  target.addEventListener('click', () => {
+    const rect = target.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    const sx = stage.offsetWidth/2;
+    const sy = stage.offsetHeight - 60;
+    const tx = (rect.left + rect.width/2) - stageRect.left;
+    const ty = (rect.top + rect.height/2) - stageRect.top;
+    // Emit several hearts from self to target
+    for (let i = 0; i < 5; i++) {
+      const h = document.createElement('span');
+      h.className = 'heart-particle';
+      h.textContent = heartEmojis[Math.floor(Math.random()*heartEmojis.length)];
+      h.style.left = sx + 'px';
+      h.style.top = sy + 'px';
+      h.style.animationDelay = (i * 0.08) + 's';
+      h.style.animationDuration = '1.2s';
+      stage.appendChild(h);
+      const dx = tx - sx + (Math.random()-0.5)*30;
+      const dy = ty - sy + (Math.random()-0.5)*20;
+      // Custom animation via keyframes injection
+      h.animate([
+        { transform: 'translate(0,0) scale(0.5)', opacity: 0 },
+        { transform: `translate(${dx*0.3}px,${dy*0.3 - 30}px) scale(1.3)`, opacity: 1, offset: 0.3 },
+        { transform: `translate(${dx}px,${dy}px) scale(0.8)`, opacity: 0 }
+      ], { duration: 1200, easing: 'ease-out', fill: 'forwards', delay: i*80 });
+      setTimeout(() => h.remove(), 1500 + i*80);
+    }
+    target.classList.add('lit');
+    setTimeout(() => target.classList.remove('lit'), 1500);
+    heartCount += 5;
+    sentSet.add(target.dataset.name);
+    document.getElementById('heartCount').textContent = String(heartCount);
+    if (sentSet.size >= targets.length || heartCount >= 30) {
+      document.getElementById('achievement').classList.add('show');
+    }
+  });
+});
+</script>
+</body>
+</html>

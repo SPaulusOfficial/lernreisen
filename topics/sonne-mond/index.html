@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum geht die Sonne auf?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #1a1a4e 0%, #2c3e7a 30%, #ff7e5f 70%, #feb47b 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #1a1a4e; }
+  p { color: #fff8e1; }
+  .scene { background: transparent; }
+
+  /* Compass on horizon */
+  .compass-host {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 300px;
+    margin: 14px 0;
+    background: linear-gradient(180deg, #87ceeb 0%, #ffd3a0 80%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .compass-ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, #7ec850 0%, #4a8030 100%);
+  }
+  .compass-house {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 70px;
+  }
+  .compass-dir {
+    position: absolute;
+    bottom: 100px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 0 #6a3a00;
+    background: rgba(0,0,0,0.3);
+    padding: 6px 18px;
+    border-radius: 18px;
+  }
+  .east-label { left: 20px; }
+  .west-label { right: 20px; }
+  .sun-rise-anim {
+    position: absolute;
+    left: 8%;
+    bottom: 60px;
+    font-size: 60px;
+    animation: sun-arc 6s linear infinite;
+    filter: drop-shadow(0 0 20px rgba(255,200,80,0.6));
+  }
+  @keyframes sun-arc {
+    0% { left: 5%; bottom: 60px; opacity: 0; }
+    10% { opacity: 1; }
+    50% { left: 50%; bottom: 220px; opacity: 1; }
+    90% { opacity: 1; }
+    100% { left: 95%; bottom: 60px; opacity: 0; }
+  }
+
+  /* Sun day path */
+  .day-host {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 280px;
+    margin: 14px 0;
+  }
+  .day-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #74b9ff 0%, #a8e6ff 80%, #7ec850 80%, #4a8030 100%);
+    border-radius: 24px;
+  }
+  .day-house {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 60px;
+  }
+  .sun-slider-host {
+    position: absolute;
+    top: 10%;
+    width: 100%;
+    height: 80%;
+  }
+  .sun-moving {
+    position: absolute;
+    font-size: 56px;
+    filter: drop-shadow(0 0 20px rgba(255,200,80,0.5));
+    transition: left 0.4s, top 0.4s;
+  }
+  .time-stamps {
+    position: absolute;
+    bottom: 4px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #074a87;
+    font-size: 14px;
+  }
+  .day-slider {
+    width: min(95vw, 800px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.18);
+    padding: 12px 20px;
+    border-radius: 24px;
+    margin-top: 6px;
+  }
+  .day-slider input { flex: 1; height: 12px; }
+  .day-slider .icon { font-size: 26px; }
+  .time-label {
+    background: rgba(255,255,255,0.25);
+    padding: 6px 14px;
+    border-radius: 14px;
+    color: #fff;
+    font-weight: bold;
+    min-width: 110px;
+    text-align: center;
+  }
+
+  /* Moon phases */
+  .moon-carousel {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 14px 0;
+  }
+  .moon-big {
+    font-size: 180px;
+    line-height: 1;
+    filter: drop-shadow(0 0 40px rgba(220,220,255,0.5));
+    transition: transform 0.3s;
+  }
+  .moon-big.flip { transform: scale(1.1); }
+  .phase-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 28px;
+    padding: 0;
+  }
+  .phase-info {
+    background: rgba(255,255,255,0.2);
+    padding: 14px 24px;
+    border-radius: 20px;
+    color: #fff;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    min-width: 320px;
+  }
+  .phase-info h3 { color: #fff8c8; font-size: 26px; margin-bottom: 4px; }
+  .phase-strip {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 12px 0;
+  }
+  .phase-strip .pdot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .phase-strip .pdot.active {
+    background: #ffd700;
+    transform: scale(1.4);
+  }
+
+  /* Recap */
+  .recap-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 18px 0;
+  }
+  .recap-card {
+    background: rgba(255,255,255,0.18);
+    border-radius: 24px;
+    padding: 18px;
+    width: 240px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+  }
+  .recap-card .icon { font-size: 60px; display: block; }
+  .recap-card .label { font-weight: bold; font-size: 18px; margin: 4px 0; color: #fff8c8; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌅🌙</div>
+    <h1>Sonne auf, Mond auf!</h1>
+    <p>Morgens kommt die Sonne hoch. Abends geht sie weg. Und der Mond?<br/>
+       Warum machen die das? Heute lösen wir das Rätsel!</p>
+    <button class="orange" onclick="engine.next()">Los geht's! 🌟</button>
+  </section>
+
+  <!-- Scene 1: Sonne kommt von Osten -->
+  <section class="scene" data-scene="1">
+    <h2>Im Osten geht sie auf</h2>
+    <p>Stell dich vor dein Haus und schau morgens raus.<br/>
+       Die Sonne kommt immer von der gleichen Seite: <b style="color:#ffd700">Osten</b>!</p>
+    <div class="compass-host">
+      <span class="compass-dir east-label">⬅️ Osten</span>
+      <span class="compass-dir west-label">Westen ➡️</span>
+      <span class="sun-rise-anim">☀️</span>
+      <div class="compass-ground"></div>
+      <span class="compass-house">🏠</span>
+    </div>
+    <p>Und am Abend geht sie auf der anderen Seite unter — im <b style="color:#ff7e5f">Westen</b>.</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Day path interactive -->
+  <section class="scene" data-scene="2">
+    <h2>Die Sonne wandert</h2>
+    <p>Schieb den Knopf und sieh, wie die Sonne über den Himmel zieht:</p>
+    <div class="day-host">
+      <div class="day-bg"></div>
+      <div class="sun-slider-host">
+        <span class="sun-moving" id="daySun">☀️</span>
+      </div>
+      <span class="day-house">🏡</span>
+      <div class="time-stamps">
+        <span>🌅 Morgen<br/>Osten</span>
+        <span>☀️ Mittag<br/>Oben</span>
+        <span>🌇 Abend<br/>Westen</span>
+      </div>
+    </div>
+    <div class="day-slider">
+      <span class="icon">🌅</span>
+      <input type="range" id="daySlider" min="0" max="100" value="0"/>
+      <span class="icon">🌇</span>
+      <span class="time-label" id="dayLabel">Morgen</span>
+    </div>
+    <p style="font-size:18px;max-width:800px;">Eigentlich bewegt sich die Sonne <b>gar nicht</b>!<br/>
+       Sie steht still — die <b style="color:#ffd700">Erde dreht sich</b>, und darum sehen wir sie wandern.</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Moon also rises -->
+  <section class="scene" data-scene="3">
+    <h2>Der Mond auch! 🌙</h2>
+    <p>Auch der Mond geht auf und unter — meistens in der Nacht.<br/>
+       Aber Achtung: Der Mond bewegt sich anders als die Sonne.</p>
+    <div class="recap-row">
+      <div class="recap-card">
+        <span class="icon">☀️</span>
+        <div class="label">Die Sonne</div>
+        <p style="margin:0">Steht still in der Mitte. Wir Erde drehen uns um sie!</p>
+      </div>
+      <div class="recap-card">
+        <span class="icon">🌍</span>
+        <div class="label">Die Erde</div>
+        <p style="margin:0">Dreht sich um sich selbst (Tag/Nacht) <br/>und um die Sonne!</p>
+      </div>
+      <div class="recap-card">
+        <span class="icon">🌙</span>
+        <div class="label">Der Mond</div>
+        <p style="margin:0">Fliegt um die Erde herum. Etwa einmal in 28 Tagen!</p>
+      </div>
+    </div>
+    <button class="orange" onclick="engine.next()">Mondphasen anschauen! 🌑→🌕</button>
+  </section>
+
+  <!-- Scene 4: Moon phases interactive -->
+  <section class="scene" data-scene="4">
+    <h2>Die Mondphasen</h2>
+    <p>Der Mond sieht jede Nacht ein bisschen anders aus — klicke dich durch!</p>
+    <div class="moon-carousel">
+      <button class="phase-btn purple" onclick="prevPhase()">⬅️</button>
+      <div class="moon-big" id="moonBig">🌕</div>
+      <button class="phase-btn purple" onclick="nextPhase()">➡️</button>
+    </div>
+    <div class="phase-strip" id="phaseStrip"></div>
+    <div class="phase-info">
+      <h3 id="phaseName">Vollmond</h3>
+      <p id="phaseDesc" style="margin:0">Der Mond ist eine schöne, runde Scheibe am Himmel!</p>
+    </div>
+    <p style="font-size:16px;max-width:700px;margin-top:12px;opacity:0.9;">
+      Warum sieht der Mond verschieden aus? Die Sonne beleuchtet ihn nur von einer Seite —<br/>
+      und je nachdem, wo der Mond gerade ist, sehen wir mehr oder weniger davon!
+    </p>
+    <button class="orange" onclick="engine.next()" style="margin-top:10px">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Recap -->
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">☀️🌙</div>
+    <h2>Du kennst jetzt das Geheimnis</h2>
+    <p style="font-size:22px;line-height:1.5;">
+      ✨ Die Sonne <b>steht still</b>.<br/>
+      🌍 Die <b>Erde dreht sich</b> — darum geht die Sonne auf und unter.<br/>
+      🌙 Der Mond <b>kreist um die Erde</b> — und sieht jeden Tag ein bisschen anders aus.<br/>
+      🌅 Sonne immer von <b>Osten</b> hoch, nach <b>Westen</b> runter.
+    </p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Morgens kommt die Sonne hoch. Abends geht sie weg. Und der Mond? Warum machen die das? Heute lösen wir das Rätsel!",
+  "Stell dich vor dein Haus und schau morgens raus. Die Sonne kommt immer von der gleichen Seite. Im Osten! Und am Abend geht sie auf der anderen Seite unter, im Westen.",
+  "Schieb den Knopf und sieh, wie die Sonne über den Himmel zieht. Morgens kommt sie hoch, mittags steht sie ganz oben, abends geht sie unter. Aber: Eigentlich bewegt sich die Sonne gar nicht! Sie steht still. Die Erde dreht sich, und darum sehen wir sie wandern.",
+  "Auch der Mond geht auf und unter, meistens in der Nacht. Aber der Mond bewegt sich anders als die Sonne. Die Sonne steht still. Die Erde dreht sich um sich selbst und um die Sonne. Und der Mond fliegt um die Erde herum, etwa einmal in achtundzwanzig Tagen.",
+  "Der Mond sieht jede Nacht ein bisschen anders aus. Klicke dich durch die Mondphasen! Warum? Die Sonne beleuchtet den Mond nur von einer Seite. Je nachdem, wo der Mond gerade ist, sehen wir mehr oder weniger davon.",
+  "Du kennst jetzt das Geheimnis! Die Sonne steht still. Die Erde dreht sich, darum geht die Sonne auf und unter. Der Mond kreist um die Erde und sieht jeden Tag ein bisschen anders aus. Sonne immer von Osten hoch, nach Westen runter!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: (idx) => { if (idx === 2) updateDaySun(); if (idx === 4) initPhases(); }
+});
+
+// Day sun slider
+const daySlider = document.getElementById('daySlider');
+const daySun = document.getElementById('daySun');
+const dayLabel = document.getElementById('dayLabel');
+
+function updateDaySun() {
+  const v = parseFloat(daySlider.value) / 100;
+  const arcAngle = v * Math.PI; // 0 → π
+  const x = (v) * 100; // percent
+  const y = 95 - Math.sin(arcAngle) * 80; // percent from top inverted
+  daySun.style.left = `calc(${x}% - 28px)`;
+  daySun.style.top = `${Math.max(0, y - 30)}%`;
+  let label;
+  if (v < 0.2) label = '🌅 Morgen';
+  else if (v < 0.45) label = '☀️ Vormittag';
+  else if (v < 0.55) label = '🌞 Mittag';
+  else if (v < 0.8) label = '🌆 Nachmittag';
+  else label = '🌇 Abend';
+  dayLabel.textContent = label;
+}
+daySlider.addEventListener('input', updateDaySun);
+
+// Moon phases
+const PHASES = [
+  { emoji: '🌑', name: 'Neumond',                desc: 'Der Mond ist ganz dunkel — wir sehen ihn fast nicht!' },
+  { emoji: '🌒', name: 'Zunehmender Sichelmond', desc: 'Ein kleiner Streifen leuchtet auf — der Mond wird größer!' },
+  { emoji: '🌓', name: 'Zunehmender Halbmond',   desc: 'Genau die Hälfte leuchtet — wie eine halbe Scheibe.' },
+  { emoji: '🌔', name: 'Fast voll',              desc: 'Der Mond ist fast ganz hell. Schon bald ist er rund!' },
+  { emoji: '🌕', name: 'Vollmond',               desc: 'Der Mond ist eine schöne, runde Scheibe am Himmel!' },
+  { emoji: '🌖', name: 'Schon kleiner',          desc: 'Der Mond wird wieder kleiner — etwas Schatten kommt zurück.' },
+  { emoji: '🌗', name: 'Abnehmender Halbmond',   desc: 'Wieder eine Hälfte — aber die andere als beim Zunehmen!' },
+  { emoji: '🌘', name: 'Abnehmender Sichelmond', desc: 'Nur noch ein winziger Streifen — bald ist Neumond.' }
+];
+
+let phaseIdx = 4;
+function initPhases() {
+  const strip = document.getElementById('phaseStrip');
+  strip.innerHTML = '';
+  PHASES.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'pdot' + (i === phaseIdx ? ' active' : '');
+    d.onclick = () => { phaseIdx = i; renderPhase(); };
+    strip.appendChild(d);
+  });
+  renderPhase();
+}
+function renderPhase() {
+  const p = PHASES[phaseIdx];
+  const m = document.getElementById('moonBig');
+  m.classList.remove('flip');
+  void m.offsetWidth;
+  m.classList.add('flip');
+  m.textContent = p.emoji;
+  document.getElementById('phaseName').textContent = p.name;
+  document.getElementById('phaseDesc').textContent = p.desc;
+  document.querySelectorAll('.pdot').forEach((d, i) => d.classList.toggle('active', i === phaseIdx));
+}
+function nextPhase() { phaseIdx = (phaseIdx + 1) % PHASES.length; renderPhase(); }
+function prevPhase() { phaseIdx = (phaseIdx - 1 + PHASES.length) % PHASES.length; renderPhase(); }
+</script>
+</body>
+</html>

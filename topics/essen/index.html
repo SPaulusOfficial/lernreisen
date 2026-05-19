@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Woher kommt unser Essen?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff8dc 0%, #ffe5b4 40%, #ffb88c 100%); }
+  h1, h2 { color: #6a3a00; text-shadow: 2px 2px 0 #fff; }
+
+  /* Plate items */
+  .plate-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    width: min(95vw, 900px);
+    margin: 14px 0;
+  }
+  .food-item {
+    background: rgba(255,255,255,0.8);
+    border-radius: 20px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .food-item .emoji { font-size: 50px; display: block; margin-bottom: 4px; }
+  .food-item .label { font-weight: bold; color: #6a3a00; font-size: 16px; }
+  .food-item .source { font-size: 13px; color: #888; }
+
+  /* Field illustration */
+  .field-svg {
+    width: min(95vw, 700px);
+    height: auto;
+    background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 50%, #7ec850 50%, #4a8030 100%);
+    border-radius: 24px;
+    padding: 14px;
+  }
+
+  /* Wheat to bread journey */
+  .journey-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .journey-step {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 14px 18px;
+    text-align: center;
+    width: 130px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+  .journey-step .emoji { font-size: 56px; display: block; }
+  .journey-step .label { font-weight: bold; color: #6a3a00; font-size: 16px; }
+  .journey-arrow { font-size: 30px; color: #d2691e; }
+
+  /* Builder game */
+  .builder {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+    margin: 14px 0;
+  }
+  .palette {
+    background: rgba(255,255,255,0.7);
+    border-radius: 24px;
+    padding: 18px;
+    width: 340px;
+  }
+  .palette h3 { color: #6a3a00; margin-bottom: 10px; text-align: center; }
+  .palette-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .palette-item {
+    background: rgba(255,255,255,0.8);
+    border: 3px solid transparent;
+    border-radius: 16px;
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .palette-item:hover { transform: scale(1.08); border-color: #d2691e; }
+  .palette-item:active { transform: scale(0.92); }
+  .palette-item .emoji { font-size: 38px; display: block; }
+  .palette-item .label { font-size: 12px; color: #6a3a00; font-weight: bold; }
+
+  .plate-stage {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle at center, #fff 50%, #e8e8e8 70%, transparent 71%);
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15), inset 0 0 0 15px #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .plate-content {
+    position: relative;
+    width: 80%;
+    height: 80%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+  }
+  .plate-content .pi {
+    font-size: 46px;
+    animation: drop-in 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes drop-in {
+    0% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+    70% { transform: translateY(10px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .plate-empty {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+  }
+  .plate-controls {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .plate-counter {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 18px;
+    border-radius: 14px;
+    font-weight: bold;
+    color: #6a3a00;
+    margin-top: 8px;
+  }
+
+  /* Thanks scene */
+  .thanks-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .thank-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 18px;
+    width: 180px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .thank-card .emoji { font-size: 60px; display: block; }
+  .thank-card .label { font-weight: bold; color: #6a3a00; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🍞🍎</div>
+    <h1>Woher kommt unser Essen?</h1>
+    <p>Wenn du an deinem Tisch sitzt — woher kommt eigentlich dein Frühstück?<br/>
+       Die Wurst war nicht immer Wurst. Das Brot war nicht immer Brot. Komm mit!</p>
+    <button class="orange" onclick="engine.next()">Los geht's! 🌾</button>
+  </section>
+
+  <!-- Scene 1: Was ist auf deinem Teller -->
+  <section class="scene" data-scene="1">
+    <h2>Schau dir dein Essen an</h2>
+    <p>Wenn du an einen normalen Tag denkst — was hast du heute gegessen?</p>
+    <div class="plate-items">
+      <div class="food-item"><span class="emoji">🍞</span><div class="label">Brot</div><div class="source">Vom Feld</div></div>
+      <div class="food-item"><span class="emoji">🍎</span><div class="label">Apfel</div><div class="source">Vom Baum</div></div>
+      <div class="food-item"><span class="emoji">🥕</span><div class="label">Karotte</div><div class="source">Aus der Erde</div></div>
+      <div class="food-item"><span class="emoji">🥛</span><div class="label">Milch</div><div class="source">Von der Kuh</div></div>
+      <div class="food-item"><span class="emoji">🥚</span><div class="label">Ei</div><div class="source">Vom Huhn</div></div>
+      <div class="food-item"><span class="emoji">🧀</span><div class="label">Käse</div><div class="source">Aus Milch</div></div>
+      <div class="food-item"><span class="emoji">🍯</span><div class="label">Honig</div><div class="source">Von der Biene</div></div>
+      <div class="food-item"><span class="emoji">🐟</span><div class="label">Fisch</div><div class="source">Aus dem Wasser</div></div>
+    </div>
+    <p>Alles kommt aus der <b style="color:#1b5e20">Natur</b> — von Pflanzen oder Tieren!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Vom Feld zum Teller -->
+  <section class="scene" data-scene="2">
+    <h2>Vom Feld zum Teller</h2>
+    <p>Wie wird zum Beispiel aus einem Samen ein Brot? Schau:</p>
+    <div class="journey-row">
+      <div class="journey-step"><span class="emoji">🌾</span><div class="label">Weizen wächst</div></div>
+      <span class="journey-arrow">➡️</span>
+      <div class="journey-step"><span class="emoji">🚜</span><div class="label">Bauer erntet</div></div>
+      <span class="journey-arrow">➡️</span>
+      <div class="journey-step"><span class="emoji">⚙️</span><div class="label">Wird zu Mehl</div></div>
+      <span class="journey-arrow">➡️</span>
+      <div class="journey-step"><span class="emoji">🥖</span><div class="label">Bäcker backt</div></div>
+      <span class="journey-arrow">➡️</span>
+      <div class="journey-step"><span class="emoji">🛒</span><div class="label">Im Laden</div></div>
+      <span class="journey-arrow">➡️</span>
+      <div class="journey-step"><span class="emoji">🍞</span><div class="label">Dein Tisch!</div></div>
+    </div>
+    <p style="font-size:18px;max-width:800px;">Das dauert <b>viele Monate</b> — und ganz viele Menschen helfen mit!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Tiere geben uns Essen -->
+  <section class="scene" data-scene="3">
+    <h2>Tiere geben uns auch Essen</h2>
+    <p>Tiere auf dem Bauernhof geben uns viele Sachen:</p>
+    <div class="plate-items">
+      <div class="food-item"><span class="emoji">🐄</span><div class="label">Kuh</div><div class="source">Milch, Käse, Joghurt</div></div>
+      <div class="food-item"><span class="emoji">🐔</span><div class="label">Huhn</div><div class="source">Eier</div></div>
+      <div class="food-item"><span class="emoji">🐝</span><div class="label">Bienen</div><div class="source">Honig</div></div>
+      <div class="food-item"><span class="emoji">🐟</span><div class="label">Fische</div><div class="source">Aus dem Meer</div></div>
+    </div>
+    <p>Den Tieren muss es gut gehen — sie sind unsere Freunde, die uns helfen 💚</p>
+    <button class="orange" onclick="engine.next()">Bau dein eigenes Frühstück! 🍳</button>
+  </section>
+
+  <!-- Scene 4: Build a meal -->
+  <section class="scene" data-scene="4">
+    <h2>Dein Lieblingsfrühstück</h2>
+    <p style="font-size:18px;">Klick auf die Zutaten und stell dir ein Frühstück zusammen!</p>
+    <div class="builder">
+      <div class="palette">
+        <h3>🌾 Vom Feld</h3>
+        <div class="palette-grid">
+          <div class="palette-item" data-emoji="🍞" data-name="Brot"><span class="emoji">🍞</span><div class="label">Brot</div></div>
+          <div class="palette-item" data-emoji="🥖" data-name="Baguette"><span class="emoji">🥖</span><div class="label">Baguette</div></div>
+          <div class="palette-item" data-emoji="🥨" data-name="Brezel"><span class="emoji">🥨</span><div class="label">Brezel</div></div>
+          <div class="palette-item" data-emoji="🥐" data-name="Croissant"><span class="emoji">🥐</span><div class="label">Croissant</div></div>
+          <div class="palette-item" data-emoji="🍎" data-name="Apfel"><span class="emoji">🍎</span><div class="label">Apfel</div></div>
+          <div class="palette-item" data-emoji="🍌" data-name="Banane"><span class="emoji">🍌</span><div class="label">Banane</div></div>
+          <div class="palette-item" data-emoji="🍓" data-name="Erdbeere"><span class="emoji">🍓</span><div class="label">Erdbeere</div></div>
+          <div class="palette-item" data-emoji="🥝" data-name="Kiwi"><span class="emoji">🥝</span><div class="label">Kiwi</div></div>
+          <div class="palette-item" data-emoji="🥒" data-name="Gurke"><span class="emoji">🥒</span><div class="label">Gurke</div></div>
+        </div>
+        <h3 style="margin-top:14px;">🐄 Von Tieren</h3>
+        <div class="palette-grid">
+          <div class="palette-item" data-emoji="🧀" data-name="Käse"><span class="emoji">🧀</span><div class="label">Käse</div></div>
+          <div class="palette-item" data-emoji="🥚" data-name="Ei"><span class="emoji">🥚</span><div class="label">Ei</div></div>
+          <div class="palette-item" data-emoji="🥛" data-name="Milch"><span class="emoji">🥛</span><div class="label">Milch</div></div>
+          <div class="palette-item" data-emoji="🍯" data-name="Honig"><span class="emoji">🍯</span><div class="label">Honig</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="plate-stage">
+          <div class="plate-content" id="plateContent">
+            <span class="plate-empty">Tippe auf Zutaten →</span>
+          </div>
+        </div>
+        <div class="plate-counter">🍽️ Zutaten: <span id="plateCount">0</span></div>
+        <div class="plate-controls">
+          <button class="small secondary" onclick="clearPlate()">🧽 Teller leeren</button>
+          <button class="green small" onclick="engine.next()" id="essenNext" style="display:none">Weiter ➡️</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 5: Thanks -->
+  <section class="scene" data-scene="5">
+    <h2>Danke an alle, die unser Essen machen 🙏</h2>
+    <p>Jedes Stück Brot, jeder Apfel, jedes Glas Milch — viele Menschen haben geholfen:</p>
+    <div class="thanks-row">
+      <div class="thank-card"><span class="emoji">🧑‍🌾</span><div class="label">Bauern</div></div>
+      <div class="thank-card"><span class="emoji">👩‍🍳</span><div class="label">Köche</div></div>
+      <div class="thank-card"><span class="emoji">🚚</span><div class="label">Fahrer</div></div>
+      <div class="thank-card"><span class="emoji">🛒</span><div class="label">Verkäufer</div></div>
+      <div class="thank-card"><span class="emoji">👨‍👩‍👧</span><div class="label">Eltern, die kochen</div></div>
+    </div>
+    <p style="font-size:20px;margin-top:14px;">Und auch <b style="color:#1b5e20">die Natur</b> hat sehr viel Arbeit gemacht: die Sonne, der Regen, die Erde 🌍✨</p>
+    <p style="font-size:22px;color:#1b5e20;font-weight:bold;margin-top:8px;">Guten Appetit! 🍽️</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Wenn du an deinem Tisch sitzt, woher kommt eigentlich dein Frühstück? Die Wurst war nicht immer Wurst. Das Brot war nicht immer Brot. Komm mit!",
+  "Wenn du an einen normalen Tag denkst, was hast du heute gegessen? Brot, Apfel, Karotte, Milch, Ei, Käse, Honig, Fisch. Alles kommt aus der Natur, von Pflanzen oder Tieren!",
+  "Wie wird zum Beispiel aus einem Samen ein Brot? Der Weizen wächst auf dem Feld. Der Bauer erntet ihn. Dann wird der Weizen zu Mehl gemahlen. Der Bäcker backt daraus Brot. Im Laden kannst du es kaufen. Und dann landet es auf deinem Tisch! Das dauert viele Monate.",
+  "Tiere auf dem Bauernhof geben uns viele Sachen: Die Kuh gibt Milch, Käse und Joghurt. Das Huhn legt Eier. Die Bienen machen Honig. Und Fische kommen aus dem Meer. Den Tieren muss es gut gehen, sie sind unsere Freunde, die uns helfen.",
+  "Bau dein eigenes Lieblingsfrühstück! Klick auf die Zutaten und stell dir ein leckeres Essen zusammen. Was magst du am liebsten?",
+  "Jedes Stück Brot, jeder Apfel, jedes Glas Milch, ganz viele Menschen haben geholfen: Bauern, Köche, Fahrer, Verkäufer und deine Eltern. Und auch die Natur hat sehr viel Arbeit gemacht: die Sonne, der Regen, die Erde. Guten Appetit!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS
+});
+
+// Builder
+let plateItems = [];
+function clearPlate() {
+  plateItems = [];
+  document.getElementById('plateContent').innerHTML = '<span class="plate-empty">Tippe auf Zutaten →</span>';
+  document.getElementById('plateCount').textContent = '0';
+  document.getElementById('essenNext').style.display = 'none';
+}
+
+document.querySelectorAll('.palette-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const emoji = item.dataset.emoji;
+    plateItems.push(emoji);
+    const content = document.getElementById('plateContent');
+    content.querySelector('.plate-empty')?.remove();
+    const span = document.createElement('span');
+    span.className = 'pi';
+    span.textContent = emoji;
+    content.appendChild(span);
+    document.getElementById('plateCount').textContent = String(plateItems.length);
+    if (plateItems.length >= 3) {
+      document.getElementById('essenNext').style.display = 'inline-block';
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Woher kommt Wasser?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #74b9ff 0%, #00b4d8 50%, #0077b6 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #0077b6; }
+  p { color: #fff8e1; }
+  .scene { background: transparent; }
+
+  /* Where water is */
+  .water-places {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    width: min(95vw, 900px);
+    margin: 14px 0;
+  }
+  .place {
+    background: rgba(255,255,255,0.18);
+    border-radius: 22px;
+    padding: 18px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .place .emoji { font-size: 60px; display: block; }
+  .place .label { font-weight: bold; font-size: 18px; margin: 4px 0; }
+  .place .pct { font-size: 14px; opacity: 0.8; }
+
+  /* Body water indicator */
+  .body-water {
+    position: relative;
+    width: 200px;
+    height: 320px;
+    margin: 14px 0;
+  }
+  .body-svg {
+    width: 100%;
+    height: 100%;
+  }
+  .body-fill {
+    fill: #74b9ff;
+    transition: y 1s ease;
+  }
+
+  /* Cycle interactive */
+  .cycle-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 400px;
+    border-radius: 30px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 30%, #98d2eb 70%, #2563eb 71%, #1e40af 100%);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    margin: 14px 0;
+    user-select: none;
+  }
+  .cycle-sun {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 70px;
+    cursor: pointer;
+    filter: drop-shadow(0 0 20px rgba(255,200,80,0.6));
+    transition: transform 0.2s;
+  }
+  .cycle-sun:hover { transform: scale(1.1) rotate(20deg); }
+  .cycle-cloud {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 100px;
+    cursor: pointer;
+    transition: filter 0.5s;
+  }
+  .cycle-cloud:hover { transform: translateX(-50%) scale(1.05); }
+  .cycle-cloud.heavy { filter: brightness(0.7) drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+  .cycle-mountain {
+    position: absolute;
+    bottom: 28%;
+    right: 5%;
+    font-size: 130px;
+  }
+  .cycle-river {
+    position: absolute;
+    bottom: 28%;
+    right: 6%;
+    width: 30px;
+    height: 80px;
+    background: linear-gradient(180deg, #b5e8ff, #74b9ff);
+    border-radius: 0 0 20px 20px;
+  }
+  .cycle-label {
+    position: absolute;
+    bottom: 4px;
+    width: 100%;
+    text-align: center;
+    color: #fff;
+    text-shadow: 1px 1px 0 #0077b6;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  .vapor {
+    position: absolute;
+    font-size: 18px;
+    color: #fff;
+    animation: vapor-rise 3s ease-out forwards;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(0,0,0,0.3);
+  }
+  @keyframes vapor-rise {
+    0% { transform: translateY(0); opacity: 0.9; }
+    100% { transform: translateY(-260px); opacity: 0; }
+  }
+  .raindrop {
+    position: absolute;
+    font-size: 22px;
+    pointer-events: none;
+    animation: rain-fall 1.8s ease-in forwards;
+  }
+  @keyframes rain-fall {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(280px); opacity: 0.3; }
+  }
+
+  .cycle-stats {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .stat {
+    background: rgba(255,255,255,0.25);
+    padding: 8px 18px;
+    border-radius: 18px;
+    color: #fff;
+    font-weight: bold;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Tips */
+  .tips-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 900px;
+  }
+  .tip {
+    background: rgba(255,255,255,0.85);
+    color: #0077b6;
+    border-radius: 20px;
+    padding: 16px;
+    width: 180px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .tip .icon { font-size: 56px; display: block; margin-bottom: 6px; }
+  .tip p { color: #2a2a4a; font-size: 15px; margin: 0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">💧🌊</div>
+    <h1>Woher kommt Wasser?</h1>
+    <p>Wenn du den Wasserhahn aufmachst — plitsch! — kommt Wasser raus.<br/>
+       Aber wo war das vorher? Auf der größten Reise der Welt!</p>
+    <button class="orange" onclick="engine.next()">Komm mit! 🌧️</button>
+  </section>
+
+  <!-- Scene 1: Water everywhere -->
+  <section class="scene" data-scene="1">
+    <h2>Wasser ist überall!</h2>
+    <p>Wasser ist nicht nur im Hahn. Schau mal, wo es überall ist:</p>
+    <div class="water-places">
+      <div class="place"><span class="emoji">🌊</span><div class="label">Im Meer</div><div class="pct">Riesengroß!</div></div>
+      <div class="place"><span class="emoji">🏞️</span><div class="label">In Seen & Flüssen</div></div>
+      <div class="place"><span class="emoji">☁️</span><div class="label">In den Wolken</div></div>
+      <div class="place"><span class="emoji">❄️</span><div class="label">Als Schnee & Eis</div></div>
+      <div class="place"><span class="emoji">🌧️</span><div class="label">Als Regen</div></div>
+      <div class="place"><span class="emoji">🧒</span><div class="label">In dir!</div><div class="pct">60% Wasser</div></div>
+    </div>
+    <p>Du bist sogar fast zur Hälfte aus Wasser gemacht! 💧</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Sun lifts water -->
+  <section class="scene" data-scene="2">
+    <h2>Die Sonne saugt Wasser hoch ☀️</h2>
+    <p>Wenn die Sonne auf das Meer scheint, wird das Wasser <b style="color:#fff8c8">warm und leicht</b>.<br/>
+       Es fliegt nach oben — wie ein Luftballon!</p>
+    <svg viewBox="0 0 600 280" style="width:min(90vw,600px);height:auto;">
+      <defs>
+        <linearGradient id="seaGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#74b9ff"/>
+          <stop offset="1" stop-color="#0077b6"/>
+        </linearGradient>
+      </defs>
+      <!-- Sun -->
+      <circle cx="80" cy="60" r="35" fill="#ffeb3b" stroke="#f9a826" stroke-width="3"/>
+      <g stroke="#ffeb3b" stroke-width="4" stroke-linecap="round">
+        <line x1="80" y1="10" x2="80" y2="20"/>
+        <line x1="80" y1="100" x2="80" y2="110"/>
+        <line x1="30" y1="60" x2="40" y2="60"/>
+        <line x1="120" y1="60" x2="130" y2="60"/>
+      </g>
+      <!-- Rays to sea -->
+      <line x1="100" y1="90" x2="200" y2="180" stroke="#fdcb6e" stroke-width="4" stroke-dasharray="6"/>
+      <line x1="115" y1="90" x2="280" y2="200" stroke="#fdcb6e" stroke-width="4" stroke-dasharray="6"/>
+      <!-- Rising vapor -->
+      <text x="240" y="160" font-size="20" fill="#fff">💧⬆️</text>
+      <text x="290" y="130" font-size="20" fill="#fff">💧⬆️</text>
+      <text x="340" y="110" font-size="20" fill="#fff">💧⬆️</text>
+      <!-- Sea -->
+      <rect x="0" y="180" width="600" height="100" fill="url(#seaGrad)"/>
+      <path d="M 0 185 Q 50 175 100 185 T 200 185 T 300 185 T 400 185 T 500 185 T 600 185 V 200 H 0 Z" fill="#a8e6ff" opacity="0.5"/>
+      <text x="300" y="240" text-anchor="middle" font-size="20" fill="#fff" font-weight="bold">Meer</text>
+    </svg>
+    <p>Das nennt man <b>Verdunstung</b>. Aber kleine Tröpfchen sieht man nicht — sie sind unsichtbar!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Clouds make rain -->
+  <section class="scene" data-scene="3">
+    <h2>Wolken machen Regen</h2>
+    <p>Hoch oben treffen sich ganz viele Tröpfchen.<br/>
+       Sie kommen zusammen und werden zu einer <b>Wolke</b> ☁️.<br/>
+       Wenn die Wolke zu schwer wird — <b style="color:#fff8c8">PLATSCH!</b> Regen 🌧️</p>
+    <div style="font-size:80px;">☁️</div>
+    <div style="font-size:50px;animation:rain-fall 1s linear infinite;display:inline-block">💧</div>
+    <div style="font-size:50px;animation:rain-fall 1s linear infinite;animation-delay:0.2s;display:inline-block">💧</div>
+    <div style="font-size:50px;animation:rain-fall 1s linear infinite;animation-delay:0.4s;display:inline-block">💧</div>
+    <p>Der Regen fällt auf Berge, läuft als Bach den Berg runter, wird zum Fluss, und fließt ins Meer!</p>
+    <button class="orange" onclick="engine.next()">Jetzt probieren! ▶️</button>
+  </section>
+
+  <!-- Scene 4: Interactive water cycle -->
+  <section class="scene" data-scene="4">
+    <h2>Dein Wasser-Kreislauf</h2>
+    <p>Klick auf die <b>Sonne</b> ☀️ und die <b>Wolke</b> ☁️ — und schau, wie alles im Kreis läuft!</p>
+    <div class="cycle-stage" id="cycle">
+      <span class="cycle-sun" onclick="evaporate()" title="Klick für Verdunstung">☀️</span>
+      <span class="cycle-cloud" id="cloud" onclick="rain()" title="Klick für Regen">☁️</span>
+      <span class="cycle-mountain">⛰️</span>
+      <div class="cycle-river"></div>
+      <div class="cycle-label">🌊 Meer 🌊</div>
+    </div>
+    <div class="cycle-stats">
+      <div class="stat">💨 Verdunstet: <span id="evapCount">0</span></div>
+      <div class="stat">☁️ In der Wolke: <span id="cloudFill">0</span> / 5</div>
+      <div class="stat">🌧️ Regen: <span id="rainCount">0</span></div>
+    </div>
+    <button class="orange" onclick="engine.next()" style="margin-top:14px;">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Save water -->
+  <section class="scene" data-scene="5">
+    <h2>Pass auf dein Wasser auf!</h2>
+    <p>Wasser ist kostbar. Nur ein winziger Teil ist Trinkwasser. So sparst du Wasser:</p>
+    <div class="tips-row">
+      <div class="tip"><span class="icon">🚿</span><p>Kurz duschen statt lange baden</p></div>
+      <div class="tip"><span class="icon">🚰</span><p>Hahn zu beim Zähneputzen</p></div>
+      <div class="tip"><span class="icon">🪣</span><p>Kein Wasser verschwenden</p></div>
+      <div class="tip"><span class="icon">🌱</span><p>Pflanzen mit Regenwasser gießen</p></div>
+    </div>
+    <p style="margin-top:14px;">Jeder Tropfen zählt 💧✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Wenn du den Wasserhahn aufmachst, plitsch, kommt Wasser raus. Aber wo war das vorher? Auf der größten Reise der Welt!",
+  "Wasser ist nicht nur im Hahn. Schau mal, wo es überall ist: im Meer, in Seen und Flüssen, in den Wolken, als Schnee und Eis, als Regen, und sogar in dir! Du bist fast zur Hälfte aus Wasser gemacht!",
+  "Wenn die Sonne auf das Meer scheint, wird das Wasser warm und leicht. Es fliegt nach oben, wie ein Luftballon! Das nennt man Verdunstung. Aber kleine Tröpfchen sieht man nicht, sie sind unsichtbar!",
+  "Hoch oben treffen sich ganz viele Tröpfchen. Sie kommen zusammen und werden zu einer Wolke. Wenn die Wolke zu schwer wird, platsch, Regen! Der Regen fällt auf Berge, läuft als Bach den Berg runter, wird zum Fluss, und fließt ins Meer!",
+  "Klick auf die Sonne und schau, wie Wasser verdunstet. Klick auf die Wolke, wenn sie voll ist, und mach Regen! So läuft das Wasser immer im Kreis.",
+  "Wasser ist kostbar. Nur ein winziger Teil ist Trinkwasser. Spare Wasser: kurz duschen statt baden, Hahn zu beim Zähneputzen, Pflanzen mit Regenwasser gießen. Jeder Tropfen zählt!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS
+});
+
+let cloudFill = 0;
+let evapCount = 0;
+let rainCount = 0;
+
+function updateStats() {
+  document.getElementById('evapCount').textContent = String(evapCount);
+  document.getElementById('cloudFill').textContent = String(cloudFill);
+  document.getElementById('rainCount').textContent = String(rainCount);
+  const cloud = document.getElementById('cloud');
+  if (cloud) cloud.classList.toggle('heavy', cloudFill >= 5);
+}
+
+function evaporate() {
+  const stage = document.getElementById('cycle');
+  // Spawn 3-5 vapors from sea
+  for (let i = 0; i < 4; i++) {
+    const v = document.createElement('span');
+    v.className = 'vapor';
+    v.textContent = '💧';
+    const left = 50 + Math.random()*(stage.offsetWidth-120);
+    v.style.left = left + 'px';
+    v.style.bottom = '30px';
+    v.style.animationDelay = (Math.random()*0.4) + 's';
+    stage.appendChild(v);
+    setTimeout(() => v.remove(), 3500);
+  }
+  evapCount++;
+  cloudFill = Math.min(5, cloudFill + 1);
+  updateStats();
+}
+
+function rain() {
+  if (cloudFill < 1) return;
+  const stage = document.getElementById('cycle');
+  const cloudEl = document.getElementById('cloud');
+  const cx = cloudEl.offsetLeft + cloudEl.offsetWidth/2;
+  for (let i = 0; i < cloudFill * 3; i++) {
+    const d = document.createElement('span');
+    d.className = 'raindrop';
+    d.textContent = '💧';
+    d.style.left = (cx - 40 + Math.random()*80) + 'px';
+    d.style.top = '120px';
+    d.style.animationDelay = (Math.random()*0.5) + 's';
+    stage.appendChild(d);
+    setTimeout(() => d.remove(), 2300);
+  }
+  rainCount += cloudFill;
+  cloudFill = 0;
+  updateStats();
+}
+</script>
+</body>
+</html>

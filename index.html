@@ -16,12 +16,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 60px;
+    padding: 36px 20px 60px;
     min-height: 100vh;
   }
   header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
   }
   h1 {
     font-size: clamp(36px, 6vw, 72px);
@@ -33,17 +33,30 @@
     font-size: clamp(18px, 2.5vw, 26px);
     color: #d81b60;
   }
+  .topic-section {
+    width: 100%;
+    max-width: 1300px;
+    margin-bottom: 30px;
+  }
+  .section-title {
+    font-size: clamp(20px, 2.4vw, 28px);
+    color: #6a1b9a;
+    margin-bottom: 14px;
+    padding-left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
     width: 100%;
-    max-width: 1280px;
   }
   .card {
     background: rgba(255,255,255,0.85);
     border-radius: 30px;
-    padding: 24px 18px;
+    padding: 22px 16px;
     text-align: center;
     text-decoration: none;
     color: inherit;
@@ -59,19 +72,10 @@
     box-shadow: 0 14px 0 rgba(106,27,154,0.15), 0 18px 28px rgba(0,0,0,0.12);
     border-color: #ff6b9d;
   }
-  .card.disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-  .card.disabled:hover {
-    transform: none;
-    box-shadow: 0 8px 0 rgba(106,27,154,0.15), 0 12px 24px rgba(0,0,0,0.08);
-    border-color: transparent;
-  }
   .card-emoji {
-    font-size: 78px;
+    font-size: 72px;
     line-height: 1;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     display: block;
     animation: floaty 3s ease-in-out infinite;
   }
@@ -83,35 +87,17 @@
     50% { transform: translateY(-10px); }
   }
   .card h2 {
-    font-size: clamp(20px, 2.4vw, 26px);
+    font-size: clamp(18px, 2.2vw, 24px);
     color: #6a1b9a;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .card p {
-    font-size: clamp(14px, 1.7vw, 17px);
+    font-size: clamp(13px, 1.6vw, 16px);
     color: #2a2a4a;
-    line-height: 1.4;
+    line-height: 1.35;
   }
-  .badge {
-    display: inline-block;
-    background: #fdcb6e;
-    color: #6a3a00;
-    font-size: 13px;
-    padding: 4px 12px;
-    border-radius: 12px;
-    margin-top: 10px;
-    font-weight: bold;
-  }
-  .badge.soon {
-    background: #b5b5d0;
-    color: #3a3a5a;
-  }
-  .badge.game { background: #55efc4; color: #006a52; }
-  .badge.science { background: #74b9ff; color: #074a87; color: #fff; }
-  .badge.body { background: #ff6b9d; color: #fff; }
-  .badge.cosmic { background: #d6a2ff; color: #3d0a5a; }
   footer {
-    margin-top: 60px;
+    margin-top: 40px;
     font-size: 16px;
     color: #6a1b9a;
     opacity: 0.7;
@@ -134,6 +120,12 @@
     0%, 100% { opacity: 0.4; transform: scale(1); }
     50% { opacity: 0.8; transform: scale(1.2); }
   }
+  /* Category color accents */
+  .cat-game     { border-top: 8px solid #00b894; }
+  .cat-body     { border-top: 8px solid #ff6b9d; }
+  .cat-world    { border-top: 8px solid #74b9ff; }
+  .cat-nature   { border-top: 8px solid #55efc4; }
+  .cat-feelings { border-top: 8px solid #d6a2ff; }
 </style>
 </head>
 <body>
@@ -150,71 +142,101 @@
 
 <header>
   <h1>🌟 Lern-Reisen 🌟</h1>
-  <p class="subtitle">Welche Reise möchtest du heute machen?</p>
+  <p class="subtitle">Zwölf Abenteuer warten auf dich!</p>
 </header>
 
-<div class="grid">
+<div class="topic-section">
+  <h3 class="section-title">🎮 Üben & Spielen</h3>
+  <div class="grid">
+    <a class="card cat-game" href="topics/maus-spiel/index.html">
+      <span class="card-emoji">🖱️</span>
+      <h2>Maus-Schule</h2>
+      <p>Sechs lustige Spiele für die Computer-Maus.</p>
+    </a>
+  </div>
+</div>
 
-  <a class="card" href="topics/maus-spiel/index.html">
-    <span class="card-emoji">🖱️</span>
-    <h2>Maus-Schule</h2>
-    <p>Sechs lustige Spiele, um die Computermaus zu lernen!</p>
-    <span class="badge game">🎮 Spiel</span>
-  </a>
+<div class="topic-section">
+  <h3 class="section-title">🧠 Dein Körper</h3>
+  <div class="grid">
+    <a class="card cat-body" href="topics/staebchen/index.html">
+      <span class="card-emoji">👁️</span>
+      <h2>Wie sehen wir?</h2>
+      <p>Stäbchen, Zäpfchen und ein Live-Webcam-Labor!</p>
+    </a>
+    <a class="card cat-body" href="topics/ohren/index.html">
+      <span class="card-emoji">👂</span>
+      <h2>Wie hörst du?</h2>
+      <p>Eine Reise durch das Ohr — mit Sound-Labor.</p>
+    </a>
+    <a class="card cat-body" href="topics/atmen/index.html">
+      <span class="card-emoji">🫁</span>
+      <h2>Warum atmen wir?</h2>
+      <p>Sauerstoff, Lungen und eine Atemübung.</p>
+    </a>
+  </div>
+</div>
 
-  <a class="card" href="topics/staebchen/index.html">
-    <span class="card-emoji">👁️</span>
-    <h2>Wie sehen wir?</h2>
-    <p>Lerne die Stäbchen und Zäpfchen in deinem Auge kennen!</p>
-    <span class="badge body">🧠 Körper</span>
-  </a>
+<div class="topic-section">
+  <h3 class="section-title">🌍 Welt & Weltall</h3>
+  <div class="grid">
+    <a class="card cat-world" href="topics/himmel/index.html">
+      <span class="card-emoji">🌈</span>
+      <h2>Warum ist der Himmel blau?</h2>
+      <p>Sonnenlicht und der Sonnen-Slider.</p>
+    </a>
+    <a class="card cat-world" href="topics/tag-nacht/index.html">
+      <span class="card-emoji">🌍</span>
+      <h2>Tag und Nacht</h2>
+      <p>Dreh die Erde und entdecke Tageszeiten.</p>
+    </a>
+    <a class="card cat-world" href="topics/sonne-mond/index.html">
+      <span class="card-emoji">🌅</span>
+      <h2>Sonne & Mond</h2>
+      <p>Warum gehen sie auf? Mit Mondphasen!</p>
+    </a>
+    <a class="card cat-world" href="topics/wasser/index.html">
+      <span class="card-emoji">💧</span>
+      <h2>Woher kommt Wasser?</h2>
+      <p>Mach deinen eigenen Wasserkreislauf.</p>
+    </a>
+  </div>
+</div>
 
-  <a class="card" href="topics/ohren/index.html">
-    <span class="card-emoji">👂</span>
-    <h2>Wie hörst du?</h2>
-    <p>Eine Reise durch dein Ohr — mit eigenem Sound-Labor!</p>
-    <span class="badge body">🧠 Körper</span>
-  </a>
+<div class="topic-section">
+  <h3 class="section-title">🌱 Natur & Essen</h3>
+  <div class="grid">
+    <a class="card cat-nature" href="topics/pflanzen/index.html">
+      <span class="card-emoji">🌱</span>
+      <h2>Wie wachsen Pflanzen?</h2>
+      <p>Gieß und lass deine eigene Blume wachsen.</p>
+    </a>
+    <a class="card cat-nature" href="topics/essen/index.html">
+      <span class="card-emoji">🍞</span>
+      <h2>Woher kommt unser Essen?</h2>
+      <p>Vom Feld zum Teller — bau dein Frühstück!</p>
+    </a>
+  </div>
+</div>
 
-  <a class="card" href="topics/himmel/index.html">
-    <span class="card-emoji">🌈</span>
-    <h2>Warum ist der Himmel blau?</h2>
-    <p>Sonnenlicht ist heimlich bunt — und Blau hüpft am meisten!</p>
-    <span class="badge science">🔬 Wissenschaft</span>
-  </a>
-
-  <a class="card" href="topics/pflanzen/index.html">
-    <span class="card-emoji">🌱</span>
-    <h2>Wie wachsen Pflanzen?</h2>
-    <p>Pflanze einen Samen und lass ihn zur Blume werden!</p>
-    <span class="badge game">🌻 Garten</span>
-  </a>
-
-  <a class="card" href="topics/tag-nacht/index.html">
-    <span class="card-emoji">🌍</span>
-    <h2>Tag und Nacht</h2>
-    <p>Dreh die Erde und entdecke, wann es hell und dunkel wird.</p>
-    <span class="badge cosmic">🌌 Weltall</span>
-  </a>
-
-  <a class="card" href="topics/schlaf/index.html">
-    <span class="card-emoji">😴</span>
-    <h2>Schlaf & Träume</h2>
-    <p>Warum schlafen wir? Und was tun bei Albträumen?</p>
-    <span class="badge body">💤 Schlaf</span>
-  </a>
-
-  <a class="card disabled" href="#" onclick="event.preventDefault()">
-    <span class="card-emoji">❤️</span>
-    <h2>Warum schlägt dein Herz?</h2>
-    <p>Folge dem Blut durch deinen Körper.</p>
-    <span class="badge soon">Bald</span>
-  </a>
-
+<div class="topic-section">
+  <h3 class="section-title">💝 Gefühle & Schlaf</h3>
+  <div class="grid">
+    <a class="card cat-feelings" href="topics/liebe/index.html">
+      <span class="card-emoji">❤️</span>
+      <h2>Was ist Liebe?</h2>
+      <p>Ein Gefühl, das alles wärmer macht.</p>
+    </a>
+    <a class="card cat-feelings" href="topics/schlaf/index.html">
+      <span class="card-emoji">😴</span>
+      <h2>Schlaf & Träume</h2>
+      <p>Albträume, Atmung und gute Schlaf-Routinen.</p>
+    </a>
+  </div>
 </div>
 
 <footer>
-  Mehr Reisen kommen bald 💫
+  ✨ Zwölf Reisen — und es kommen noch mehr! 💫
 </footer>
 
 </body>
