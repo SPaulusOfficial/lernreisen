@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maus-Bahn</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #d4ffd6 0%, #b5e8ff 50%, #ffd6e8 100%); }
+
+  .track-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 380px;
+    margin: 14px 0;
+    background: rgba(255,255,255,0.5);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+  .track-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .path-bg { stroke: #d6a2ff; stroke-width: 40; fill: none; stroke-linecap: round; opacity: 0.4; }
+  .path-fg { stroke: #fff; stroke-width: 26; fill: none; stroke-linecap: round; stroke-dasharray: 8 12; }
+  .path-progress { stroke: #00b894; stroke-width: 26; fill: none; stroke-linecap: round; transition: stroke-dashoffset 0.1s linear; }
+  .start, .goal {
+    position: absolute;
+    font-size: 36px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .cursor-dot {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background: radial-gradient(circle, #ffeb3b 0%, #f59e0b 70%);
+    box-shadow: 0 0 16px rgba(255,200,80,0.8);
+    z-index: 10;
+    transition: opacity 0.2s;
+  }
+  .cursor-dot.off-track { background: radial-gradient(circle, #ff6b6b 0%, #c0392b 70%); box-shadow: 0 0 16px rgba(255,107,107,0.8); }
+  .stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .stat {
+    background: rgba(255,255,255,0.9);
+    padding: 8px 18px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #6a1b9a;
+  }
+  .level-pick {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .complete {
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #5a3a00;
+    padding: 14px 26px;
+    border-radius: 18px;
+    font-size: 22px;
+    font-weight: bold;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .complete.show { opacity: 1; transform: scale(1); }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🐌➡️🎯</div>
+    <h1>Maus-Bahn</h1>
+    <p>Fahre mit der Maus auf der Bahn entlang — vom Start bis zum Ziel!<br/>
+       Bleib auf dem Weg — die Bahn ändert sich!</p>
+    <button class="green" onclick="engine.next()">Los geht's! 🚀</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Such die richtige Bahn</h2>
+    <div class="level-pick">
+      <button class="small green" onclick="loadTrack(0)">🌟 Leicht</button>
+      <button class="small secondary" onclick="loadTrack(1)">🚀 Mittel</button>
+      <button class="small purple" onclick="loadTrack(2)">🐉 Schwer</button>
+    </div>
+    <div class="track-stage" id="trackStage">
+      <svg class="track-svg" viewBox="0 0 800 380" preserveAspectRatio="none">
+        <path id="pathBg" class="path-bg" d=""/>
+        <path id="pathFg" class="path-fg" d=""/>
+        <path id="pathProgress" class="path-progress" d=""/>
+      </svg>
+      <span class="start" id="startMark">🚩</span>
+      <span class="goal" id="goalMark">🎯</span>
+      <div class="cursor-dot" id="cursor"></div>
+    </div>
+    <div class="stats">
+      <span class="stat">📏 Strecke: <span id="pct">0</span>%</span>
+      <span class="stat">⚠️ Daneben: <span id="miss">0</span>×</span>
+    </div>
+    <div class="complete" id="complete">🏆 Geschafft! Wow, super gemacht!</div>
+    <button class="small secondary" onclick="loadTrack(currentLevel)" style="margin-top:8px">🔁 Nochmal</button>
+    <button class="green" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🏆</div>
+    <h2>Maus-Bahn-Meister!</h2>
+    <p>Wow, du wirst immer besser mit der Maus!<br/>Versuch's auch mal auf der schwersten Stufe! 🐉</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Fahre mit der Maus auf der Bahn entlang, vom Start bis zum Ziel! Bleib auf dem Weg, dann wird sie immer länger!",
+  "Such dir eine Bahn aus und fahre los! Fang am Start an und folge dem Weg bis zum Ziel. Bleib drauf!",
+  "Maus-Bahn-Meister! Du wirst immer besser mit der Maus. Versuch's auch mal auf der schwersten Stufe!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 1) loadTrack(0); } });
+
+const TRACKS = [
+  // Easy - gentle S
+  "M 60 190 Q 250 80 400 190 T 740 190",
+  // Medium - figure 8-ish
+  "M 60 320 Q 200 60 400 200 Q 600 340 740 80",
+  // Hard - zigzag
+  "M 60 100 L 200 320 L 340 100 L 480 320 L 620 100 L 740 320"
+];
+
+let currentLevel = 0;
+let pathFg = null, pathTotalLen = 0, pathProgress = null;
+let progressDist = 0;
+let missCount = 0;
+let lastOnTrack = true;
+
+function loadTrack(idx) {
+  currentLevel = idx;
+  document.getElementById('pathBg').setAttribute('d', TRACKS[idx]);
+  document.getElementById('pathFg').setAttribute('d', TRACKS[idx]);
+  document.getElementById('pathProgress').setAttribute('d', TRACKS[idx]);
+  pathFg = document.getElementById('pathFg');
+  pathProgress = document.getElementById('pathProgress');
+  pathTotalLen = pathFg.getTotalLength();
+  pathProgress.style.strokeDasharray = pathTotalLen + ' ' + pathTotalLen;
+  pathProgress.style.strokeDashoffset = pathTotalLen;
+  progressDist = 0;
+  missCount = 0;
+  document.getElementById('pct').textContent = '0';
+  document.getElementById('miss').textContent = '0';
+  document.getElementById('complete').classList.remove('show');
+
+  // Position start/goal markers
+  const stage = document.getElementById('trackStage');
+  const sw = stage.offsetWidth, sh = stage.offsetHeight;
+  const startPt = pathFg.getPointAtLength(0);
+  const goalPt = pathFg.getPointAtLength(pathTotalLen);
+  const startMark = document.getElementById('startMark');
+  const goalMark = document.getElementById('goalMark');
+  startMark.style.left = (startPt.x / 800 * 100) + '%';
+  startMark.style.top = (startPt.y / 380 * 100) + '%';
+  goalMark.style.left = (goalPt.x / 800 * 100) + '%';
+  goalMark.style.top = (goalPt.y / 380 * 100) + '%';
+}
+
+const stage = document.getElementById('trackStage');
+const cursor = document.getElementById('cursor');
+stage.addEventListener('mousemove', onMove);
+
+function onMove(e) {
+  if (!pathFg) return;
+  const r = stage.getBoundingClientRect();
+  const mx = e.clientX - r.left;
+  const my = e.clientY - r.top;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+  // Convert to SVG coords (viewBox 800 x 380)
+  const sx = mx / r.width * 800;
+  const sy = my / r.height * 380;
+  // Find nearest point on path (sample 60 points)
+  const SAMPLES = 80;
+  let bestD = Infinity, bestLen = 0;
+  for (let i = 0; i <= SAMPLES; i++) {
+    const t = (i / SAMPLES) * pathTotalLen;
+    const p = pathFg.getPointAtLength(t);
+    const d = Math.hypot(p.x - sx, p.y - sy);
+    if (d < bestD) { bestD = d; bestLen = t; }
+  }
+  const onTrack = bestD < 26;
+  cursor.classList.toggle('off-track', !onTrack);
+  if (onTrack) {
+    if (bestLen > progressDist) {
+      progressDist = bestLen;
+      pathProgress.style.strokeDashoffset = String(pathTotalLen - progressDist);
+      const pct = Math.round(progressDist / pathTotalLen * 100);
+      document.getElementById('pct').textContent = String(pct);
+      if (pct >= 95) celebrate();
+    }
+    lastOnTrack = true;
+  } else {
+    if (lastOnTrack) {
+      missCount++;
+      document.getElementById('miss').textContent = String(missCount);
+    }
+    lastOnTrack = false;
+  }
+}
+
+let done = false;
+function celebrate() {
+  if (done) return;
+  done = true;
+  document.getElementById('complete').classList.add('show');
+  setTimeout(() => { done = false; }, 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Buchstaben-Jagd</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffd6e8 0%, #b5e8ff 60%, #d4ffd6 100%); }
+
+  .target-banner {
+    background: linear-gradient(135deg, #6a1b9a, #ec407a);
+    color: #fff;
+    padding: 18px 36px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(106,27,154,0.3);
+    margin-bottom: 12px;
+  }
+  .target-banner .target-letter {
+    font-size: 80px;
+    font-weight: bold;
+    line-height: 1;
+    display: block;
+    animation: target-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes target-pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255,255,255,0.6)); }
+    50%      { transform: scale(1.1); filter: drop-shadow(0 0 24px rgba(255,255,255,1)); }
+  }
+  .play-btn {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 8px;
+    display: inline-block;
+  }
+
+  .letter-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 360px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    margin: 12px 0;
+  }
+  .letter-bubble {
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff, #fab1a0);
+    color: #c44569;
+    font-weight: bold;
+    font-size: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(196,69,105,0.3);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    animation: letter-drift var(--dur, 8s) linear infinite;
+    border: 3px solid #ec407a;
+  }
+  .letter-bubble:hover { transform: scale(1.18); }
+  @keyframes letter-drift {
+    0%   { transform: translate(0, 0) rotate(0); }
+    25%  { transform: translate(40px, -20px) rotate(8deg); }
+    50%  { transform: translate(60px, 10px) rotate(-6deg); }
+    75%  { transform: translate(30px, 25px) rotate(4deg); }
+    100% { transform: translate(0, 0) rotate(0); }
+  }
+  .letter-bubble.correct { animation: correct-pop 0.7s ease-out forwards; background: radial-gradient(circle, #55efc4, #00b894); color: #fff; }
+  @keyframes correct-pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.5) rotate(20deg); }
+    100% { transform: scale(0) rotate(180deg); opacity: 0; }
+  }
+  .letter-bubble.wrong { animation: wrong-shake 0.4s ease-in-out; background: radial-gradient(circle, #ff6b6b, #c0392b); color: #fff; }
+  @keyframes wrong-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+  }
+
+  .stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .stat {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 18px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #6a1b9a;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🔤🎯</div>
+    <h1>Buchstaben-Jagd</h1>
+    <p>Hör genau hin — welcher Buchstabe ist gemeint?<br/>Klick ihn schnell, bevor er wegfliegt!</p>
+    <button class="purple" onclick="engine.next()">Los geht's! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <div class="target-banner">
+      <span style="font-size:18px;">Such den Buchstaben:</span>
+      <span class="target-letter" id="targetLetter">A</span>
+      <span class="play-btn" onclick="sayLetter(currentTarget)">🔊 Nochmal hören</span>
+    </div>
+    <div class="letter-stage" id="letterStage"></div>
+    <div class="stats">
+      <span class="stat">✅ Richtig: <span id="correct">0</span></span>
+      <span class="stat">⏭️ Runde: <span id="round">1</span> / 10</span>
+    </div>
+    <button class="small secondary" onclick="newGame()" style="margin-top:6px">🔁 Neu</button>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🏆🔤</div>
+    <h2>Buchstaben-Profi!</h2>
+    <p>Du kennst deine Buchstaben schon richtig gut!<br/>Bald kannst du <b>lesen</b>! 📖</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Hör genau hin: welcher Buchstabe ist gemeint? Klick ihn schnell, bevor er wegfliegt!",
+  "Schau auf den großen Buchstaben oben. Such ihn unter den fliegenden Buchstaben und klick ihn an!",
+  "Buchstaben-Profi! Du kennst deine Buchstaben schon richtig gut! Bald kannst du lesen!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 1) newGame(); } });
+
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+let currentTarget = 'A', correct = 0, round = 1;
+
+function newGame() {
+  correct = 0; round = 1;
+  document.getElementById('correct').textContent = '0';
+  document.getElementById('round').textContent = '1';
+  nextRound();
+}
+
+function nextRound() {
+  // Pick target
+  currentTarget = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+  document.getElementById('targetLetter').textContent = currentTarget;
+  document.getElementById('round').textContent = String(round);
+  // Spawn 6 letters, one is target
+  const stage = document.getElementById('letterStage');
+  stage.innerHTML = '';
+  const choices = [currentTarget];
+  while (choices.length < 6) {
+    const c = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+    if (!choices.includes(c)) choices.push(c);
+  }
+  choices.sort(() => Math.random() - 0.5);
+  const cols = 3, rows = 2;
+  choices.forEach((letter, i) => {
+    const b = document.createElement('div');
+    b.className = 'letter-bubble';
+    b.textContent = letter;
+    const col = i % cols, row = Math.floor(i / cols);
+    b.style.left = (15 + col * 30 + Math.random()*8) + '%';
+    b.style.top = (15 + row * 45 + Math.random()*8) + '%';
+    b.style.setProperty('--dur', (6 + Math.random()*5) + 's');
+    b.style.animationDelay = (i * 0.2) + 's';
+    b.onclick = () => check(b, letter);
+    stage.appendChild(b);
+  });
+  sayLetter(currentTarget);
+}
+
+function check(bubble, letter) {
+  if (letter === currentTarget) {
+    bubble.classList.add('correct');
+    sfx('yes');
+    correct++;
+    document.getElementById('correct').textContent = String(correct);
+    setTimeout(() => {
+      round++;
+      if (round > 10) {
+        document.getElementById('letterStage').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:42px;color:#00b894;font-weight:bold;">🏆 ' + correct + ' / 10 — super!</div>';
+        sfx('win');
+      } else {
+        nextRound();
+      }
+    }, 800);
+  } else {
+    bubble.classList.add('wrong');
+    sfx('no');
+    setTimeout(() => bubble.classList.remove('wrong'), 500);
+  }
+}
+
+function sayLetter(letter) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(letter);
+  u.lang = 'de-DE';
+  u.rate = 0.8;
+  u.pitch = 1.2;
+  // Try to find a German voice
+  const voices = speechSynthesis.getVoices();
+  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
+  if (de) u.voice = de;
+  speechSynthesis.speak(u);
+}
+
+let ac = null;
+function sfx(type) {
+  try {
+    if (!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+    const t = ac.currentTime;
+    if (type === 'yes') {
+      [800, 1200].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.25, t + i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.1 + 0.2);
+        o.start(t + i*0.1); o.stop(t + i*0.1 + 0.22);
+      });
+    } else if (type === 'no') {
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'sine'; o.frequency.setValueAtTime(280, t); o.frequency.exponentialRampToValueAtTime(150, t+0.25);
+      g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+      o.start(t); o.stop(t+0.32);
+    } else if (type === 'win') {
+      [523, 659, 784, 1047, 1319].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.25, t + i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.1 + 0.25);
+        o.start(t + i*0.1); o.stop(t + i*0.1 + 0.3);
+      });
+    }
+  } catch(e){}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ABC-Reihenfolge</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #d4ffd6 0%, #ffeaa7 50%, #ffd6e8 100%); }
+
+  .abc-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    min-height: 380px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 28px;
+    padding: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    margin: 14px 0;
+  }
+  .letter-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    min-height: 180px;
+  }
+  .letter-tile {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: #fff;
+    font-weight: bold;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 6px 0 #8e2c4e, 0 8px 14px rgba(0,0,0,0.18);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .letter-tile:hover { transform: translateY(-4px) scale(1.08); }
+  .letter-tile.gone { animation: tile-fly 0.5s ease-in forwards; pointer-events: none; }
+  @keyframes tile-fly {
+    0%   { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.3) translateY(60px); opacity: 0; }
+  }
+  .letter-tile.wrong { animation: tile-shake 0.4s ease-in-out; }
+  @keyframes tile-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-8px) rotate(-3deg); }
+    75%      { transform: translateX(8px) rotate(3deg); }
+  }
+
+  .progress-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    min-height: 60px;
+    padding: 14px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 18px;
+    margin-bottom: 14px;
+  }
+  .placed {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #55efc4, #00b894);
+    color: #fff;
+    font-weight: bold;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: place-pop 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes place-pop {
+    0%   { transform: scale(0) rotate(-45deg); }
+    60%  { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  .next-hint {
+    background: rgba(255,255,255,0.9);
+    padding: 10px 24px;
+    border-radius: 18px;
+    color: #6a1b9a;
+    font-weight: bold;
+    font-size: 22px;
+    margin: 4px 0;
+  }
+  .level-pick { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🔤📚</div>
+    <h1>Das ABC</h1>
+    <p>Das Alphabet hat 26 Buchstaben — A, B, C, D...<br/>Bring sie in die richtige Reihenfolge!</p>
+    <button class="orange" onclick="engine.next()">Los geht's! 🔤</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <div class="level-pick">
+      <button class="small green" onclick="newGame(5)">🌟 Erste 5</button>
+      <button class="small secondary" onclick="newGame(10)">🚀 Erste 10</button>
+      <button class="small purple" onclick="newGame(26)">🐉 Alle 26</button>
+    </div>
+    <div class="next-hint">Klick als nächstes: <b id="nextLetter">A</b></div>
+    <div class="abc-stage">
+      <div class="progress-row" id="progressRow"></div>
+      <div class="letter-pool" id="letterPool"></div>
+    </div>
+    <button class="small secondary" onclick="newGame(currentSize)" style="margin-top:6px">🔁 Neu</button>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🌟📖</div>
+    <h2>Du kennst das ABC!</h2>
+    <p>A, B, C, D, E, F, G... das ist der Anfang von <b>Lesen lernen</b>! 📚✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Das Alphabet hat sechsundzwanzig Buchstaben: A, B, C, D! Bring sie in die richtige Reihenfolge!",
+  "Klick die Buchstaben in der richtigen Reihenfolge. Erst A, dann B, dann C! Schau oben, welcher als nächstes kommt.",
+  "Du kennst das ABC! A, B, C, D, E, F, G. Das ist der Anfang von Lesen lernen!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 1) newGame(5); } });
+
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+let currentSize = 5, currentIdx = 0, sequence = '';
+
+function newGame(size) {
+  currentSize = size;
+  sequence = ALPHABET.slice(0, size);
+  currentIdx = 0;
+  document.getElementById('progressRow').innerHTML = '';
+  document.getElementById('nextLetter').textContent = sequence[0];
+  // Build shuffled pool
+  const pool = document.getElementById('letterPool');
+  pool.innerHTML = '';
+  const letters = sequence.split('').sort(() => Math.random() - 0.5);
+  letters.forEach(letter => {
+    const t = document.createElement('div');
+    t.className = 'letter-tile';
+    t.textContent = letter;
+    t.onclick = () => check(t, letter);
+    pool.appendChild(t);
+  });
+}
+
+function check(tile, letter) {
+  const expected = sequence[currentIdx];
+  if (letter === expected) {
+    tile.classList.add('gone');
+    setTimeout(() => {
+      tile.remove();
+      const p = document.createElement('div');
+      p.className = 'placed';
+      p.textContent = letter;
+      document.getElementById('progressRow').appendChild(p);
+      currentIdx++;
+      if (currentIdx >= sequence.length) {
+        document.getElementById('nextLetter').textContent = '🏆 fertig!';
+        sfx('win');
+      } else {
+        document.getElementById('nextLetter').textContent = sequence[currentIdx];
+        sfx('yes');
+      }
+    }, 450);
+  } else {
+    tile.classList.add('wrong');
+    sfx('no');
+    setTimeout(() => tile.classList.remove('wrong'), 500);
+  }
+}
+
+let ac = null;
+function sfx(type) {
+  try {
+    if (!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+    const t = ac.currentTime;
+    if (type === 'yes') {
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'triangle'; o.frequency.setValueAtTime(800, t); o.frequency.linearRampToValueAtTime(1200, t+0.1);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+      o.start(t); o.stop(t+0.22);
+    } else if (type === 'no') {
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'sine'; o.frequency.setValueAtTime(280, t); o.frequency.exponentialRampToValueAtTime(150, t+0.25);
+      g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+      o.start(t); o.stop(t+0.32);
+    } else if (type === 'win') {
+      [523, 659, 784, 1047, 1319].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.25, t + i*0.12); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.12 + 0.25);
+        o.start(t + i*0.12); o.stop(t + i*0.12 + 0.3);
+      });
+    }
+  } catch(e){}
+}
+</script>
+</body>
+</html>

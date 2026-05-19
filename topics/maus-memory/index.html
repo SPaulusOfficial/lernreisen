@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maus-Memory</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #fff5e1 0%, #ffd6e8 50%, #b5e8ff 100%); }
+
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 520px;
+    width: 90vw;
+    margin: 14px 0;
+  }
+  .card {
+    aspect-ratio: 1;
+    background: transparent;
+    cursor: pointer;
+    perspective: 600px;
+    user-select: none;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(.45,.05,.55,.95);
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+  .card.matched .card-inner { transform: rotateY(180deg) scale(0.92); }
+  .card.matched { animation: match-pop 0.6s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes match-pop {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); filter: drop-shadow(0 0 20px gold); }
+  }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  }
+  .card-back {
+    background: linear-gradient(135deg, #6a1b9a, #ec407a);
+    color: #fff;
+    font-size: 36px;
+  }
+  .card-front {
+    background: #fff;
+    transform: rotateY(180deg);
+    font-size: 50px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 6px 0;
+  }
+  .stat {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 18px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #6a1b9a;
+  }
+  .level-pick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .win-banner {
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #5a3a00;
+    padding: 14px 24px;
+    border-radius: 18px;
+    font-weight: bold;
+    font-size: 22px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .win-banner.show { opacity: 1; transform: scale(1); }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🃏✨</div>
+    <h1>Maus-Memory</h1>
+    <p>Klick zwei Karten — sind sie gleich, bleiben sie offen!<br/>Wie schnell findest du alle Paare?</p>
+    <button class="purple" onclick="engine.next()">Los geht's! 🎴</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <div class="level-pick">
+      <button class="small green" onclick="newGame('tiere')">🐶 Tiere</button>
+      <button class="small secondary" onclick="newGame('obst')">🍎 Obst</button>
+      <button class="small purple" onclick="newGame('fahrzeuge')">🚗 Fahrzeuge</button>
+    </div>
+    <div class="memory-grid" id="memGrid"></div>
+    <div class="stats">
+      <span class="stat">🎯 Paare: <span id="pairs">0</span> / 8</span>
+      <span class="stat">🔢 Klicks: <span id="clicks">0</span></span>
+    </div>
+    <div class="win-banner" id="winBanner">🏆 Super! Alle Paare gefunden!</div>
+    <button class="small secondary" onclick="newGame()" style="margin-top:8px">🔁 Neu</button>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🧠💪</div>
+    <h2>Dein Gedächtnis wird stark!</h2>
+    <p>Beim Memory lernt dein Gehirn, sich Sachen zu merken — wie ein Muskel!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Klick zwei Karten. Wenn sie gleich sind, bleiben sie offen! Wie schnell findest du alle Paare?",
+  "Such alle Paare! Erst klick eine Karte, dann eine andere. Sind sie gleich, juhu! Sind sie unterschiedlich, drehen sie wieder um.",
+  "Beim Memory lernt dein Gehirn, sich Sachen zu merken. Wie ein Muskel, der wächst!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 1) newGame('tiere'); } });
+
+const THEMES = {
+  tiere: ['🐶','🐱','🐰','🦊','🐻','🐼','🐸','🐵'],
+  obst: ['🍎','🍌','🍇','🍓','🍉','🍒','🥭','🍑'],
+  fahrzeuge: ['🚗','🚂','✈️','🚀','🚲','⛵','🏎️','🚁']
+};
+
+let firstCard = null, locked = false, pairs = 0, clicks = 0;
+
+function newGame(theme) {
+  theme = theme || 'tiere';
+  pairs = 0; clicks = 0;
+  firstCard = null; locked = false;
+  document.getElementById('pairs').textContent = '0';
+  document.getElementById('clicks').textContent = '0';
+  document.getElementById('winBanner').classList.remove('show');
+  const grid = document.getElementById('memGrid');
+  grid.innerHTML = '';
+  const emojis = THEMES[theme];
+  const deck = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+  deck.forEach(emoji => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.dataset.emoji = emoji;
+    c.innerHTML = '<div class="card-inner"><div class="card-face card-back">?</div><div class="card-face card-front">' + emoji + '</div></div>';
+    c.onclick = () => flipCard(c);
+    grid.appendChild(c);
+  });
+}
+
+function flipCard(card) {
+  if (locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  card.classList.add('flipped');
+  clicks++;
+  document.getElementById('clicks').textContent = String(clicks);
+  if (!firstCard) { firstCard = card; return; }
+  // Second card
+  if (card.dataset.emoji === firstCard.dataset.emoji) {
+    card.classList.add('matched');
+    firstCard.classList.add('matched');
+    pairs++;
+    document.getElementById('pairs').textContent = String(pairs);
+    firstCard = null;
+    sfx('match');
+    if (pairs >= 8) {
+      sfx('win');
+      document.getElementById('winBanner').classList.add('show');
+    }
+  } else {
+    locked = true;
+    sfx('nope');
+    setTimeout(() => {
+      card.classList.remove('flipped');
+      firstCard.classList.remove('flipped');
+      firstCard = null;
+      locked = false;
+    }, 900);
+  }
+}
+
+let ac = null;
+function sfx(type) {
+  try {
+    if (!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+    const t = ac.currentTime;
+    if (type === 'match') {
+      [600, 800, 1000].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.2, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.08 + 0.15);
+        o.start(t + i*0.08); o.stop(t + i*0.08 + 0.2);
+      });
+    } else if (type === 'nope') {
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'sine'; o.frequency.setValueAtTime(280, t); o.frequency.exponentialRampToValueAtTime(180, t+0.25);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+      o.start(t); o.stop(t+0.32);
+    } else if (type === 'win') {
+      [523, 659, 784, 1047, 1319].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.25, t + i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.1 + 0.25);
+        o.start(t + i*0.1); o.stop(t + i*0.1 + 0.3);
+      });
+    }
+  } catch(e){}
+}
+</script>
+</body>
+</html>
