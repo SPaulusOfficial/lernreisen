@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tag und Nacht</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #0c1445 0%, #1a3a8a 50%, #3a5fc8 100%); }
+  h1, h2 { color: #fff8e1; text-shadow: 2px 2px 0 #2c1a4e; }
+  p { color: #fff8e1; }
+  .scene { background: transparent; }
+
+  .stars-decor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .stars-decor span {
+    position: absolute;
+    color: #fff;
+    font-size: 14px;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  /* Spinning Earth */
+  .spinner-host {
+    position: relative;
+    width: min(70vw, 280px);
+    height: min(70vw, 280px);
+    margin: 30px 0;
+  }
+  .earth-emoji {
+    font-size: clamp(150px, 30vw, 260px);
+    animation: spin-y 8s linear infinite;
+    display: inline-block;
+    filter: drop-shadow(0 0 40px rgba(100,180,255,0.5));
+  }
+  @keyframes spin-y {
+    from { transform: rotateY(0); }
+    to { transform: rotateY(360deg); }
+  }
+
+  /* Sun-Earth diagram */
+  .sun-earth {
+    position: relative;
+    width: min(95vw, 800px);
+    height: 280px;
+    margin: 16px 0;
+  }
+  .sun-big {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 120px;
+    filter: drop-shadow(0 0 40px rgba(255,200,80,0.7));
+    animation: spin-slow 30s linear infinite;
+  }
+  .light-rays {
+    position: absolute;
+    left: 130px;
+    top: 0;
+    bottom: 0;
+    width: 350px;
+    background: linear-gradient(90deg, rgba(255,230,150,0.5), transparent);
+  }
+  .earth-static {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 100px;
+    animation: spin-z 6s linear infinite;
+  }
+  @keyframes spin-z {
+    from { transform: translateY(-50%) rotate(0); }
+    to { transform: translateY(-50%) rotate(360deg); }
+  }
+
+  /* Interactive earth - day/night ball */
+  .earth-stage {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .day-night-ball {
+    position: relative;
+    width: min(70vw, 300px);
+    height: min(70vw, 300px);
+    border-radius: 50%;
+    background: linear-gradient(90deg, #ffeb3b 0%, #ff9800 50%, #1a237e 50%, #0d1442 100%);
+    box-shadow: 0 0 60px rgba(100,180,255,0.4), inset -20px -20px 60px rgba(0,0,0,0.3);
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+    overflow: visible;
+  }
+  .day-side, .night-side {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+  /* House marker on rotating ball */
+  .house-marker {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin: -30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    transform-origin: center;
+    transition: transform 0.3s ease;
+    text-shadow: 0 0 6px rgba(0,0,0,0.5);
+    z-index: 5;
+  }
+  /* Sun position indicator */
+  .sun-indicator {
+    position: absolute;
+    top: 50%;
+    left: -130px;
+    transform: translateY(-50%);
+    font-size: 80px;
+    filter: drop-shadow(0 0 30px rgba(255,200,80,0.7));
+  }
+  .stars-night {
+    position: absolute;
+    top: 0;
+    right: -120px;
+    width: 110px;
+    height: 100%;
+    pointer-events: none;
+  }
+  .stars-night span {
+    position: absolute;
+    color: #fff;
+    font-size: 18px;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .rotation-slider {
+    width: min(80vw, 500px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    border-radius: 24px;
+    backdrop-filter: blur(6px);
+  }
+  .rotation-slider input { flex: 1; height: 12px; }
+  .rotation-slider .icon { font-size: 28px; }
+
+  .time-box {
+    background: rgba(255,255,255,0.18);
+    border-radius: 24px;
+    padding: 16px 30px;
+    color: #fff;
+    font-size: 22px;
+    margin-top: 14px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    min-width: 280px;
+  }
+  .time-box .big-time {
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff8c8;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Activities scene */
+  .activity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: min(95vw, 800px);
+    margin: 14px 0;
+  }
+  .activity-card {
+    background: rgba(255,255,255,0.18);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+  }
+  .activity-card.day { background: linear-gradient(135deg, rgba(255,235,59,0.25), rgba(255,152,0,0.25)); }
+  .activity-card.night { background: linear-gradient(135deg, rgba(74,58,142,0.4), rgba(28,18,60,0.4)); }
+  .activity-card h3 { font-size: 24px; color: #fff; margin-bottom: 10px; }
+  .act-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .act { font-size: 50px; background: rgba(255,255,255,0.2); border-radius: 16px; padding: 10px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <div class="stars-decor" id="bgStars"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌍✨</div>
+    <h1>Tag und Nacht</h1>
+    <p>Hallo! Warum ist es manchmal hell und manchmal dunkel? Warum geht die Sonne unter?<br/>
+       Heute lösen wir das Rätsel der Erde!</p>
+    <button class="purple" onclick="engine.next()">Komm mit! 🚀</button>
+  </section>
+
+  <!-- Scene 1: Earth spins -->
+  <section class="scene" data-scene="1">
+    <h2>Die Erde dreht sich!</h2>
+    <p>Unsere Erde ist wie ein <b style="color:#fdcb6e">Kreisel</b>.<br/>
+       Sie dreht sich die ganze Zeit — immer rundherum!</p>
+    <div class="spinner-host">
+      <span class="earth-emoji">🌍</span>
+    </div>
+    <p>Eine ganze Drehung dauert <b style="color:#fdcb6e">24 Stunden</b> — also einen ganzen Tag und eine ganze Nacht.</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Sun + Earth -->
+  <section class="scene" data-scene="2">
+    <h2>Die Sonne bleibt stehen</h2>
+    <p>Die Sonne bewegt sich nicht — sie ist riesig und steht still.<br/>
+       Aber die Erde dreht sich vor der Sonne!</p>
+    <div class="sun-earth">
+      <span class="sun-big">☀️</span>
+      <div class="light-rays"></div>
+      <span class="earth-static">🌍</span>
+    </div>
+    <p>Die Seite, die zur Sonne schaut, hat <b style="color:#fdcb6e">Tag</b>. Die andere Seite hat <b style="color:#74b9ff">Nacht</b>!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Interactive earth -->
+  <section class="scene" data-scene="3">
+    <h2>Dreh die Erde!</h2>
+    <p>Bewege den Schieber und sieh, wann dein Haus 🏡 Tag und Nacht hat.</p>
+    <div class="earth-stage">
+      <div style="position:relative;">
+        <span class="sun-indicator">☀️</span>
+        <div class="day-night-ball" id="earthBall">
+          <span class="house-marker" id="houseMarker">🏡</span>
+        </div>
+        <div class="stars-night">
+          <span style="top:20%;left:20%;">⭐</span>
+          <span style="top:50%;left:60%;animation-delay:0.5s">✨</span>
+          <span style="top:75%;left:30%;animation-delay:1s">🌟</span>
+        </div>
+      </div>
+    </div>
+    <div class="rotation-slider">
+      <span class="icon">🌅</span>
+      <input type="range" id="rotSlider" min="0" max="360" value="0" />
+      <span class="icon">🌇</span>
+    </div>
+    <div class="time-box">
+      <span class="big-time" id="timeText">🌅 Morgens</span>
+      <span id="timeDesc">Die Sonne kommt gerade hoch — bald wird es richtig hell!</span>
+    </div>
+    <button class="purple" onclick="engine.next()" style="margin-top:14px">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Activities -->
+  <section class="scene" data-scene="4">
+    <h2>Tag oder Nacht — was machst du?</h2>
+    <p>Tiere und Menschen haben eine eigene Uhr im Körper. Wir wissen, wann wir spielen oder schlafen!</p>
+    <div class="activity-grid">
+      <div class="activity-card day">
+        <h3>☀️ Am Tag</h3>
+        <div class="act-row">
+          <div class="act" title="Aufstehen">🌞</div>
+          <div class="act" title="Frühstück">🥐</div>
+          <div class="act" title="Spielen">🧸</div>
+          <div class="act" title="Lernen">📚</div>
+          <div class="act" title="Toben">🏃</div>
+          <div class="act" title="Essen">🍎</div>
+        </div>
+      </div>
+      <div class="activity-card night">
+        <h3>🌙 In der Nacht</h3>
+        <div class="act-row">
+          <div class="act" title="Schlafen">😴</div>
+          <div class="act" title="Mond">🌙</div>
+          <div class="act" title="Sterne">⭐</div>
+          <div class="act" title="Eule">🦉</div>
+          <div class="act" title="Kuschel">🧸</div>
+          <div class="act" title="Träumen">💭</div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:14px;font-size:20px;">Und dann beginnt alles wieder von vorne — die Erde dreht sich weiter! 🌍</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Hallo! Warum ist es manchmal hell und manchmal dunkel? Warum geht die Sonne unter? Heute lösen wir das Rätsel der Erde!",
+  "Unsere Erde ist wie ein Kreisel. Sie dreht sich die ganze Zeit, immer rundherum! Eine ganze Drehung dauert vierundzwanzig Stunden, also einen ganzen Tag und eine ganze Nacht.",
+  "Die Sonne bewegt sich nicht. Sie ist riesig und steht still. Aber die Erde dreht sich vor der Sonne! Die Seite, die zur Sonne schaut, hat Tag. Die andere Seite hat Nacht!",
+  "Probier mal: Bewege den Schieber und dreh die Erde. Schau, wann dein Haus Tag und Nacht hat. Morgens, mittags, abends und nachts!",
+  "Tiere und Menschen haben eine eigene Uhr im Körper. Am Tag spielen wir, lernen, essen. In der Nacht schlafen wir und träumen. Und dann beginnt alles wieder von vorne, denn die Erde dreht sich weiter!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: (idx) => { if (idx === 3) updateRot(); }
+});
+
+// Bg stars
+const bgStars = document.getElementById('bgStars');
+for (let i = 0; i < 40; i++) {
+  const s = document.createElement('span');
+  s.textContent = ['⭐','✨','·','*'][i%4];
+  s.style.top = (Math.random()*100) + '%';
+  s.style.left = (Math.random()*100) + '%';
+  s.style.animationDelay = (Math.random()*2) + 's';
+  s.style.fontSize = (10 + Math.random()*14) + 'px';
+  bgStars.appendChild(s);
+}
+
+// Interactive earth rotation
+const slider = document.getElementById('rotSlider');
+const ball = document.getElementById('earthBall');
+const marker = document.getElementById('houseMarker');
+const timeText = document.getElementById('timeText');
+const timeDesc = document.getElementById('timeDesc');
+
+function updateRot() {
+  const v = parseInt(slider.value, 10);
+  // Rotate the ball so the gradient day/night line moves
+  ball.style.transform = 'rotate(' + (-v) + 'deg)';
+  // Counter-rotate the house so it stays upright, but position it around the surface
+  // Position on circle edge
+  const r = Math.min(ball.offsetWidth, 300) / 2 - 20;
+  const angleRad = (v - 90) * Math.PI / 180;
+  const x = Math.cos(angleRad) * r;
+  const y = Math.sin(angleRad) * r;
+  marker.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+
+  // Determine time of day based on house position relative to sun (sun is to the left)
+  // angle 0 = top, 90 = right (night), 180 = bottom, 270 = left (day)
+  let label, desc;
+  if (v >= 0 && v < 45) { label = '🌅 Morgens';      desc = 'Die Sonne kommt gerade hoch — bald wird es richtig hell!'; }
+  else if (v < 90)      { label = '☀️ Vormittag';   desc = 'Es ist schon hell. Zeit zum Spielen und Lernen!'; }
+  else if (v < 135)     { label = '🌞 Mittag';        desc = 'Die Sonne steht hoch. Es ist Zeit für Mittagessen!'; }
+  else if (v < 180)     { label = '🌇 Abend';         desc = 'Die Sonne geht langsam unter. Bald wird es dunkel.'; }
+  else if (v < 225)     { label = '🌆 Sonnenuntergang'; desc = 'Schau die Farben am Himmel! Rot, Orange, Lila.'; }
+  else if (v < 270)     { label = '🌙 Nacht';         desc = 'Es ist dunkel. Sterne und Mond sind zu sehen.'; }
+  else if (v < 315)     { label = '🌌 Tiefe Nacht';   desc = 'Alle schlafen jetzt. Auch die Tiere.'; }
+  else                  { label = '🌄 Sonnenaufgang'; desc = 'Bald kommt die Sonne wieder hoch — ein neuer Tag!'; }
+  timeText.textContent = label;
+  timeDesc.textContent = desc;
+}
+slider.addEventListener('input', updateRot);
+</script>
+</body>
+</html>

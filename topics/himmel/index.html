@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum ist der Himmel blau?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #74b9ff 0%, #a8e6ff 50%, #e8f4ff 100%); }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #0984e3; }
+  .scene { background: transparent; }
+
+  /* Prism scene */
+  .prism-host {
+    position: relative;
+    width: min(90vw, 700px);
+    height: 250px;
+    margin: 20px 0;
+  }
+  .prism-svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Scattering demo */
+  .scatter-host {
+    position: relative;
+    width: min(90vw, 700px);
+    height: 300px;
+    background: rgba(135, 206, 250, 0.4);
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 20px 0;
+    border: 3px solid #fff;
+  }
+  .sun-source {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 70px;
+    z-index: 3;
+  }
+  .ray {
+    position: absolute;
+    height: 6px;
+    border-radius: 3px;
+    transform-origin: left center;
+    opacity: 0;
+  }
+  .photon {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 12px currentColor;
+  }
+  .air-particle {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    border: 2px solid rgba(255,255,255,0.8);
+  }
+  .eye-watcher {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 60px;
+    z-index: 3;
+  }
+
+  /* Sun slider scene */
+  .sky-stage {
+    position: relative;
+    width: min(95vw, 900px);
+    height: 320px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 16px 0;
+    box-shadow: inset 0 -40px 60px rgba(0,0,0,0.1);
+    transition: background 0.3s;
+  }
+  .sun-controlled {
+    position: absolute;
+    font-size: 60px;
+    transition: top 0.4s ease, left 0.4s ease;
+    z-index: 2;
+    filter: drop-shadow(0 0 18px rgba(255,200,80,0.7));
+    pointer-events: none;
+  }
+  .horizon {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, #7ec850 0%, #4a8030 100%);
+    z-index: 1;
+  }
+  .house {
+    position: absolute;
+    bottom: 30px;
+    font-size: 50px;
+    z-index: 2;
+  }
+  .slider-row {
+    width: min(95vw, 900px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.8);
+    padding: 14px 20px;
+    border-radius: 24px;
+  }
+  .slider-row label {
+    font-weight: bold;
+    color: #6a1b9a;
+  }
+  input[type=range] {
+    flex: 1;
+    height: 12px;
+  }
+  .time-label {
+    font-size: 24px;
+    color: #d81b60;
+    font-weight: bold;
+    min-width: 130px;
+    text-align: center;
+  }
+  .explain-box {
+    background: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 14px 24px;
+    margin-top: 8px;
+    color: #2a2a4a;
+    max-width: 700px;
+    font-size: 18px;
+    transition: all 0.4s;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌈☁️</div>
+    <h1>Warum ist der Himmel blau?</h1>
+    <p style="color:#fff;text-shadow:1px 1px 0 #0984e3;">Hast du schon mal in den Himmel geschaut?<br/>
+       Heute lösen wir das große Rätsel: <b>Warum ist er blau?</b></p>
+    <button class="orange" onclick="engine.next()">Los geht's! ☀️</button>
+  </section>
+
+  <!-- Scene 1: Prism -->
+  <section class="scene" data-scene="1">
+    <h2>Sonnenlicht versteckt alle Farben</h2>
+    <p style="color:#fff;">Das Sonnenlicht sieht weiß aus. Aber in Wirklichkeit sind ALLE Farben drin versteckt!</p>
+    <div class="prism-host">
+      <svg class="prism-svg" viewBox="0 0 700 250">
+        <!-- Sun -->
+        <text x="40" y="120" font-size="60">☀️</text>
+        <!-- White light beam -->
+        <line x1="110" y1="125" x2="300" y2="125" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+        <!-- Prism -->
+        <polygon points="300,60 380,180 220,180" fill="rgba(180,220,255,0.5)" stroke="#fff" stroke-width="3"/>
+        <!-- Rainbow rays -->
+        <line x1="350" y1="155" x2="650" y2="60" stroke="#ff0000" stroke-width="5" stroke-linecap="round"/>
+        <line x1="350" y1="155" x2="650" y2="90" stroke="#ff8800" stroke-width="5" stroke-linecap="round"/>
+        <line x1="350" y1="155" x2="650" y2="120" stroke="#ffee00" stroke-width="5" stroke-linecap="round"/>
+        <line x1="350" y1="155" x2="650" y2="150" stroke="#00cc00" stroke-width="5" stroke-linecap="round"/>
+        <line x1="350" y1="155" x2="650" y2="180" stroke="#0088ff" stroke-width="5" stroke-linecap="round"/>
+        <line x1="350" y1="155" x2="650" y2="210" stroke="#7700ff" stroke-width="5" stroke-linecap="round"/>
+        <text x="350" y="225" text-anchor="middle" font-size="16" fill="#fff" font-weight="bold">Glaspyramide</text>
+      </svg>
+    </div>
+    <p style="color:#fff;">Wenn weißes Licht durch ein Prisma geht, sehen wir <b>einen Regenbogen</b> 🌈!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Scattering demo -->
+  <section class="scene" data-scene="2">
+    <h2>Blau hüpft am liebsten!</h2>
+    <p style="color:#fff;">In der Luft sind ganz, ganz, ganz kleine Teilchen.<br/>
+       <b>Blaues Licht</b> hüpft an ihnen ab — alle anderen Farben fliegen einfach durch!</p>
+    <div class="scatter-host" id="scatter">
+      <span class="sun-source">☀️</span>
+      <span class="eye-watcher">👁️</span>
+    </div>
+    <button class="small green" onclick="runScatter()">▶️ Nochmal zeigen</button>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Interactive sun slider -->
+  <section class="scene" data-scene="3">
+    <h2>Schieb die Sonne!</h2>
+    <p style="color:#fff;">Bewege die Sonne und sieh, wie sich der Himmel verändert.</p>
+    <div class="sky-stage" id="skyStage">
+      <span class="sun-controlled" id="sunIcon">☀️</span>
+      <div class="horizon"></div>
+      <span class="house" style="left:15%;">🏠</span>
+      <span class="house" style="left:45%;font-size:60px;">🌳</span>
+      <span class="house" style="right:15%;">🏡</span>
+    </div>
+    <div class="slider-row">
+      <label>🌅</label>
+      <input type="range" id="sunPos" min="0" max="100" value="50" />
+      <label>☀️</label>
+      <span class="time-label" id="timeLabel">Mittag</span>
+    </div>
+    <div class="explain-box" id="skyExplain">Bei Mittag steht die Sonne hoch — der Himmel ist <b style="color:#0984e3">strahlend blau</b>.</div>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Recap -->
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🌅🌌</div>
+    <h2>Du hast das Rätsel gelöst!</h2>
+    <p style="color:#fff;font-size:24px;line-height:1.5;">
+      ✨ Sonnenlicht hat alle Farben.<br/>
+      💙 Blau hüpft am meisten an der Luft.<br/>
+      🌍 Darum ist der Himmel <b>blau</b>!<br/>
+      🌅 Bei Sonnenuntergang muss das Licht weiter reisen — dann sehen wir <b>rot und orange</b>.
+    </p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Hast du schon mal in den Himmel geschaut? Heute lösen wir das große Rätsel: Warum ist der Himmel blau?",
+  "Das Sonnenlicht sieht weiß aus. Aber in Wirklichkeit sind alle Farben drin versteckt! Wenn weißes Licht durch ein Prisma geht, sehen wir einen Regenbogen!",
+  "Schau mal: In der Luft sind ganz, ganz, ganz kleine Teilchen. Blaues Licht hüpft an ihnen ab. Alle anderen Farben fliegen einfach durch! Darum sehen wir Blau, wo immer wir hinschauen.",
+  "Probier mal: Schieb die Sonne hin und her. Bei Mittag steht sie hoch und der Himmel ist blau. Wenn sie tief steht, bei Sonnenuntergang, wird der Himmel orange und rot!",
+  "Du hast das Rätsel gelöst! Sonnenlicht hat alle Farben. Blau hüpft am meisten an der Luft. Darum ist der Himmel blau! Und bei Sonnenuntergang sehen wir rot und orange."
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: handleSceneEnter
+});
+
+function handleSceneEnter(idx) {
+  if (idx === 2) setTimeout(runScatter, 600);
+  if (idx === 3) updateSky();
+}
+
+// ============ Scattering animation ============
+let scatterTimer = null;
+function runScatter() {
+  const host = document.getElementById('scatter');
+  // Remove old photons/particles
+  host.querySelectorAll('.photon, .air-particle, .ray').forEach(e => e.remove());
+  if (scatterTimer) clearInterval(scatterTimer);
+
+  // Place air particles
+  const rect = host.getBoundingClientRect();
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'air-particle';
+    p.style.left = (120 + Math.random()*(rect.width-260)) + 'px';
+    p.style.top  = (Math.random()*(rect.height-20)) + 'px';
+    host.appendChild(p);
+  }
+
+  let i = 0;
+  function shoot() {
+    if (i > 12) { clearInterval(scatterTimer); scatterTimer = null; return; }
+    const isBlue = i % 3 === 0 || i % 3 === 1; // more blue
+    const photon = document.createElement('div');
+    photon.className = 'photon';
+    photon.style.color = isBlue ? '#3b82f6' : (i%6<2 ? '#ef4444' : '#fde047');
+    photon.style.background = photon.style.color;
+    photon.style.left = '70px';
+    const startY = 40 + Math.random()*(rect.height-80);
+    photon.style.top = startY + 'px';
+    host.appendChild(photon);
+
+    // Find a particle to bounce off (for blue only)
+    const particles = host.querySelectorAll('.air-particle');
+    let target = null;
+    if (isBlue && particles.length) {
+      const candidates = Array.from(particles).map(p => ({
+        x: parseFloat(p.style.left)+9,
+        y: parseFloat(p.style.top)+9,
+        dy: Math.abs(parseFloat(p.style.top)+9 - startY)
+      })).sort((a,b) => a.dy - b.dy);
+      target = candidates[0];
+    }
+
+    const startTime = performance.now();
+    const speedX = 350; // px/s
+    const targetX = target ? target.x : rect.width-60;
+    const targetY = target ? target.y : startY;
+    const t1 = (targetX - 70) / speedX * 1000;
+
+    function animate(now) {
+      const dt = now - startTime;
+      if (dt < t1) {
+        const p = dt / t1;
+        photon.style.left = (70 + (targetX-70)*p) + 'px';
+        photon.style.top  = (startY + (targetY-startY)*p) + 'px';
+        requestAnimationFrame(animate);
+      } else if (target) {
+        // Bounce off in random direction
+        const angle = Math.random()*Math.PI*2;
+        const bounceStart = now;
+        const bounceTime = 700;
+        function bounce(now2) {
+          const dt2 = now2 - bounceStart;
+          if (dt2 < bounceTime) {
+            const p = dt2 / bounceTime;
+            const r = 200 * p;
+            photon.style.left = (targetX + Math.cos(angle)*r - 7) + 'px';
+            photon.style.top  = (targetY + Math.sin(angle)*r - 7) + 'px';
+            photon.style.opacity = 1 - p;
+            requestAnimationFrame(bounce);
+          } else {
+            photon.remove();
+          }
+        }
+        requestAnimationFrame(bounce);
+      } else {
+        // Goes through
+        photon.style.opacity = '0';
+        setTimeout(() => photon.remove(), 500);
+      }
+    }
+    requestAnimationFrame(animate);
+    i++;
+  }
+  scatterTimer = setInterval(shoot, 350);
+  shoot();
+}
+
+// ============ Sun slider ============
+const slider = document.getElementById('sunPos');
+const sunIcon = document.getElementById('sunIcon');
+const stage = document.getElementById('skyStage');
+const timeLabel = document.getElementById('timeLabel');
+const explain = document.getElementById('skyExplain');
+
+function updateSky() {
+  const v = parseFloat(slider.value); // 0 = horizon (sunrise/sunset), 100 = high
+  // Sun position: 0 → bottom-left, 50 → top-middle, 100 → bottom-right? No, let's do horizon-to-zenith-to-horizon
+  // Map: 0..50 = sunrise to noon; 50..100 = noon to sunset
+  const angle = (v / 100) * Math.PI;
+  const cx = 50 + (Math.cos(Math.PI - angle))*40; // %
+  const cy = 80 - Math.sin(angle)*70; // %
+  sunIcon.style.left = `calc(${cx}% - 30px)`;
+  sunIcon.style.top  = `${Math.max(0, cy)}%`;
+
+  // Sky color based on height (lower = warmer)
+  const h = Math.sin(angle); // 0 at horizon, 1 at noon
+  let bg;
+  let label, exp;
+  if (h > 0.85) {
+    bg = 'linear-gradient(180deg, #74b9ff 0%, #a8e6ff 100%)';
+    label = 'Mittag'; exp = 'Bei Mittag steht die Sonne hoch — der Himmel ist <b style="color:#0984e3">strahlend blau</b>. Das Licht muss nur eine kurze Strecke durch die Luft, und das blaue Licht hüpft schön zu uns!';
+  } else if (h > 0.55) {
+    bg = 'linear-gradient(180deg, #4a90d9 0%, #87ceeb 60%, #ffd3a0 100%)';
+    label = 'Nachmittag'; exp = 'Die Sonne sinkt. Der Himmel wird langsam <b style="color:#f9a826">wärmer</b>.';
+  } else if (h > 0.25) {
+    bg = 'linear-gradient(180deg, #4a3a8e 0%, #ec7063 40%, #f1c40f 80%, #f39c12 100%)';
+    label = 'Sonnenuntergang'; exp = 'Jetzt muss das Licht <b>weiter</b> durch die Luft reisen. Das Blau ist schon weg — nur <b style="color:#e74c3c">rot und orange</b> bleiben übrig!';
+  } else {
+    bg = 'linear-gradient(180deg, #1a1a4e 0%, #4a3a7e 60%, #ec7063 100%)';
+    label = 'Abend'; exp = 'Die Sonne geht unter. Bald sehen wir <b style="color:#fdcb6e">Sterne</b> ✨';
+  }
+  stage.style.background = bg;
+  timeLabel.textContent = label;
+  explain.innerHTML = exp;
+}
+slider.addEventListener('input', updateSky);
+</script>
+</body>
+</html>

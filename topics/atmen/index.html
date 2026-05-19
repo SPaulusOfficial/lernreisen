@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Warum atmen wir?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #e8f7ff 0%, #b5e8ff 50%, #88c5ff 100%); }
+  h1, h2 { color: #074a87; text-shadow: 2px 2px 0 #fff; }
+
+  /* Floating air molecules */
+  .air-cloud {
+    position: relative;
+    width: min(95vw, 600px);
+    height: 200px;
+    margin: 14px 0;
+    background: rgba(255,255,255,0.4);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .o2 {
+    position: absolute;
+    font-size: 32px;
+    animation: drift 6s ease-in-out infinite;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0); }
+    25% { transform: translate(30px, -10px); }
+    50% { transform: translate(60px, 10px); }
+    75% { transform: translate(30px, 0); }
+  }
+
+  /* Lung SVG */
+  .lung-wrap {
+    width: min(90vw, 500px);
+    margin: 14px 0;
+  }
+  .lung-svg { width: 100%; height: auto; }
+  .lung {
+    fill: #ff9aa2;
+    stroke: #c44569;
+    stroke-width: 3;
+    transform-origin: center;
+    transition: transform 1.5s ease-in-out;
+  }
+  .lung.inhale { transform: scaleY(1.15) scaleX(1.08); fill: #ffb5bb; }
+  .lung.exhale { transform: scaleY(0.85) scaleX(0.95); fill: #e07880; }
+
+  /* Breathing exercise */
+  .breath-circle {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #b5e8ff, #88c5ff);
+    border: 5px solid #074a87;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    margin: 18px 0;
+    animation: breathe 8s ease-in-out infinite;
+    box-shadow: 0 0 50px rgba(116,185,255,0.5);
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.65); }
+    50% { transform: scale(1.1); }
+  }
+
+  /* Journey of air */
+  .journey-svg {
+    width: min(95vw, 800px);
+    height: auto;
+  }
+  .pulse-path {
+    stroke-dasharray: 8;
+    animation: pulse-dash 1.5s linear infinite;
+  }
+  @keyframes pulse-dash { to { stroke-dashoffset: -16; } }
+
+  /* Plant-human friendship */
+  .friend-row {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+  .friend-being {
+    background: rgba(255,255,255,0.7);
+    border-radius: 30px;
+    padding: 18px 24px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+  .friend-being .emoji { font-size: 80px; display: block; }
+  .friend-being .label { font-weight: bold; color: #074a87; font-size: 18px; }
+  .exchange {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 20px;
+  }
+  .exchange-line { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.6); padding: 6px 14px; border-radius: 14px; }
+
+  .breath-counter {
+    background: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 10px 24px;
+    font-size: 22px;
+    color: #074a87;
+    margin-top: 8px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🫁💨</div>
+    <h1>Warum atmen wir?</h1>
+    <p>Atme mal tief ein... und langsam aus.<br/>
+       Hast du gewusst, dass dein Körper das <b style="color:#c44569">22.000 Mal am Tag</b> macht?<br/>
+       Heute finden wir raus, warum!</p>
+    <button class="secondary" onclick="engine.next()">Los geht's! 🌬️</button>
+  </section>
+
+  <!-- Scene 1: Air is everywhere -->
+  <section class="scene" data-scene="1">
+    <h2>Luft ist überall</h2>
+    <p>Auch wenn du sie nicht siehst — überall um dich rum ist <b style="color:#0984e3">Luft</b>.<br/>
+       In der Luft ist etwas ganz Wichtiges: <b style="color:#c44569">Sauerstoff</b> ✨</p>
+    <div class="air-cloud" id="airCloud">
+      <span class="o2" style="top:30%;left:10%;color:#74b9ff">O₂</span>
+      <span class="o2" style="top:60%;left:25%;color:#74b9ff;animation-delay:0.5s">O₂</span>
+      <span class="o2" style="top:20%;left:50%;color:#74b9ff;animation-delay:1s">O₂</span>
+      <span class="o2" style="top:70%;left:65%;color:#74b9ff;animation-delay:1.5s">O₂</span>
+      <span class="o2" style="top:40%;left:85%;color:#74b9ff;animation-delay:2s">O₂</span>
+    </div>
+    <p>Sauerstoff ist wie <b>Essen</b> für jede Zelle in deinem Körper!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Lungs animation -->
+  <section class="scene" data-scene="2">
+    <h2>Deine Lungen</h2>
+    <p>In deiner Brust hast du zwei <b>Lungen</b>. Wie zwei große Schwämme!</p>
+    <div class="lung-wrap">
+      <svg class="lung-svg" viewBox="0 0 400 360">
+        <!-- Trachea -->
+        <rect x="185" y="10" width="30" height="100" rx="10" fill="#ffd3b6" stroke="#a04040" stroke-width="3"/>
+        <text x="200" y="40" text-anchor="middle" font-size="16" fill="#a04040" font-weight="bold">Luftröhre</text>
+        <!-- Bronchi -->
+        <line x1="200" y1="110" x2="140" y2="155" stroke="#a04040" stroke-width="6" stroke-linecap="round"/>
+        <line x1="200" y1="110" x2="260" y2="155" stroke="#a04040" stroke-width="6" stroke-linecap="round"/>
+        <!-- Lungs -->
+        <ellipse class="lung" id="leftLung" cx="120" cy="220" rx="60" ry="90"/>
+        <ellipse class="lung" id="rightLung" cx="280" cy="220" rx="60" ry="90"/>
+        <!-- Tiny bronchioles -->
+        <g stroke="#a04040" stroke-width="1.5" fill="none">
+          <path d="M 120 180 L 100 200 M 120 180 L 140 200 M 100 200 L 90 220 M 140 200 L 150 220"/>
+          <path d="M 280 180 L 300 200 M 280 180 L 260 200 M 300 200 L 310 220 M 260 200 L 250 220"/>
+        </g>
+        <text x="200" y="350" text-anchor="middle" font-size="18" fill="#c44569" font-weight="bold">Lungen</text>
+      </svg>
+    </div>
+    <p>Probier mal: <button class="small secondary" id="breathBtn" onclick="oneBreath()">🌬️ Einmal atmen</button></p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Journey of air -->
+  <section class="scene" data-scene="3">
+    <h2>Die Reise der Luft</h2>
+    <p>Schau, wohin die Luft in deinem Körper reist:</p>
+    <svg class="journey-svg" viewBox="0 0 800 320">
+      <!-- Head -->
+      <circle cx="100" cy="80" r="50" fill="#ffd3b6" stroke="#6a3a00" stroke-width="2"/>
+      <circle cx="85" cy="75" r="3" fill="#2c2c54"/>
+      <circle cx="105" cy="75" r="3" fill="#2c2c54"/>
+      <path d="M 88 95 Q 95 100 102 95" stroke="#2c2c54" stroke-width="2" fill="none"/>
+      <!-- Nose / mouth label -->
+      <text x="100" y="155" text-anchor="middle" font-size="14" fill="#6a3a00" font-weight="bold">Nase 👃</text>
+      <!-- Body -->
+      <rect x="60" y="140" width="80" height="140" rx="20" fill="#ffd3b6" stroke="#6a3a00" stroke-width="2"/>
+      <!-- Lungs inside body -->
+      <ellipse cx="85" cy="200" rx="15" ry="30" fill="#ff9aa2" stroke="#c44569" stroke-width="2"/>
+      <ellipse cx="115" cy="200" rx="15" ry="30" fill="#ff9aa2" stroke="#c44569" stroke-width="2"/>
+      <text x="100" y="295" text-anchor="middle" font-size="14" fill="#c44569" font-weight="bold">Lungen 🫁</text>
+      <!-- Arrow into nose -->
+      <path d="M 20 80 L 50 80" stroke="#74b9ff" stroke-width="6" class="pulse-path" stroke-linecap="round"/>
+      <text x="35" y="65" font-size="20" fill="#0984e3" font-weight="bold">O₂</text>
+      <!-- Heart pumping blood -->
+      <g transform="translate(280,180)">
+        <path d="M 0 -20 Q 20 -30 20 -10 Q 20 10 0 20 Q -20 10 -20 -10 Q -20 -30 0 -20 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="2" class="pulse"/>
+        <text x="0" y="50" text-anchor="middle" font-size="14" fill="#c0392b" font-weight="bold">Herz ❤️</text>
+      </g>
+      <!-- Arrow from lungs to heart -->
+      <path d="M 150 200 L 250 180" stroke="#74b9ff" stroke-width="5" class="pulse-path" stroke-linecap="round"/>
+      <!-- Body distribution -->
+      <g transform="translate(450,160)">
+        <circle cx="0" cy="0" r="60" fill="#ffe5b4" stroke="#6a3a00" stroke-width="2"/>
+        <text x="0" y="5" text-anchor="middle" font-size="14" fill="#6a3a00" font-weight="bold">Deine Zellen</text>
+        <!-- Tiny cells -->
+        <circle cx="-25" cy="-25" r="8" fill="#fff" stroke="#6a3a00" stroke-width="1"/>
+        <circle cx="25" cy="-20" r="8" fill="#fff" stroke="#6a3a00" stroke-width="1"/>
+        <circle cx="-20" cy="25" r="8" fill="#fff" stroke="#6a3a00" stroke-width="1"/>
+        <circle cx="25" cy="20" r="8" fill="#fff" stroke="#6a3a00" stroke-width="1"/>
+      </g>
+      <path d="M 320 180 L 390 170" stroke="#e74c3c" stroke-width="5" class="pulse-path" stroke-linecap="round"/>
+      <text x="350" y="155" font-size="16" fill="#c0392b" font-weight="bold">Blut</text>
+      <!-- Out arrow -->
+      <path d="M 510 220 L 600 250" stroke="#a3a3a3" stroke-width="5" class="pulse-path" stroke-linecap="round"/>
+      <text x="620" y="260" font-size="20" fill="#5a5a5a" font-weight="bold">CO₂ 💨</text>
+      <text x="620" y="280" font-size="14" fill="#5a5a5a">(ausatmen)</text>
+    </svg>
+    <p style="font-size:18px;max-width:800px;">Nase → Lungen → Herz → Blut → alle Zellen.<br/>
+       Und zurück mit dem <b>verbrauchten</b> CO₂ — das atmest du wieder aus!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Breathing exercise -->
+  <section class="scene" data-scene="4">
+    <h2>Atme mit mir</h2>
+    <p>Folge dem Kreis — atme tief und ruhig.</p>
+    <div class="breath-circle" id="breathCircle">🫁</div>
+    <p id="breathLabel" style="font-size:24px;color:#074a87;font-weight:bold;height:34px;">Einatmen ⬆️</p>
+    <div class="breath-counter">Atemzüge: <span id="breathNum">0</span></div>
+    <p style="font-size:18px;max-width:700px;margin-top:14px;">Wenn du aufgeregt bist, oder Angst hast — atme so. Das macht dich ganz ruhig!</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Plants are our friends -->
+  <section class="scene" data-scene="5">
+    <h2>Pflanzen sind deine Atem-Freunde 🌳</h2>
+    <p>Pflanzen machen genau das Gegenteil von dir:</p>
+    <div class="friend-row">
+      <div class="friend-being">
+        <span class="emoji">🧒</span>
+        <span class="label">Du</span>
+      </div>
+      <div class="exchange">
+        <div class="exchange-line">➡️ atmest <b style="color:#5a5a5a">CO₂</b> aus</div>
+        <div class="exchange-line">⬅️ atmest <b style="color:#0984e3">O₂</b> ein</div>
+      </div>
+      <div class="friend-being">
+        <span class="emoji">🌳</span>
+        <span class="label">Pflanze</span>
+      </div>
+    </div>
+    <p style="font-size:20px;max-width:800px;">
+      Pflanzen <b style="color:#0984e3">geben dir Sauerstoff</b> — und sie freuen sich über dein CO₂!<br/>
+      Darum sind Wälder so wichtig 🌲💚
+    </p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Atme mal tief ein, und langsam aus. Hast du gewusst, dass dein Körper das zweiundzwanzig tausend Mal am Tag macht? Heute finden wir raus, warum!",
+  "Auch wenn du sie nicht siehst, überall um dich rum ist Luft. In der Luft ist etwas ganz Wichtiges: Sauerstoff! Sauerstoff ist wie Essen für jede Zelle in deinem Körper.",
+  "In deiner Brust hast du zwei Lungen. Wie zwei große Schwämme! Drück auf den Knopf und schau, wie sie sich beim Atmen aufblähen und wieder kleiner werden.",
+  "Komm mit auf die Reise der Luft. Die Luft kommt durch deine Nase rein, geht in die Lungen, das Herz pumpt sie ins Blut, und das Blut bringt den Sauerstoff zu jeder Zelle. Und zurück kommt das verbrauchte Gas, das CO2, das atmest du wieder aus!",
+  "Atme jetzt mit mir. Folge dem Kreis: Wenn er groß wird, atme ein. Wenn er klein wird, atme aus. Tief und ruhig. Wenn du aufgeregt bist oder Angst hast, macht dich das ganz ruhig!",
+  "Pflanzen sind deine besten Atem-Freunde. Sie machen genau das Gegenteil von dir: Du atmest CO2 aus, sie nehmen es auf. Sie geben Sauerstoff her, du atmest ihn ein. Darum sind Wälder so wichtig!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: handleSceneEnter
+});
+
+function handleSceneEnter(idx) {
+  if (idx === 4) startBreathing();
+  else stopBreathing();
+}
+
+// Lung animation on demand
+function oneBreath() {
+  const l = document.getElementById('leftLung');
+  const r = document.getElementById('rightLung');
+  l.classList.remove('inhale','exhale'); r.classList.remove('inhale','exhale');
+  void l.offsetWidth;
+  l.classList.add('inhale'); r.classList.add('inhale');
+  setTimeout(() => {
+    l.classList.remove('inhale'); r.classList.remove('inhale');
+    l.classList.add('exhale'); r.classList.add('exhale');
+    setTimeout(() => {
+      l.classList.remove('exhale'); r.classList.remove('exhale');
+    }, 1500);
+  }, 1500);
+}
+
+// Breathing exercise
+let breathTimer = null;
+let breathCount = 0;
+function startBreathing() {
+  breathCount = 0;
+  document.getElementById('breathNum').textContent = '0';
+  let phase = 0; // 0 = einatmen, 1 = ausatmen
+  const lbl = document.getElementById('breathLabel');
+  lbl.textContent = 'Einatmen ⬆️';
+  if (breathTimer) clearInterval(breathTimer);
+  breathTimer = setInterval(() => {
+    phase = (phase + 1) % 2;
+    lbl.textContent = phase === 0 ? 'Einatmen ⬆️' : 'Ausatmen ⬇️';
+    if (phase === 0) {
+      breathCount++;
+      document.getElementById('breathNum').textContent = String(breathCount);
+    }
+  }, 4000);
+}
+function stopBreathing() {
+  if (breathTimer) clearInterval(breathTimer);
+  breathTimer = null;
+}
+</script>
+</body>
+</html>

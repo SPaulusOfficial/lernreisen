@@ -1,0 +1,199 @@
+/* Shared kid-friendly styles for all topic journeys */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+  background: linear-gradient(135deg, #ffd6e8 0%, #b5e8ff 50%, #d4ffd6 100%);
+  color: #2a2a4a;
+  overflow: hidden;
+}
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+  text-align: center;
+}
+.scene.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+h1 {
+  font-size: clamp(28px, 5vw, 56px);
+  color: #6a1b9a;
+  text-shadow: 2px 2px 0 #fff;
+  margin-bottom: 16px;
+}
+h2 {
+  font-size: clamp(22px, 4vw, 40px);
+  color: #d81b60;
+  text-shadow: 1px 1px 0 #fff;
+  margin-bottom: 12px;
+}
+h3 {
+  font-size: clamp(18px, 2.5vw, 26px);
+  margin-bottom: 10px;
+}
+p {
+  font-size: clamp(18px, 2.5vw, 26px);
+  max-width: 900px;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+button {
+  font-family: inherit;
+  font-size: clamp(16px, 2vw, 22px);
+  padding: 14px 28px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #8e2c4e, 0 8px 14px rgba(0,0,0,0.2);
+  transition: all 0.15s;
+  font-weight: bold;
+}
+button:hover { transform: translateY(-2px); }
+button:active { transform: translateY(4px); box-shadow: 0 2px 0 #8e2c4e; }
+button.secondary {
+  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  box-shadow: 0 6px 0 #074a87, 0 8px 14px rgba(0,0,0,0.2);
+}
+button.secondary:active { box-shadow: 0 2px 0 #074a87; }
+button.green {
+  background: linear-gradient(135deg, #55efc4, #00b894);
+  box-shadow: 0 6px 0 #006a52, 0 8px 14px rgba(0,0,0,0.2);
+}
+button.green:active { box-shadow: 0 2px 0 #006a52; }
+button.purple {
+  background: linear-gradient(135deg, #d6a2ff, #6a1b9a);
+  box-shadow: 0 6px 0 #3d0a5a, 0 8px 14px rgba(0,0,0,0.2);
+}
+button.purple:active { box-shadow: 0 2px 0 #3d0a5a; }
+button.orange {
+  background: linear-gradient(135deg, #ffd166, #f59e0b);
+  box-shadow: 0 6px 0 #92560b, 0 8px 14px rgba(0,0,0,0.2);
+}
+button.orange:active { box-shadow: 0 2px 0 #92560b; }
+button.active-mode {
+  outline: 4px solid #ffeb3b;
+  outline-offset: 3px;
+}
+button.small {
+  font-size: 16px;
+  padding: 10px 18px;
+}
+
+.nav {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 14px;
+  z-index: 100;
+}
+
+.progress {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 50;
+}
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: 2px solid #6a1b9a;
+  transition: all 0.3s;
+}
+.dot.active {
+  background: #d81b60;
+  transform: scale(1.4);
+}
+
+.home-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 60;
+  background: rgba(255,255,255,0.8);
+  border: 2px solid #6a1b9a;
+  color: #6a1b9a;
+  font-size: 24px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  padding: 0;
+  box-shadow: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.home-btn:active { box-shadow: none; transform: none; }
+.sound-btn {
+  left: auto;
+  right: 16px;
+}
+
+.big-emoji { font-size: clamp(60px, 10vw, 120px); }
+
+/* Animations available everywhere */
+.floaty { animation: floaty 3s ease-in-out infinite; }
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+.twinkle { animation: twinkle 1.5s ease-in-out infinite; }
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.wobble { animation: wobble 2s ease-in-out infinite; transform-origin: bottom center; }
+@keyframes wobble {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+.pulse { animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.spin-slow { animation: spin-slow 12s linear infinite; }
+@keyframes spin-slow {
+  from { transform: rotate(0); }
+  to { transform: rotate(360deg); }
+}
+
+.stars-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.star {
+  position: absolute;
+  color: #fff700;
+  font-size: 24px;
+  animation: twinkle 2s ease-in-out infinite;
+}

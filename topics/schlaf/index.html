@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Schlaf & Träume</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  html, body {
+    background: linear-gradient(180deg, #1a1a4e 0%, #4a3a7e 60%, #6a5fa8 100%);
+    color: #f4f4ff;
+  }
+  h1, h2 { color: #fff6ff; text-shadow: 2px 2px 0 #2c1a4e; }
+  p { color: #f4f4ff; }
+  .scene { background: transparent; }
+
+  .moon {
+    position: absolute;
+    top: 8%;
+    right: 10%;
+    font-size: 100px;
+    animation: floaty 6s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(255,255,180,0.6));
+  }
+  .stars-decor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .stars-decor span {
+    position: absolute;
+    color: #fff;
+    font-size: 20px;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  /* Battery */
+  .battery-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin: 14px 0;
+  }
+  .battery {
+    width: 140px;
+    height: 70px;
+    border: 5px solid #fff;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(0,0,0,0.4);
+  }
+  .battery::after {
+    content: '';
+    position: absolute;
+    right: -15px;
+    top: 22px;
+    width: 12px;
+    height: 22px;
+    background: #fff;
+    border-radius: 0 4px 4px 0;
+  }
+  .battery-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #fdcb6e, #55efc4);
+    width: 0%;
+    transition: width 1s ease;
+  }
+  .battery.full .battery-fill { width: 100%; }
+  .battery.low .battery-fill { width: 12%; background: #ff6b6b; }
+  .battery-label {
+    font-size: 36px;
+    width: 80px;
+    text-align: center;
+  }
+
+  /* Dream bubbles */
+  .dream-host {
+    position: relative;
+    width: min(80vw, 600px);
+    height: 300px;
+    margin: 20px 0;
+  }
+  .dream-bubble {
+    position: absolute;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 50%;
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    backdrop-filter: blur(4px);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .dream-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 18px;
+    width: 14px;
+    height: 14px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 50%;
+  }
+  .sleeping-child {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 80px;
+  }
+
+  /* Albtraum - transforming bubble */
+  .transform-bubble {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 3px solid rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 120px;
+    margin: 20px 0;
+    cursor: pointer;
+    transition: all 0.4s;
+    user-select: none;
+  }
+  .transform-bubble:hover {
+    transform: scale(1.05);
+    border-color: #ffd700;
+  }
+  .transform-bubble.transformed {
+    background: rgba(255, 240, 200, 0.3);
+    border-color: #ffd700;
+    box-shadow: 0 0 40px rgba(255,215,0,0.5);
+  }
+  .hint {
+    font-size: 18px;
+    opacity: 0.8;
+    margin-top: 8px;
+  }
+
+  /* Breathing exercise */
+  .breath-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(180,220,255,0.6), rgba(120,180,255,0.3));
+    border: 4px solid rgba(255,255,255,0.7);
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #fff;
+    font-weight: bold;
+    animation: breathe 8s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(180,220,255,0.5);
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.7); }
+    50% { transform: scale(1.1); }
+  }
+  .breath-label {
+    font-size: clamp(20px, 3vw, 32px);
+    margin-bottom: 8px;
+    color: #fff;
+    height: 40px;
+  }
+
+  /* Routine icons */
+  .routine-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 900px;
+  }
+  .routine-step {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 18px;
+    width: 140px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+  }
+  .routine-step .icon { font-size: 60px; display: block; margin-bottom: 6px; }
+  .routine-step .step-num {
+    background: #ffd700;
+    color: #2c1a4e;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+    font-weight: bold;
+    margin: 0 auto 8px;
+    font-size: 18px;
+  }
+  .routine-step p { font-size: 16px; margin: 0; color: #fff; }
+
+  /* Comfort buttons on Albtraum scene */
+  .comfort-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 18px 0;
+  }
+  .comfort-btn {
+    background: rgba(255,255,255,0.18) !important;
+    border: 2px solid rgba(255,255,255,0.5);
+    color: #fff !important;
+    box-shadow: none !important;
+    padding: 14px 22px;
+    border-radius: 25px;
+    font-size: 20px;
+  }
+  .comfort-btn:hover { background: rgba(255,255,255,0.3) !important; }
+
+  .message-popup {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #2c1a4e;
+    padding: 30px 50px;
+    border-radius: 30px;
+    font-size: 28px;
+    font-weight: bold;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    text-align: center;
+    max-width: 90vw;
+  }
+  .message-popup.show {
+    transform: translate(-50%, -50%) scale(1);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <div class="stars-decor" id="stars"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="moon">🌙</div>
+    <div class="big-emoji floaty">😴💤</div>
+    <h1>Schlaf & Träume</h1>
+    <p>Hallo! Heute reisen wir in eine Welt, die jede Nacht beginnt.<br/>
+       Die Welt des <b style="color:#ffd700">Schlafs</b> und der <b style="color:#ffd700">Träume</b>!</p>
+    <button class="purple" onclick="engine.next()">Komm mit! ✨</button>
+  </section>
+
+  <!-- Scene 1: Warum schlafen wir -->
+  <section class="scene" data-scene="1">
+    <h2>Warum schlafen wir?</h2>
+    <p>Dein Körper ist wie ein Handy. Wenn du wach bist, geht der Akku langsam leer.</p>
+    <div class="battery-row">
+      <span class="battery-label">😪</span>
+      <div class="battery low" id="bat1"><div class="battery-fill"></div></div>
+      <span class="battery-label">➡️</span>
+      <div class="battery full" id="bat2"><div class="battery-fill"></div></div>
+      <span class="battery-label">😄</span>
+    </div>
+    <p>Im Schlaf lädt dein Akku wieder auf — bis du am Morgen wieder voll Energie bist!</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Träume -->
+  <section class="scene" data-scene="2">
+    <h2>Was sind Träume?</h2>
+    <p>Wenn du schläfst, macht dein Gehirn kleine Filme. Das sind Träume!</p>
+    <div class="dream-host">
+      <div class="dream-bubble" style="top:0;left:5%;">🦄</div>
+      <div class="dream-bubble" style="top:20%;left:35%;animation-delay:0.5s;">🍦</div>
+      <div class="dream-bubble" style="top:5%;right:5%;animation-delay:1s;">🎈</div>
+      <div class="dream-bubble" style="bottom:0;left:25%;animation-delay:1.5s;">🌈</div>
+      <div class="dream-bubble" style="bottom:10%;right:20%;animation-delay:0.7s;">🐢</div>
+      <span class="sleeping-child">🛌</span>
+    </div>
+    <p>Manchmal sind Träume lustig, manchmal komisch, manchmal richtig schön.</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Albträume -->
+  <section class="scene" data-scene="3">
+    <h2>Und Albträume?</h2>
+    <p>Manchmal macht dein Gehirn auch komische, gruselige Filme. Das sind <b style="color:#ffd700">Albträume</b>.</p>
+    <div class="transform-bubble" id="albbubble">👻</div>
+    <p class="hint">Klicke auf den Geist — und schau, was passiert!</p>
+    <p id="albmessage" style="display:none;font-size:22px;color:#ffd700;font-weight:bold;">
+      Siehst du? Ein Albtraum ist nur ein Traum. Er kann dir nichts tun.<br/>
+      Dein Bett ist sicher. Mama und Papa sind da.
+    </p>
+    <button class="purple" id="albnext" style="display:none;" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Atemübung -->
+  <section class="scene" data-scene="4">
+    <h2>Tief atmen hilft</h2>
+    <p>Wenn du Angst hast, atme tief mit mir. Schau auf den Kreis:</p>
+    <div class="breath-label" id="breathLabel">Einatmen ⬆️</div>
+    <div class="breath-circle">💙</div>
+    <p style="font-size:18px;opacity:0.9;">Wenn er groß wird → einatmen. Wenn er klein wird → ausatmen.</p>
+    <div class="comfort-row">
+      <button class="comfort-btn" onclick="showComfort('🧸 Kuscheltier umarmen!')">🧸 Kuscheln</button>
+      <button class="comfort-btn" onclick="showComfort('💡 Mach das Licht an — und schau, alles ist da.')">💡 Licht</button>
+      <button class="comfort-btn" onclick="showComfort('🤗 Mama oder Papa kommen sofort, wenn du rufst.')">👨‍👩‍👧 Eltern</button>
+      <button class="comfort-btn" onclick="showComfort('🌈 Denk an einen schönen Tag, einen Ausflug oder dein Lieblingstier!')">🌈 Schöne Gedanken</button>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Gute-Nacht-Routine -->
+  <section class="scene" data-scene="5">
+    <h2>So schläfst du gut</h2>
+    <p>Jeden Abend dasselbe — dann findet dein Körper schnell in den Schlaf:</p>
+    <div class="routine-row">
+      <div class="routine-step"><div class="step-num">1</div><span class="icon">🛁</span><p>Baden oder waschen</p></div>
+      <div class="routine-step"><div class="step-num">2</div><span class="icon">🦷</span><p>Zähne putzen</p></div>
+      <div class="routine-step"><div class="step-num">3</div><span class="icon">📖</span><p>Geschichte hören</p></div>
+      <div class="routine-step"><div class="step-num">4</div><span class="icon">🤗</span><p>Gute-Nacht-Kuss</p></div>
+      <div class="routine-step"><div class="step-num">5</div><span class="icon">😴</span><p>Augen zu</p></div>
+    </div>
+    <p style="margin-top:18px;">Schlaf schön! 🌙✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="message-popup" id="msgPopup"></div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+// Sprinkle stars
+const starsHost = document.getElementById('stars');
+for (let i = 0; i < 30; i++) {
+  const s = document.createElement('span');
+  s.textContent = ['⭐','✨','🌟','·'][i%4];
+  s.style.top = (Math.random()*95) + '%';
+  s.style.left = (Math.random()*98) + '%';
+  s.style.animationDelay = (Math.random()*2) + 's';
+  s.style.fontSize = (12 + Math.random()*16) + 'px';
+  starsHost.appendChild(s);
+}
+
+const SCENE_TEXTS = [
+  "Hallo! Heute reisen wir in eine Welt, die jede Nacht beginnt. Die Welt des Schlafs und der Träume!",
+  "Warum schlafen wir? Dein Körper ist wie ein Handy. Wenn du wach bist, geht der Akku langsam leer. Im Schlaf lädt dein Akku wieder auf, bis du am Morgen wieder voll Energie hast!",
+  "Wenn du schläfst, macht dein Gehirn kleine Filme. Das sind Träume! Manchmal sind sie lustig, manchmal komisch, und manchmal richtig schön.",
+  "Manchmal macht dein Gehirn auch komische, gruselige Filme. Das sind Albträume. Klick auf den Geist und schau, was passiert!",
+  "Wenn du Angst hast, atme tief mit mir. Schau auf den blauen Kreis. Wenn er groß wird, atme ein. Wenn er klein wird, atme aus.",
+  "Damit du gut schlafen kannst, mach jeden Abend dasselbe. Baden, Zähne putzen, eine Geschichte hören, einen Gute-Nacht-Kuss bekommen, und dann die Augen zu. Schlaf schön!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: handleSceneEnter
+});
+
+let breathTimer = null;
+function handleSceneEnter(idx) {
+  if (idx === 4) {
+    const lbl = document.getElementById('breathLabel');
+    let phase = 0;
+    function tick() {
+      phase = (phase + 1) % 2;
+      lbl.textContent = phase === 0 ? 'Einatmen ⬆️' : 'Ausatmen ⬇️';
+    }
+    tick();
+    if (breathTimer) clearInterval(breathTimer);
+    breathTimer = setInterval(tick, 4000);
+  } else if (breathTimer) {
+    clearInterval(breathTimer); breathTimer = null;
+  }
+}
+
+// Albtraum bubble transform
+const bubble = document.getElementById('albbubble');
+const albMsg = document.getElementById('albmessage');
+const albNext = document.getElementById('albnext');
+const friendlyOptions = ['🐶','🦄','🐰','🐱','🌈','🦋'];
+bubble.addEventListener('click', () => {
+  if (bubble.classList.contains('transformed')) return;
+  bubble.classList.add('transformed');
+  bubble.textContent = friendlyOptions[Math.floor(Math.random()*friendlyOptions.length)];
+  albMsg.style.display = 'block';
+  albNext.style.display = 'inline-block';
+  engine.speak('alb_transform', "Siehst du? Ein Albtraum ist nur ein Traum. Er kann dir nichts tun. Dein Bett ist sicher. Mama und Papa sind da.");
+});
+
+// Comfort popup
+let popupTimer = null;
+function showComfort(text) {
+  const p = document.getElementById('msgPopup');
+  p.textContent = text;
+  p.classList.add('show');
+  clearTimeout(popupTimer);
+  popupTimer = setTimeout(() => p.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

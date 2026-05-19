@@ -1,0 +1,16 @@
+{
+  "scene_0": "Hallo! Komm mit auf eine Reise in dein Auge. Wir besuchen zwei kleine Helfer: die Stäbchen und die Zäpfchen!",
+  "scene_1": "Das ist dein Auge. Wenn Licht in dein Auge fällt, kommt es ganz hinten an, an die Netzhaut. Dort wohnen die Stäbchen und Zäpfchen!",
+  "scene_2": "Hi, wir sind die Stäbchen! Wir sind echte Nachthelden. Wir helfen dir zu sehen, wenn es dunkel ist. Aber wir sehen keine Farben, nur hell und dunkel!",
+  "scene_3": "Hi, wir sind die Zäpfchen! Wir sind die Farbkünstler. Wir sehen Rot, Grün und Blau. Aber wir brauchen viel Licht. Im Dunkeln können wir nichts machen!",
+  "scene_4": "So sieht die Welt aus, wenn deine Augenhelfer arbeiten. Am Tag sind die Zäpfchen dran und du siehst alle Farben. In der Nacht helfen nur die Stäbchen, dann ist alles grau, nur hell und dunkel!",
+  "scene_5": "Willkommen in deinem Augenlabor! Schau dich selbst an und probiere die verschiedenen Augen aus. Drücke auf einen Knopf, um die Kamera zu starten!",
+  "mode_normal-day":   "Normale Augen am Tag: Alles bunt und hell. Stäbchen und Zäpfchen helfen zusammen!",
+  "mode_normal-night": "Normale Augen in der Nacht: Stäbchen sehen die Form, ein bisschen Farbe ist noch da.",
+  "mode_rods-day":     "Nur Stäbchen am Tag: Alles hell, aber keine Farben. Nur schwarz und weiß!",
+  "mode_rods-night":   "Nur Stäbchen in der Nacht: Du kannst Formen sehen, aber alles ist grau.",
+  "mode_cones-day":    "Nur Zäpfchen am Tag: Schöne Farben! Bei Sonne sind die Zäpfchen Profis.",
+  "mode_cones-night":  "Nur Zäpfchen in der Nacht: Oh nein, fast nichts zu sehen! Zäpfchen brauchen Licht.",
+  "mode_none-day":     "Keine Helfer: Du siehst gar nichts, egal wie hell es ist!",
+  "mode_none-night":   "Keine Helfer: Genauso dunkel wie vorher, keiner hilft dir!"
+}

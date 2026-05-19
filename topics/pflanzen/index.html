@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie wachsen Pflanzen?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff5e1 0%, #c8e6c9 50%, #81c784 100%); }
+  h1, h2 { color: #1b5e20; text-shadow: 2px 2px 0 #fff; }
+
+  /* Seed cross-section */
+  .seed-svg { width: min(80vw, 400px); height: auto; }
+
+  /* Need icons */
+  .needs-row {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .need {
+    background: rgba(255,255,255,0.8);
+    border-radius: 30px;
+    padding: 22px;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+  .need .icon { font-size: 80px; display: block; margin-bottom: 10px; }
+  .need h3 { color: #1b5e20; margin-bottom: 6px; font-size: 22px; }
+  .need p { font-size: 16px; margin: 0; }
+
+  /* Growth lab */
+  .lab-wrap {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .plant-stage {
+    position: relative;
+    background: linear-gradient(180deg, #fffacd 0%, #fff5e1 70%, #d7ccc8 100%);
+    width: 280px;
+    height: 360px;
+    border-radius: 24px;
+    box-shadow: inset 0 -30px 40px rgba(0,0,0,0.06), 0 8px 16px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .plant-stage svg {
+    width: 100%;
+    height: 100%;
+  }
+  .stage-name {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.85);
+    padding: 6px 18px;
+    border-radius: 16px;
+    color: #1b5e20;
+    font-weight: bold;
+    font-size: 20px;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .meter {
+    width: 240px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 14px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .meter-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .meter-bar {
+    height: 16px;
+    background: #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b9d, #ffeb3b, #4caf50);
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .lab-btn {
+    width: 240px;
+    padding: 16px;
+    font-size: 22px;
+  }
+  .sun-bg {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    font-size: 50px;
+    opacity: 0.4;
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .sun-bg.active { opacity: 1; animation: spin-slow 8s linear infinite; }
+
+  .water-drop {
+    position: absolute;
+    font-size: 32px;
+    animation: fall 1.2s ease-in forwards;
+    pointer-events: none;
+  }
+  @keyframes fall {
+    0% { opacity: 1; transform: translateY(-20px); }
+    100% { opacity: 0; transform: translateY(280px); }
+  }
+
+  /* Lifecycle scene */
+  .cycle {
+    position: relative;
+    width: min(95vw, 700px);
+    aspect-ratio: 1;
+    max-height: 60vh;
+  }
+  .cycle-item {
+    position: absolute;
+    width: 25%;
+    text-align: center;
+    transform: translate(-50%, -50%);
+  }
+  .cycle-item .emoji { font-size: 70px; display: block; }
+  .cycle-item .label { background: rgba(255,255,255,0.85); padding: 4px 12px; border-radius: 12px; font-weight: bold; }
+  .cycle-arrow {
+    position: absolute;
+    font-size: 36px;
+    color: #4caf50;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌱🌻</div>
+    <h1>Wie wachsen Pflanzen?</h1>
+    <p>Hallo! Heute werden wir <b style="color:#1b5e20">Garten-Forscher</b>!<br/>
+       Wir gucken, wie aus einem winzigen Samen ein großer Baum oder eine schöne Blume wird.</p>
+    <button class="green" onclick="engine.next()">Los geht's! 🌿</button>
+  </section>
+
+  <!-- Scene 1: Der Same -->
+  <section class="scene" data-scene="1">
+    <h2>Der Same — ein winziges Wunder</h2>
+    <p>In jedem Samen schläft eine kleine Pflanze. Sie wartet auf den richtigen Moment, um aufzuwachen.</p>
+    <svg class="seed-svg" viewBox="0 0 300 300">
+      <!-- Soil -->
+      <rect x="0" y="180" width="300" height="120" fill="#5d4037"/>
+      <ellipse cx="150" cy="180" rx="150" ry="10" fill="#3e2723"/>
+      <!-- Seed -->
+      <ellipse cx="150" cy="230" rx="55" ry="40" fill="#a0522d" stroke="#3e2723" stroke-width="3"/>
+      <ellipse cx="150" cy="230" rx="35" ry="25" fill="#8b4513"/>
+      <!-- Tiny baby plant inside -->
+      <g transform="translate(150,225)">
+        <path d="M 0 5 Q 0 -10 -5 -15 M 0 5 Q 0 -10 5 -15" stroke="#7cb342" stroke-width="3" fill="none"/>
+        <circle cx="0" cy="-15" r="3" fill="#7cb342"/>
+      </g>
+      <text x="150" y="50" text-anchor="middle" font-size="20" fill="#1b5e20" font-weight="bold">Same von innen</text>
+      <line x1="150" y1="60" x2="150" y2="200" stroke="#1b5e20" stroke-width="2" stroke-dasharray="5"/>
+      <text x="150" y="285" text-anchor="middle" font-size="16" fill="#fff" font-weight="bold">In der Erde 🌍</text>
+    </svg>
+    <button class="green" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Needs -->
+  <section class="scene" data-scene="2">
+    <h2>Was Pflanzen brauchen</h2>
+    <p>Damit der Same aufwacht und wächst, braucht er drei Dinge:</p>
+    <div class="needs-row">
+      <div class="need"><span class="icon">💧</span><h3>Wasser</h3><p>Zum Trinken — wie du auch!</p></div>
+      <div class="need"><span class="icon">☀️</span><h3>Sonne</h3><p>Licht zum Essen ✨</p></div>
+      <div class="need"><span class="icon">🌍</span><h3>Erde</h3><p>Ein gemütliches Zuhause</p></div>
+    </div>
+    <p style="font-size:20px;">Und ein bisschen <b>Zeit</b> ⏳ — Wachsen geht nicht von heute auf morgen!</p>
+    <button class="green" onclick="engine.next()">Lass uns eine Pflanze wachsen! 🌱</button>
+  </section>
+
+  <!-- Scene 3: Growth lab -->
+  <section class="scene" data-scene="3">
+    <h2>Dein Garten</h2>
+    <p style="font-size:18px;">Gib deiner Pflanze Wasser ☀️ und Sonne ☀️ — und schau sie wachsen!</p>
+    <div class="lab-wrap">
+      <div class="plant-stage" id="plantStage">
+        <span class="sun-bg" id="sunBg">☀️</span>
+        <span class="stage-name" id="stageName">Same</span>
+        <svg viewBox="0 0 200 360">
+          <!-- Pot -->
+          <polygon points="60,300 140,300 132,355 68,355" fill="#bf6c3a" stroke="#7a3e10" stroke-width="2"/>
+          <rect x="56" y="295" width="88" height="14" fill="#d28b5b" stroke="#7a3e10" stroke-width="2"/>
+          <!-- Soil -->
+          <ellipse cx="100" cy="302" rx="40" ry="6" fill="#3e2723"/>
+          <!-- Seed (always visible at start, hidden after growth) -->
+          <ellipse id="seedSvg" cx="100" cy="302" rx="14" ry="9" fill="#8b4513" stroke="#3e2723" stroke-width="2"/>
+          <!-- Stem -->
+          <line id="stem" x1="100" y1="302" x2="100" y2="302" stroke="#4caf50" stroke-width="6" stroke-linecap="round"/>
+          <!-- Leaves -->
+          <ellipse id="leaf-left" cx="86" cy="240" rx="0" ry="0" fill="#66bb6a" stroke="#388e3c" stroke-width="1.5" transform="rotate(-30 86 240)"/>
+          <ellipse id="leaf-right" cx="114" cy="200" rx="0" ry="0" fill="#66bb6a" stroke="#388e3c" stroke-width="1.5" transform="rotate(30 114 200)"/>
+          <ellipse id="leaf-left2" cx="82" cy="160" rx="0" ry="0" fill="#7cb342" stroke="#388e3c" stroke-width="1.5" transform="rotate(-30 82 160)"/>
+          <ellipse id="leaf-right2" cx="118" cy="130" rx="0" ry="0" fill="#7cb342" stroke="#388e3c" stroke-width="1.5" transform="rotate(30 118 130)"/>
+          <!-- Flower -->
+          <g id="flower" opacity="0" transform="translate(100,90)">
+            <circle cx="0" cy="0" r="0" id="flowerCenter" fill="#ffd700"/>
+            <ellipse cx="0" cy="-18" rx="9" ry="14" fill="#ff6b9d" id="petal1"/>
+            <ellipse cx="18" cy="0" rx="14" ry="9" fill="#ff6b9d" id="petal2"/>
+            <ellipse cx="0" cy="18" rx="9" ry="14" fill="#ff6b9d" id="petal3"/>
+            <ellipse cx="-18" cy="0" rx="14" ry="9" fill="#ff6b9d" id="petal4"/>
+            <circle cx="0" cy="0" r="6" fill="#ffd700"/>
+          </g>
+        </svg>
+      </div>
+      <div class="controls">
+        <div class="meter">
+          <div class="meter-label"><span>💧 Wasser</span><span id="waterPct">0%</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="waterFill"></div></div>
+        </div>
+        <div class="meter">
+          <div class="meter-label"><span>☀️ Sonne</span><span id="sunPct">0%</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="sunFill"></div></div>
+        </div>
+        <button class="secondary lab-btn" onclick="addWater()">💧 Gießen!</button>
+        <button class="orange lab-btn" onclick="addSun()">☀️ Sonne!</button>
+        <button class="green lab-btn small" onclick="resetPlant()">🔁 Neu starten</button>
+      </div>
+    </div>
+    <button class="green" id="pflanzenNext" style="display:none;margin-top:14px" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Lifecycle -->
+  <section class="scene" data-scene="4">
+    <h2>Der Kreislauf der Pflanze</h2>
+    <p>So geht es immer weiter: Aus einem Samen wird eine Blume — und aus der Blume neue Samen!</p>
+    <div class="cycle">
+      <div class="cycle-item" style="top:10%;left:50%"><span class="emoji">🌰</span><span class="label">Same</span></div>
+      <div class="cycle-item" style="top:35%;left:88%"><span class="emoji">🌱</span><span class="label">Keimling</span></div>
+      <div class="cycle-item" style="top:75%;left:88%"><span class="emoji">🌿</span><span class="label">Pflanze</span></div>
+      <div class="cycle-item" style="top:90%;left:50%"><span class="emoji">🌻</span><span class="label">Blüte</span></div>
+      <div class="cycle-item" style="top:75%;left:12%"><span class="emoji">🐝</span><span class="label">Bienen</span></div>
+      <div class="cycle-item" style="top:35%;left:12%"><span class="emoji">🌰</span><span class="label">Neue Samen</span></div>
+      <span class="cycle-arrow" style="top:18%;right:25%">↘️</span>
+      <span class="cycle-arrow" style="top:55%;right:8%">⬇️</span>
+      <span class="cycle-arrow" style="bottom:8%;right:30%">↙️</span>
+      <span class="cycle-arrow" style="bottom:30%;left:8%">⬆️</span>
+      <span class="cycle-arrow" style="top:18%;left:25%">↗️</span>
+    </div>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Hallo! Heute werden wir Garten-Forscher! Wir gucken, wie aus einem winzigen Samen ein großer Baum oder eine schöne Blume wird.",
+  "In jedem Samen schläft eine kleine Pflanze. Sie wartet auf den richtigen Moment, um aufzuwachen.",
+  "Damit der Same aufwacht und wächst, braucht er drei Dinge: Wasser zum Trinken, Sonne zum Essen, und Erde als gemütliches Zuhause. Und ein bisschen Zeit!",
+  "Dein eigener Garten! Drück auf Gießen, um deiner Pflanze Wasser zu geben. Drück auf Sonne, um sie scheinen zu lassen. Schau, wie deine Pflanze wächst!",
+  "So geht es immer weiter: Aus einem Samen wird eine Pflanze. Die Pflanze macht eine Blüte. Bienen besuchen die Blüte und helfen, neue Samen zu machen. Und alles fängt wieder von vorne an!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS
+});
+
+// ============ Growth lab ============
+let water = 0, sun = 0;
+function addWater() {
+  water = Math.min(100, water + 12);
+  showDrop();
+  update();
+}
+function addSun() {
+  sun = Math.min(100, sun + 12);
+  document.getElementById('sunBg').classList.add('active');
+  setTimeout(() => {
+    if (sun < 100) document.getElementById('sunBg').classList.remove('active');
+  }, 1500);
+  update();
+}
+function resetPlant() {
+  water = 0; sun = 0;
+  document.getElementById('sunBg').classList.remove('active');
+  document.getElementById('pflanzenNext').style.display = 'none';
+  update();
+}
+function showDrop() {
+  const stage = document.getElementById('plantStage');
+  const d = document.createElement('span');
+  d.className = 'water-drop';
+  d.textContent = '💧';
+  d.style.left = (50 + Math.random()*150) + 'px';
+  d.style.top = '20px';
+  stage.appendChild(d);
+  setTimeout(() => d.remove(), 1300);
+}
+function update() {
+  document.getElementById('waterFill').style.width = water + '%';
+  document.getElementById('sunFill').style.width = sun + '%';
+  document.getElementById('waterPct').textContent = water + '%';
+  document.getElementById('sunPct').textContent = sun + '%';
+
+  const growth = Math.min(water, sun); // limited by the smaller resource
+
+  const stem = document.getElementById('stem');
+  stem.setAttribute('y2', String(302 - growth * 2.0));
+
+  function setLeaf(id, threshold, rxMax = 18, ryMax = 10) {
+    const e = document.getElementById(id);
+    if (growth >= threshold) {
+      const p = Math.min(1, (growth - threshold) / 20);
+      e.setAttribute('rx', String(p*rxMax));
+      e.setAttribute('ry', String(p*ryMax));
+    } else {
+      e.setAttribute('rx', '0'); e.setAttribute('ry', '0');
+    }
+  }
+  setLeaf('leaf-left', 25);
+  setLeaf('leaf-right', 40);
+  setLeaf('leaf-left2', 55);
+  setLeaf('leaf-right2', 70);
+
+  const flower = document.getElementById('flower');
+  if (growth >= 85) {
+    flower.setAttribute('opacity', '1');
+    const fc = document.getElementById('flowerCenter');
+    fc.setAttribute('r', '8');
+  } else {
+    flower.setAttribute('opacity', '0');
+  }
+
+  // Seed visibility
+  const seed = document.getElementById('seedSvg');
+  seed.setAttribute('opacity', growth < 5 ? '1' : '0');
+
+  // Stage name
+  const stageName = document.getElementById('stageName');
+  let name;
+  if (growth < 5) name = 'Same 🌰';
+  else if (growth < 30) name = 'Keimling 🌱';
+  else if (growth < 60) name = 'Junge Pflanze 🌿';
+  else if (growth < 85) name = 'Große Pflanze 🌳';
+  else name = 'Blüht! 🌸';
+  stageName.textContent = name;
+
+  if (growth >= 95) {
+    document.getElementById('pflanzenNext').style.display = 'inline-block';
+  }
+}
+update();
+</script>
+</body>
+</html>

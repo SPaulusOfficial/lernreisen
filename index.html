@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lern-Reisen</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #ffd6e8 0%, #b5e8ff 50%, #d4ffd6 100%);
+    color: #2a2a4a;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    color: #6a1b9a;
+    text-shadow: 3px 3px 0 #fff;
+    margin-bottom: 12px;
+  }
+  .subtitle {
+    font-size: clamp(18px, 2.5vw, 26px);
+    color: #d81b60;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1280px;
+  }
+  .card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 30px;
+    padding: 24px 18px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 8px 0 rgba(106,27,154,0.15), 0 12px 24px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    border: 4px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 0 rgba(106,27,154,0.15), 0 18px 28px rgba(0,0,0,0.12);
+    border-color: #ff6b9d;
+  }
+  .card.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .card.disabled:hover {
+    transform: none;
+    box-shadow: 0 8px 0 rgba(106,27,154,0.15), 0 12px 24px rgba(0,0,0,0.08);
+    border-color: transparent;
+  }
+  .card-emoji {
+    font-size: 78px;
+    line-height: 1;
+    margin-bottom: 12px;
+    display: block;
+    animation: floaty 3s ease-in-out infinite;
+  }
+  .card:nth-child(2n) .card-emoji { animation-delay: 0.4s; }
+  .card:nth-child(3n) .card-emoji { animation-delay: 0.8s; }
+  .card:nth-child(4n) .card-emoji { animation-delay: 1.2s; }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .card h2 {
+    font-size: clamp(20px, 2.4vw, 26px);
+    color: #6a1b9a;
+    margin-bottom: 8px;
+  }
+  .card p {
+    font-size: clamp(14px, 1.7vw, 17px);
+    color: #2a2a4a;
+    line-height: 1.4;
+  }
+  .badge {
+    display: inline-block;
+    background: #fdcb6e;
+    color: #6a3a00;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  .badge.soon {
+    background: #b5b5d0;
+    color: #3a3a5a;
+  }
+  .badge.game { background: #55efc4; color: #006a52; }
+  .badge.science { background: #74b9ff; color: #074a87; color: #fff; }
+  .badge.body { background: #ff6b9d; color: #fff; }
+  .badge.cosmic { background: #d6a2ff; color: #3d0a5a; }
+  footer {
+    margin-top: 60px;
+    font-size: 16px;
+    color: #6a1b9a;
+    opacity: 0.7;
+    text-align: center;
+  }
+  .stars-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .stars-bg span {
+    position: absolute;
+    font-size: 28px;
+    opacity: 0.4;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.2); }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-bg">
+  <span style="top:8%;left:5%">⭐</span>
+  <span style="top:15%;right:10%;animation-delay:0.5s">✨</span>
+  <span style="top:50%;left:3%;animation-delay:1s">🌟</span>
+  <span style="top:70%;right:5%;animation-delay:0.3s">⭐</span>
+  <span style="bottom:10%;left:50%;animation-delay:0.7s">✨</span>
+  <span style="top:35%;left:50%;animation-delay:1.2s">🌟</span>
+  <span style="bottom:30%;right:25%;animation-delay:1.5s">⭐</span>
+</div>
+
+<header>
+  <h1>🌟 Lern-Reisen 🌟</h1>
+  <p class="subtitle">Welche Reise möchtest du heute machen?</p>
+</header>
+
+<div class="grid">
+
+  <a class="card" href="topics/maus-spiel/index.html">
+    <span class="card-emoji">🖱️</span>
+    <h2>Maus-Schule</h2>
+    <p>Sechs lustige Spiele, um die Computermaus zu lernen!</p>
+    <span class="badge game">🎮 Spiel</span>
+  </a>
+
+  <a class="card" href="topics/staebchen/index.html">
+    <span class="card-emoji">👁️</span>
+    <h2>Wie sehen wir?</h2>
+    <p>Lerne die Stäbchen und Zäpfchen in deinem Auge kennen!</p>
+    <span class="badge body">🧠 Körper</span>
+  </a>
+
+  <a class="card" href="topics/ohren/index.html">
+    <span class="card-emoji">👂</span>
+    <h2>Wie hörst du?</h2>
+    <p>Eine Reise durch dein Ohr — mit eigenem Sound-Labor!</p>
+    <span class="badge body">🧠 Körper</span>
+  </a>
+
+  <a class="card" href="topics/himmel/index.html">
+    <span class="card-emoji">🌈</span>
+    <h2>Warum ist der Himmel blau?</h2>
+    <p>Sonnenlicht ist heimlich bunt — und Blau hüpft am meisten!</p>
+    <span class="badge science">🔬 Wissenschaft</span>
+  </a>
+
+  <a class="card" href="topics/pflanzen/index.html">
+    <span class="card-emoji">🌱</span>
+    <h2>Wie wachsen Pflanzen?</h2>
+    <p>Pflanze einen Samen und lass ihn zur Blume werden!</p>
+    <span class="badge game">🌻 Garten</span>
+  </a>
+
+  <a class="card" href="topics/tag-nacht/index.html">
+    <span class="card-emoji">🌍</span>
+    <h2>Tag und Nacht</h2>
+    <p>Dreh die Erde und entdecke, wann es hell und dunkel wird.</p>
+    <span class="badge cosmic">🌌 Weltall</span>
+  </a>
+
+  <a class="card" href="topics/schlaf/index.html">
+    <span class="card-emoji">😴</span>
+    <h2>Schlaf & Träume</h2>
+    <p>Warum schlafen wir? Und was tun bei Albträumen?</p>
+    <span class="badge body">💤 Schlaf</span>
+  </a>
+
+  <a class="card disabled" href="#" onclick="event.preventDefault()">
+    <span class="card-emoji">❤️</span>
+    <h2>Warum schlägt dein Herz?</h2>
+    <p>Folge dem Blut durch deinen Körper.</p>
+    <span class="badge soon">Bald</span>
+  </a>
+
+</div>
+
+<footer>
+  Mehr Reisen kommen bald 💫
+</footer>
+
+</body>
+</html>

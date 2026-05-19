@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Die Reise zu den Stäbchen und Zäpfchen</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #ffd6e8 0%, #b5e8ff 50%, #d4ffd6 100%);
+    color: #2a2a4a;
+    overflow: hidden;
+  }
+  #app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+    text-align: center;
+  }
+  .scene.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 56px);
+    color: #6a1b9a;
+    text-shadow: 2px 2px 0 #fff;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: clamp(22px, 4vw, 40px);
+    color: #d81b60;
+    text-shadow: 1px 1px 0 #fff;
+    margin-bottom: 12px;
+  }
+  p {
+    font-size: clamp(18px, 2.5vw, 26px);
+    max-width: 900px;
+    line-height: 1.4;
+    margin-bottom: 18px;
+  }
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 14px;
+    z-index: 100;
+  }
+  button {
+    font-family: inherit;
+    font-size: clamp(16px, 2vw, 22px);
+    padding: 14px 28px;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #8e2c4e, 0 8px 14px rgba(0,0,0,0.2);
+    transition: all 0.15s;
+    font-weight: bold;
+  }
+  button:hover { transform: translateY(-2px); }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 #8e2c4e; }
+  button.secondary {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    box-shadow: 0 6px 0 #074a87, 0 8px 14px rgba(0,0,0,0.2);
+  }
+  button.secondary:active { box-shadow: 0 2px 0 #074a87; }
+  button.green {
+    background: linear-gradient(135deg, #55efc4, #00b894);
+    box-shadow: 0 6px 0 #006a52, 0 8px 14px rgba(0,0,0,0.2);
+  }
+  button.green:active { box-shadow: 0 2px 0 #006a52; }
+  button.active-mode {
+    outline: 4px solid #ffeb3b;
+    outline-offset: 3px;
+  }
+  button.small {
+    font-size: 16px;
+    padding: 10px 18px;
+  }
+
+  /* Scene 1 - Welcome */
+  .floaty {
+    animation: floaty 3s ease-in-out infinite;
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  .twinkle {
+    animation: twinkle 1.5s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* Scene 2 - Eye */
+  .eye-svg { width: min(80vw, 600px); height: auto; }
+
+  /* Scene 3/4 - Characters */
+  .char-row {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  .char-svg { width: clamp(120px, 18vw, 200px); height: auto; }
+  .wobble { animation: wobble 2s ease-in-out infinite; transform-origin: bottom center; }
+  @keyframes wobble {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+
+  /* Scene 5 - Day/Night */
+  .compare {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+  }
+  .compare-card {
+    flex: 1;
+    min-width: 280px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .compare-card h3 {
+    font-size: clamp(18px, 2.5vw, 26px);
+    margin-bottom: 10px;
+  }
+  .compare-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Scene 6 - Webcam */
+  #webcam-wrap {
+    position: relative;
+    width: min(85vw, 800px);
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    margin-bottom: 14px;
+  }
+  #video { display: none; }
+  #canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .mode-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .label-info {
+    background: rgba(255,255,255,0.7);
+    padding: 12px 24px;
+    border-radius: 18px;
+    font-size: clamp(16px, 2vw, 22px);
+    margin-bottom: 12px;
+    max-width: 800px;
+  }
+  #permission-msg {
+    color: #d81b60;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  /* Progress dots */
+  .progress {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 50;
+  }
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    border: 2px solid #6a1b9a;
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: #d81b60;
+    transform: scale(1.4);
+  }
+
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    color: #fff700;
+    font-size: 24px;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .big-emoji { font-size: clamp(60px, 10vw, 120px); }
+
+  .home-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 60;
+    background: rgba(255,255,255,0.8);
+    border: 2px solid #6a1b9a;
+    color: #6a1b9a;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    padding: 0;
+    box-shadow: none;
+    cursor: pointer;
+  }
+  .home-btn:active { box-shadow: none; transform: none; }
+  .sound-btn {
+    left: auto;
+    right: 16px;
+  }
+  .replay-btn {
+    background: rgba(255,255,255,0.85);
+    border: 2px solid #6a1b9a;
+    color: #6a1b9a;
+    font-size: 18px;
+    padding: 10px 18px;
+    border-radius: 30px;
+    box-shadow: none;
+    margin-right: 10px;
+  }
+  .replay-btn:active { box-shadow: none; transform: none; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html" title="Zurück zur Themenauswahl" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn" onclick="toggleSpeech()" title="Vorlesen an/aus">🔊</button>
+
+  <div class="progress" id="progress"></div>
+
+  <!-- SCENE 0: Welcome -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👁️✨</div>
+    <h1>Die große Augen-Reise</h1>
+    <p>Hallo! Komm mit auf eine Reise in dein Auge.<br/>
+       Wir besuchen zwei kleine Helfer:<br/>
+       die <b style="color:#1976d2">Stäbchen</b> und die <b style="color:#e91e63">Zäpfchen</b>!</p>
+    <button class="green" onclick="next()">Los geht's! 🚀</button>
+  </section>
+
+  <!-- SCENE 1: Inside the eye -->
+  <section class="scene" data-scene="1">
+    <h1>Das ist dein Auge 👁️</h1>
+    <svg class="eye-svg" viewBox="0 0 600 400">
+      <!-- Eye outline -->
+      <ellipse cx="300" cy="200" rx="280" ry="180" fill="#fff" stroke="#6a1b9a" stroke-width="4"/>
+      <!-- Iris -->
+      <circle cx="200" cy="200" r="90" fill="#74b9ff" stroke="#0984e3" stroke-width="3"/>
+      <circle cx="200" cy="200" r="40" fill="#1a1a2e"/>
+      <circle cx="180" cy="180" r="15" fill="#fff"/>
+      <!-- Retina (back of eye) - highlight -->
+      <path d="M 480 100 Q 560 200 480 300" fill="none" stroke="#ff6b9d" stroke-width="8" stroke-linecap="round"/>
+      <text x="500" y="80" font-size="22" fill="#d81b60" font-weight="bold" text-anchor="middle">Netzhaut</text>
+      <text x="500" y="350" font-size="16" fill="#d81b60" text-anchor="middle">(hier wohnen sie!)</text>
+      <!-- Arrow into eye -->
+      <line x1="50" y1="200" x2="120" y2="200" stroke="#fdcb6e" stroke-width="6" stroke-linecap="round"/>
+      <polygon points="120,190 140,200 120,210" fill="#fdcb6e"/>
+      <text x="20" y="180" font-size="20" fill="#e17055" font-weight="bold">Licht ☀️</text>
+    </svg>
+    <p>Wenn Licht in dein Auge fällt, kommt es ganz hinten an: an die <b style="color:#d81b60">Netzhaut</b>.<br/>
+       Dort wohnen die Stäbchen und Zäpfchen!</p>
+    <button class="green" onclick="next()">Weiter ➡️</button>
+  </section>
+
+  <!-- SCENE 2: Meet the Stäbchen -->
+  <section class="scene" data-scene="2" style="background:linear-gradient(180deg,#1a1a4e 0%,#4a4a8e 100%);color:#fff;">
+    <div class="stars">
+      <span class="star" style="top:10%;left:15%">⭐</span>
+      <span class="star" style="top:20%;left:80%;animation-delay:0.5s">⭐</span>
+      <span class="star" style="top:60%;left:10%;animation-delay:1s">⭐</span>
+      <span class="star" style="top:75%;left:90%;animation-delay:0.3s">⭐</span>
+      <span class="star" style="top:30%;left:50%;animation-delay:0.8s">⭐</span>
+    </div>
+    <h1 style="color:#74b9ff;text-shadow:2px 2px 0 #1a1a4e;">Die Stäbchen 🌙</h1>
+    <div class="char-row">
+      <svg class="char-svg wobble" viewBox="0 0 100 200">
+        <rect x="35" y="20" width="30" height="140" rx="15" fill="#a8d0ff" stroke="#1976d2" stroke-width="3"/>
+        <circle cx="45" cy="55" r="6" fill="#fff"/>
+        <circle cx="55" cy="55" r="6" fill="#fff"/>
+        <circle cx="45" cy="56" r="3" fill="#1a1a2e"/>
+        <circle cx="55" cy="56" r="3" fill="#1a1a2e"/>
+        <path d="M 42 75 Q 50 82 58 75" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <svg class="char-svg wobble" viewBox="0 0 100 200" style="animation-delay:0.3s">
+        <rect x="35" y="20" width="30" height="140" rx="15" fill="#a8d0ff" stroke="#1976d2" stroke-width="3"/>
+        <circle cx="45" cy="55" r="6" fill="#fff"/>
+        <circle cx="55" cy="55" r="6" fill="#fff"/>
+        <circle cx="45" cy="56" r="3" fill="#1a1a2e"/>
+        <circle cx="55" cy="56" r="3" fill="#1a1a2e"/>
+        <path d="M 42 75 Q 50 82 58 75" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <svg class="char-svg wobble" viewBox="0 0 100 200" style="animation-delay:0.6s">
+        <rect x="35" y="20" width="30" height="140" rx="15" fill="#a8d0ff" stroke="#1976d2" stroke-width="3"/>
+        <circle cx="45" cy="55" r="6" fill="#fff"/>
+        <circle cx="55" cy="55" r="6" fill="#fff"/>
+        <circle cx="45" cy="56" r="3" fill="#1a1a2e"/>
+        <circle cx="55" cy="56" r="3" fill="#1a1a2e"/>
+        <path d="M 42 75 Q 50 82 58 75" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <p style="color:#fff;">Hi, wir sind die <b>Stäbchen</b>!<br/>
+       Wir sind echte <b>Nacht-Helden</b> 🌙 — wir helfen dir zu sehen, wenn es <b>dunkel</b> ist.<br/>
+       Aber: wir sehen <b>keine Farben</b>, nur hell und dunkel!</p>
+    <button class="green" onclick="next()">Weiter ➡️</button>
+  </section>
+
+  <!-- SCENE 3: Meet the Zäpfchen -->
+  <section class="scene" data-scene="3" style="background:linear-gradient(180deg,#ffeaa7 0%,#fab1a0 100%);">
+    <div style="position:absolute;top:8%;font-size:80px;" class="floaty">☀️</div>
+    <h1>Die Zäpfchen 🎨</h1>
+    <div class="char-row">
+      <svg class="char-svg wobble" viewBox="0 0 120 200">
+        <polygon points="20,30 100,30 70,170 50,170" fill="#ff6b6b" stroke="#c0392b" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="50" cy="70" r="6" fill="#fff"/>
+        <circle cx="70" cy="70" r="6" fill="#fff"/>
+        <circle cx="50" cy="71" r="3" fill="#1a1a2e"/>
+        <circle cx="70" cy="71" r="3" fill="#1a1a2e"/>
+        <path d="M 50 95 Q 60 105 70 95" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="60" y="195" text-anchor="middle" font-size="16" font-weight="bold" fill="#c0392b">ROT</text>
+      </svg>
+      <svg class="char-svg wobble" viewBox="0 0 120 200" style="animation-delay:0.3s">
+        <polygon points="20,30 100,30 70,170 50,170" fill="#55efc4" stroke="#00897b" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="50" cy="70" r="6" fill="#fff"/>
+        <circle cx="70" cy="70" r="6" fill="#fff"/>
+        <circle cx="50" cy="71" r="3" fill="#1a1a2e"/>
+        <circle cx="70" cy="71" r="3" fill="#1a1a2e"/>
+        <path d="M 50 95 Q 60 105 70 95" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="60" y="195" text-anchor="middle" font-size="16" font-weight="bold" fill="#00897b">GRÜN</text>
+      </svg>
+      <svg class="char-svg wobble" viewBox="0 0 120 200" style="animation-delay:0.6s">
+        <polygon points="20,30 100,30 70,170 50,170" fill="#74b9ff" stroke="#0984e3" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="50" cy="70" r="6" fill="#fff"/>
+        <circle cx="70" cy="70" r="6" fill="#fff"/>
+        <circle cx="50" cy="71" r="3" fill="#1a1a2e"/>
+        <circle cx="70" cy="71" r="3" fill="#1a1a2e"/>
+        <path d="M 50 95 Q 60 105 70 95" stroke="#1a1a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="60" y="195" text-anchor="middle" font-size="16" font-weight="bold" fill="#0984e3">BLAU</text>
+      </svg>
+    </div>
+    <p>Hi, wir sind die <b>Zäpfchen</b>!<br/>
+       Wir sind die <b>Farb-Künstler</b> 🎨 — wir sehen <b>Rot, Grün und Blau</b>.<br/>
+       Aber wir brauchen <b>viel Licht</b> ☀️ — im Dunkeln können wir nichts machen!</p>
+    <button class="green" onclick="next()">Weiter ➡️</button>
+  </section>
+
+  <!-- SCENE 4: Day vs Night comparison -->
+  <section class="scene" data-scene="4">
+    <h1>Tag und Nacht 🌞🌙</h1>
+    <p>So sieht die Welt aus, wenn deine Augen-Helfer arbeiten:</p>
+    <div class="compare">
+      <div class="compare-card">
+        <h3>☀️ Am Tag — die Zäpfchen sind dran!</h3>
+        <div class="compare-img" id="dayScene">
+          <svg viewBox="0 0 400 300" style="width:100%;height:100%;background:linear-gradient(180deg,#74b9ff 0%,#a8e6cf 100%);">
+            <circle cx="340" cy="60" r="35" fill="#ffeb3b"/>
+            <ellipse cx="200" cy="270" rx="220" ry="40" fill="#7ec850"/>
+            <!-- Flowers -->
+            <circle cx="80" cy="240" r="10" fill="#e91e63"/>
+            <circle cx="76" cy="234" r="6" fill="#fff"/>
+            <rect x="78" y="245" width="3" height="20" fill="#388e3c"/>
+            <circle cx="160" cy="250" r="10" fill="#9c27b0"/>
+            <circle cx="156" cy="244" r="6" fill="#fff"/>
+            <rect x="158" y="255" width="3" height="18" fill="#388e3c"/>
+            <circle cx="260" cy="245" r="10" fill="#ff9800"/>
+            <circle cx="256" cy="239" r="6" fill="#fff"/>
+            <rect x="258" y="250" width="3" height="20" fill="#388e3c"/>
+            <circle cx="340" cy="250" r="10" fill="#03a9f4"/>
+            <circle cx="336" cy="244" r="6" fill="#fff"/>
+            <rect x="338" y="255" width="3" height="18" fill="#388e3c"/>
+            <!-- Butterfly -->
+            <g transform="translate(200,130)">
+              <ellipse cx="-12" cy="0" rx="14" ry="18" fill="#ff6b9d"/>
+              <ellipse cx="12" cy="0" rx="14" ry="18" fill="#ff6b9d"/>
+              <ellipse cx="-10" cy="14" rx="10" ry="12" fill="#c44569"/>
+              <ellipse cx="10" cy="14" rx="10" ry="12" fill="#c44569"/>
+              <rect x="-2" y="-8" width="4" height="24" rx="2" fill="#2c2c54"/>
+            </g>
+          </svg>
+        </div>
+        <p style="font-size:18px;margin-top:8px;">🎨 Alle Farben! Bunt und schön.</p>
+      </div>
+      <div class="compare-card">
+        <h3>🌙 In der Nacht — nur die Stäbchen sehen!</h3>
+        <div class="compare-img" id="nightScene">
+          <svg viewBox="0 0 400 300" style="width:100%;height:100%;background:linear-gradient(180deg,#1a1a3e 0%,#2c2c54 100%);">
+            <circle cx="340" cy="60" r="28" fill="#e8e8e8"/>
+            <circle cx="335" cy="55" r="4" fill="#2c2c54" opacity="0.3"/>
+            <circle cx="345" cy="65" r="3" fill="#2c2c54" opacity="0.3"/>
+            <!-- Stars -->
+            <text x="60" y="50" font-size="20" fill="#fff">⋆</text>
+            <text x="120" y="80" font-size="14" fill="#fff">⋆</text>
+            <text x="220" y="40" font-size="18" fill="#fff">⋆</text>
+            <text x="280" y="100" font-size="14" fill="#fff">⋆</text>
+            <ellipse cx="200" cy="270" rx="220" ry="40" fill="#3a3a5a"/>
+            <!-- Flowers - all gray -->
+            <circle cx="80" cy="240" r="10" fill="#6a6a7a"/>
+            <circle cx="76" cy="234" r="6" fill="#8a8a9a"/>
+            <rect x="78" y="245" width="3" height="20" fill="#4a4a5a"/>
+            <circle cx="160" cy="250" r="10" fill="#5a5a6a"/>
+            <circle cx="156" cy="244" r="6" fill="#7a7a8a"/>
+            <rect x="158" y="255" width="3" height="18" fill="#4a4a5a"/>
+            <circle cx="260" cy="245" r="10" fill="#6a6a7a"/>
+            <circle cx="256" cy="239" r="6" fill="#8a8a9a"/>
+            <rect x="258" y="250" width="3" height="20" fill="#4a4a5a"/>
+            <circle cx="340" cy="250" r="10" fill="#5a5a6a"/>
+            <circle cx="336" cy="244" r="6" fill="#7a7a8a"/>
+            <rect x="338" y="255" width="3" height="18" fill="#4a4a5a"/>
+            <!-- Butterfly - all gray -->
+            <g transform="translate(200,130)">
+              <ellipse cx="-12" cy="0" rx="14" ry="18" fill="#7a7a8a"/>
+              <ellipse cx="12" cy="0" rx="14" ry="18" fill="#7a7a8a"/>
+              <ellipse cx="-10" cy="14" rx="10" ry="12" fill="#5a5a6a"/>
+              <ellipse cx="10" cy="14" rx="10" ry="12" fill="#5a5a6a"/>
+              <rect x="-2" y="-8" width="4" height="24" rx="2" fill="#3a3a4a"/>
+            </g>
+          </svg>
+        </div>
+        <p style="font-size:18px;margin-top:8px;">⚫⚪ Nur hell und dunkel — keine Farben!</p>
+      </div>
+    </div>
+    <button class="green" onclick="next()" style="margin-top:14px">Jetzt ausprobieren! 🎬</button>
+  </section>
+
+  <!-- SCENE 5: Webcam Lab -->
+  <section class="scene" data-scene="5">
+    <h2>Dein Augen-Labor 🔬</h2>
+    <p style="font-size:18px;">Schau dich selbst an — und probiere die verschiedenen Augen aus!</p>
+    <div id="webcam-wrap">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+    <div class="label-info" id="modeLabel">Drück auf einen Knopf, um Kamera zu starten!</div>
+    <div class="mode-buttons">
+      <button class="secondary" id="btn-start" onclick="startCam()">📷 Kamera an</button>
+      <button class="small" onclick="setMode('normal')" id="m-normal">👀 Normale Augen</button>
+      <button class="small" onclick="setMode('rods')" id="m-rods">🌙 Nur Stäbchen</button>
+      <button class="small" onclick="setMode('cones')" id="m-cones">🎨 Nur Zäpfchen</button>
+      <button class="small" onclick="setMode('none')" id="m-none">⚫ Gar nichts</button>
+    </div>
+    <div class="mode-buttons">
+      <button class="small green" onclick="setLight('day')" id="l-day">☀️ Tag</button>
+      <button class="small green" onclick="setLight('night')" id="l-night">🌙 Nacht</button>
+    </div>
+    <div id="permission-msg"></div>
+  </section>
+
+</div>
+
+<div class="nav" id="navButtons">
+  <button class="secondary" onclick="prev()" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script>
+const TOTAL_SCENES = 6;
+let current = 0;
+let mode = 'normal';
+let light = 'day';
+let stream = null;
+let rafId = null;
+
+// === Speech ===
+let speechOn = true;
+let germanVoice = null;
+const audioEl = new Audio();
+audioEl.preload = 'auto';
+
+function pickVoice() {
+  const voices = speechSynthesis.getVoices();
+  germanVoice =
+    voices.find(v => v.lang === 'de-DE' && /sandy|shelley|flo|petra|anna|katja|female/i.test(v.name)) ||
+    voices.find(v => v.lang === 'de-DE' && /google/i.test(v.name)) ||
+    voices.find(v => v.lang === 'de-DE') ||
+    voices.find(v => v.lang && v.lang.startsWith('de')) ||
+    null;
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = pickVoice;
+  pickVoice();
+}
+
+function stopSpeech() {
+  audioEl.pause();
+  audioEl.currentTime = 0;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+function speak(audioKey, fallbackText) {
+  if (!speechOn) return;
+  stopSpeech();
+  audioEl.src = 'audio/' + audioKey + '.m4a';
+  const p = audioEl.play();
+  if (p && p.catch) {
+    p.catch(() => speakBrowser(fallbackText));
+  }
+}
+
+function speakBrowser(text) {
+  if (!text || !('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  if (germanVoice) u.voice = germanVoice;
+  u.lang = 'de-DE';
+  u.rate = 0.9;
+  u.pitch = 1.15;
+  speechSynthesis.speak(u);
+}
+
+function toggleSpeech() {
+  speechOn = !speechOn;
+  document.getElementById('soundBtn').textContent = speechOn ? '🔊' : '🔇';
+  if (!speechOn) stopSpeech();
+  else speakCurrentScene();
+}
+
+const SCENE_TEXTS = [
+  "Hallo! Komm mit auf eine Reise in dein Auge. Wir besuchen zwei kleine Helfer: die Stäbchen und die Zäpfchen!",
+  "Das ist dein Auge. Wenn Licht in dein Auge fällt, kommt es ganz hinten an: an die Netzhaut. Dort wohnen die Stäbchen und Zäpfchen!",
+  "Hi, wir sind die Stäbchen! Wir sind echte Nachthelden. Wir helfen dir zu sehen, wenn es dunkel ist. Aber wir sehen keine Farben, nur hell und dunkel!",
+  "Hi, wir sind die Zäpfchen! Wir sind die Farbkünstler. Wir sehen Rot, Grün und Blau. Aber wir brauchen viel Licht. Im Dunkeln können wir nichts machen!",
+  "So sieht die Welt aus, wenn deine Augenhelfer arbeiten. Am Tag sind die Zäpfchen dran und du siehst alle Farben. In der Nacht helfen nur die Stäbchen, dann ist alles grau, nur hell und dunkel!",
+  "Willkommen in deinem Augenlabor! Schau dich selbst an und probiere die verschiedenen Augen aus. Drücke auf einen Knopf, um die Kamera zu starten!"
+];
+
+function speakCurrentScene() {
+  speak('scene_' + current, SCENE_TEXTS[current]);
+}
+
+const progress = document.getElementById('progress');
+for (let i = 0; i < TOTAL_SCENES; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  progress.appendChild(d);
+}
+
+function updateProgress() {
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= TOTAL_SCENES) return;
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.querySelector('[data-scene="' + idx + '"]').classList.add('active');
+  current = idx;
+  updateProgress();
+  document.getElementById('prevBtn').style.display = idx === 0 ? 'none' : 'inline-block';
+  if (idx !== 5) stopCam();
+  speakCurrentScene();
+}
+function next() { goTo(current + 1); }
+function prev() { goTo(current - 1); }
+
+document.getElementById('prevBtn').style.display = 'none';
+
+// Webcam
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    canvas.width = video.videoWidth || 800;
+    canvas.height = video.videoHeight || 600;
+    document.getElementById('permission-msg').textContent = '';
+    document.getElementById('btn-start').style.display = 'none';
+    setMode('normal');
+    setLight('day');
+    drawLoop();
+  } catch (err) {
+    document.getElementById('permission-msg').textContent = '😢 Keine Kamera-Erlaubnis. Bitte erlaube den Zugriff in deinem Browser.';
+  }
+}
+
+function stopCam() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  video.srcObject = null;
+  document.getElementById('btn-start').style.display = 'inline-block';
+}
+
+function setMode(m) {
+  mode = m;
+  ['normal','rods','cones','none'].forEach(n => {
+    const el = document.getElementById('m-' + n);
+    if (el) el.classList.toggle('active-mode', n === m);
+  });
+  updateLabel();
+}
+function setLight(l) {
+  light = l;
+  ['day','night'].forEach(n => {
+    const el = document.getElementById('l-' + n);
+    if (el) el.classList.toggle('active-mode', n === l);
+  });
+  updateLabel();
+}
+function updateLabel() {
+  const el = document.getElementById('modeLabel');
+  const texts = {
+    'normal-day':  '👀 Normale Augen am Tag: Alles bunt und hell — Stäbchen UND Zäpfchen helfen!',
+    'normal-night':'👀 Normale Augen in der Nacht: Stäbchen sehen die Form, ein bisschen Farbe noch da.',
+    'rods-day':    '🌙 Nur Stäbchen am Tag: Alles hell, aber KEINE Farben — nur schwarz-weiß!',
+    'rods-night':  '🌙 Nur Stäbchen in der Nacht: Du kannst Formen sehen — aber alles ist grau.',
+    'cones-day':   '🎨 Nur Zäpfchen am Tag: Schöne Farben! Bei Sonne sind die Zäpfchen Profis.',
+    'cones-night': '🎨 Nur Zäpfchen in der Nacht: Oh nein, fast nichts zu sehen! Zäpfchen brauchen Licht.',
+    'none-day':    '⚫ Keine Helfer: Du siehst gar nichts — egal wie hell es ist!',
+    'none-night':  '⚫ Keine Helfer: Genauso dunkel wie vorher — keiner hilft dir!'
+  };
+  const key = mode + '-' + light;
+  const t = texts[key] || '';
+  el.textContent = t;
+  const cleanText = t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}⚫⚪▪-◿]/gu, '').trim();
+  speak('mode_' + key, cleanText);
+}
+
+function drawLoop() {
+  if (!video.videoWidth) {
+    rafId = requestAnimationFrame(drawLoop);
+    return;
+  }
+  if (canvas.width !== video.videoWidth) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+  }
+  // mirror
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  if (mode === 'none') {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🚫 Nichts zu sehen!', canvas.width/2, canvas.height/2);
+  } else {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data;
+    const isNight = light === 'night';
+    // Night brightness factor for normal vision
+    const nightDim = 0.35;
+
+    if (mode === 'rods') {
+      // grayscale; at night a bit dimmer but still visible
+      const factor = isNight ? 0.75 : 1.0;
+      for (let i = 0; i < d.length; i += 4) {
+        const g = (d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114) * factor;
+        d[i] = d[i+1] = d[i+2] = g;
+      }
+    } else if (mode === 'cones') {
+      // full color in day, very dark at night
+      if (isNight) {
+        const f = 0.12;
+        for (let i = 0; i < d.length; i += 4) {
+          d[i]   = d[i]   * f;
+          d[i+1] = d[i+1] * f;
+          d[i+2] = d[i+2] * f;
+        }
+      }
+      // day: leave colors as-is
+    } else if (mode === 'normal') {
+      if (isNight) {
+        // mix of dim color + grayscale (rods carry most info, cones some)
+        for (let i = 0; i < d.length; i += 4) {
+          const g = d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114;
+          const r = d[i], gg = d[i+1], b = d[i+2];
+          // 70% gray + 30% dim color, then multiply by nightDim
+          d[i]   = (g*0.7 + r*0.3) * nightDim;
+          d[i+1] = (g*0.7 + gg*0.3) * nightDim;
+          d[i+2] = (g*0.7 + b*0.3) * nightDim;
+          // slight blue cast (Purkinje shift)
+          d[i+2] = Math.min(255, d[i+2] * 1.15);
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  rafId = requestAnimationFrame(drawLoop);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') prev();
+});
+
+// First user interaction unlocks audio AND reads scene 0
+document.addEventListener('click', function bootstrap() {
+  pickVoice();
+  if (speechOn && current === 0) speakCurrentScene();
+}, { once: true });
+</script>
+</body>
+</html>

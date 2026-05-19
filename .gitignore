@@ -1,0 +1,11 @@
+# Python build environment (only used locally for audio generation)
+.venv/
+__pycache__/
+*.pyc
+
+# Large TTS model files (used only for local audio generation, not at runtime)
+shared/kokoro/
+shared/piper-voices/
+
+# macOS
+.DS_Store

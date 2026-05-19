@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie hörst du?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body {
+    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 40%, #fd79a8 100%);
+  }
+
+  .wave-host {
+    position: relative;
+    width: min(90vw, 700px);
+    height: 220px;
+    margin: 20px 0;
+  }
+  .wave-circle {
+    position: absolute;
+    top: 50%;
+    left: 100px;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    border: 3px solid #d81b60;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    animation: wave-expand 2s ease-out infinite;
+  }
+  @keyframes wave-expand {
+    0% { width: 30px; height: 30px; opacity: 1; border-width: 6px; }
+    100% { width: 500px; height: 500px; opacity: 0; border-width: 1px; }
+  }
+  .speaker {
+    position: absolute;
+    top: 50%;
+    left: 60px;
+    transform: translateY(-50%);
+    font-size: 80px;
+    z-index: 2;
+  }
+  .ear-target {
+    position: absolute;
+    top: 50%;
+    right: 40px;
+    transform: translateY(-50%);
+    font-size: 80px;
+    z-index: 2;
+  }
+
+  /* Ear anatomy diagram */
+  .ear-svg-wrap {
+    width: min(90vw, 800px);
+  }
+  .ear-svg {
+    width: 100%;
+    height: auto;
+    background: rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 10px;
+  }
+  .ear-label {
+    font-size: 14px;
+    fill: #6a1b9a;
+    font-weight: bold;
+  }
+  .ear-arrow {
+    stroke: #d81b60;
+    stroke-width: 3;
+    fill: none;
+    marker-end: url(#arrowhead);
+    stroke-dasharray: 6;
+    animation: dash 1s linear infinite;
+  }
+  @keyframes dash {
+    to { stroke-dashoffset: -12; }
+  }
+
+  /* Eardrum vibrate scene */
+  .eardrum {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffd3b6, #f4a261);
+    border: 6px solid #6a3a00;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
+    margin: 20px 0;
+    cursor: pointer;
+    transition: transform 0.05s;
+  }
+  .eardrum.vibrating {
+    animation: drum-vibrate 0.15s ease-in-out 6;
+  }
+  @keyframes drum-vibrate {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.05) translateX(2px); }
+    50% { transform: scale(0.96) translateX(-2px); }
+    75% { transform: scale(1.04) translateX(1px); }
+  }
+
+  /* Sound lab */
+  .sound-lab {
+    background: rgba(255,255,255,0.6);
+    border-radius: 24px;
+    padding: 20px;
+    width: min(90vw, 700px);
+  }
+  .control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  .pitch-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    font-size: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .visualizer {
+    width: 100%;
+    height: 100px;
+    background: #1a1a4e;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .visualizer svg { width: 100%; height: 100%; }
+
+  /* Tips cards */
+  .tips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    max-width: 900px;
+  }
+  .tip {
+    background: rgba(255,255,255,0.8);
+    border-radius: 20px;
+    padding: 18px;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .tip .icon { font-size: 56px; display: block; margin-bottom: 6px; }
+  .tip p { font-size: 16px; margin: 0; }
+
+  .pulse-on-play { animation: pulse 0.5s ease-in-out; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0 -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👂🎵</div>
+    <h1>Wie hörst du?</h1>
+    <p>Hallo! Schließ kurz die Augen — was hörst du?<br/>
+       Heute reisen wir in dein <b style="color:#d81b60">Ohr</b> und finden raus, wie das funktioniert!</p>
+    <button class="orange" onclick="engine.next()">Los geht's! 🎧</button>
+  </section>
+
+  <!-- Scene 1: Schallwellen -->
+  <section class="scene" data-scene="1">
+    <h2>Geräusche sind Wellen</h2>
+    <p>Wenn etwas Töne macht, wackelt die Luft. Die Wellen reisen zu deinem Ohr!</p>
+    <div class="wave-host">
+      <span class="speaker">📢</span>
+      <div class="wave-circle"></div>
+      <div class="wave-circle" style="animation-delay:0.4s;"></div>
+      <div class="wave-circle" style="animation-delay:0.8s;"></div>
+      <div class="wave-circle" style="animation-delay:1.2s;"></div>
+      <span class="ear-target floaty">👂</span>
+    </div>
+    <p>Probier mal: <button class="small green" onclick="playTone(440, 0.8)">🔔 Ton machen!</button></p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Reise durchs Ohr -->
+  <section class="scene" data-scene="2">
+    <h2>Reise durch dein Ohr</h2>
+    <div class="ear-svg-wrap">
+      <svg class="ear-svg" viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#d81b60"/>
+          </marker>
+        </defs>
+        <!-- Outer ear -->
+        <path d="M 30 100 Q 10 150 30 220 Q 60 280 120 280 L 200 280 Q 220 280 220 250 L 220 130 Q 220 100 200 100 Z" fill="#ffd3b6" stroke="#6a3a00" stroke-width="3"/>
+        <path d="M 60 160 Q 90 170 90 200 Q 90 230 70 230" fill="none" stroke="#6a3a00" stroke-width="2"/>
+        <text x="125" y="320" class="ear-label" text-anchor="middle">Ohrmuschel</text>
+        <!-- Ear canal -->
+        <rect x="220" y="170" width="100" height="40" fill="#f4a261" stroke="#6a3a00" stroke-width="2"/>
+        <text x="270" y="240" class="ear-label" text-anchor="middle">Gehörgang</text>
+        <!-- Eardrum -->
+        <ellipse cx="335" cy="190" rx="8" ry="22" fill="#e76f51" stroke="#6a3a00" stroke-width="2"/>
+        <text x="335" y="265" class="ear-label" text-anchor="middle">Trommelfell</text>
+        <!-- Bones (Hammer, Amboss, Steigbügel) -->
+        <g transform="translate(360,170)">
+          <rect x="0" y="0" width="20" height="10" fill="#fdcb6e" stroke="#6a3a00" stroke-width="1.5" rx="3"/>
+          <rect x="22" y="6" width="18" height="10" fill="#fdcb6e" stroke="#6a3a00" stroke-width="1.5" rx="3"/>
+          <rect x="42" y="12" width="14" height="10" fill="#fdcb6e" stroke="#6a3a00" stroke-width="1.5" rx="3"/>
+        </g>
+        <text x="395" y="155" class="ear-label" text-anchor="middle">Hörknöchelchen</text>
+        <!-- Cochlea (Schnecke) -->
+        <g transform="translate(490,190)">
+          <path d="M 0 0 Q 30 -30 50 0 Q 70 30 40 50 Q 10 70 0 40 Q -10 20 20 15 Q 35 18 25 30" fill="#a8dadc" stroke="#1d3557" stroke-width="2.5"/>
+        </g>
+        <text x="520" y="265" class="ear-label" text-anchor="middle">Schnecke</text>
+        <!-- Nerve to brain -->
+        <path d="M 570 200 Q 650 180 700 130" stroke="#7e57c2" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <circle cx="720" cy="110" r="40" fill="#ffb5c5" stroke="#6a1b9a" stroke-width="3"/>
+        <path d="M 700 105 Q 710 90 720 100 Q 730 90 740 105 Q 740 120 730 125 Q 720 135 710 125 Q 700 120 700 105 Z" fill="#ec407a"/>
+        <text x="720" y="170" class="ear-label" text-anchor="middle">Gehirn</text>
+        <!-- Sound arrow entering -->
+        <path d="M 5 190 L 25 190" class="ear-arrow"/>
+        <text x="20" y="180" class="ear-label" fill="#d81b60">🎵</text>
+      </svg>
+    </div>
+    <p style="font-size:18px;max-width:800px;">Die <b>Welle</b> kommt rein → das <b>Trommelfell</b> wackelt → die <b>Knöchelchen</b> drücken → die <b>Schnecke</b> macht ein Signal → das <b>Gehirn</b> hört!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Eardrum interactive -->
+  <section class="scene" data-scene="3">
+    <h2>Das Trommelfell</h2>
+    <p>Das Trommelfell ist wie eine kleine Trommel — wenn Schall kommt, wackelt sie ganz schnell.</p>
+    <div class="eardrum" id="eardrum" title="Klick mich!"></div>
+    <p style="font-size:18px;">Klicke das Trommelfell — und hör genau hin!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Sound lab -->
+  <section class="scene" data-scene="4">
+    <h2>Dein Hör-Labor 🎛️</h2>
+    <p>Probiere verschiedene Töne aus!</p>
+    <div class="sound-lab">
+      <div class="visualizer">
+        <svg id="vizSvg" viewBox="0 0 400 100" preserveAspectRatio="none">
+          <path id="vizPath" d="M 0 50 L 400 50" stroke="#55efc4" stroke-width="3" fill="none"/>
+        </svg>
+      </div>
+      <h3 style="color:#6a1b9a;margin:8px 0;">Hoch oder Tief?</h3>
+      <div class="control-row">
+        <button class="pitch-btn green" onclick="playTone(150, 1.2)" title="Sehr tief">🐘</button>
+        <button class="pitch-btn green" onclick="playTone(300, 1.0)" title="Tief">🐶</button>
+        <button class="pitch-btn green" onclick="playTone(600, 0.8)" title="Mittel">🐱</button>
+        <button class="pitch-btn green" onclick="playTone(1200, 0.6)" title="Hoch">🐦</button>
+        <button class="pitch-btn green" onclick="playTone(2400, 0.5)" title="Sehr hoch">🐭</button>
+      </div>
+      <h3 style="color:#6a1b9a;margin:8px 0;">Laut oder Leise?</h3>
+      <div class="control-row">
+        <button class="small green" onclick="playTone(440, 1.0, 0.05)">🔈 Leise</button>
+        <button class="small green" onclick="playTone(440, 1.0, 0.2)">🔉 Mittel</button>
+        <button class="small green" onclick="playTone(440, 1.0, 0.5)">🔊 Laut</button>
+      </div>
+      <h3 style="color:#6a1b9a;margin:8px 0;">Tier-Geräusche</h3>
+      <div class="control-row">
+        <button class="small green" onclick="playMelody('cat')">🐱 Miau</button>
+        <button class="small green" onclick="playMelody('bird')">🐦 Tirili</button>
+        <button class="small green" onclick="playMelody('cow')">🐮 Muhh</button>
+        <button class="small green" onclick="playMelody('bell')">🔔 Glocke</button>
+      </div>
+    </div>
+    <button class="orange" onclick="engine.next()" style="margin-top:14px">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Schütze deine Ohren -->
+  <section class="scene" data-scene="5">
+    <h2>Pass auf deine Ohren auf! 🛡️</h2>
+    <p>Deine Ohren sind ganz empfindlich. So bleiben sie gesund:</p>
+    <div class="tips-row">
+      <div class="tip"><span class="icon">🎧</span><p>Musik nicht zu laut hören</p></div>
+      <div class="tip"><span class="icon">💥</span><p>Bei Krach: Ohren zuhalten</p></div>
+      <div class="tip"><span class="icon">🛀</span><p>Ohren sanft waschen</p></div>
+      <div class="tip"><span class="icon">🚫</span><p>Nichts in die Ohren stecken!</p></div>
+    </div>
+    <button class="green" onclick="engine.goTo(0)" style="margin-top:18px">🔁 Nochmal</button>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Hallo! Schließ kurz die Augen. Was hörst du? Heute reisen wir in dein Ohr und finden raus, wie das funktioniert!",
+  "Geräusche sind Wellen, die durch die Luft reisen. Wenn etwas Töne macht, wackelt die Luft, und die Wellen kommen bis zu deinem Ohr. Drücke auf den Knopf und mach selbst einen Ton!",
+  "Komm mit auf eine Reise durch dein Ohr! Die Welle kommt rein. Dein Trommelfell wackelt. Die kleinen Knöchelchen geben das Wackeln weiter. Die Schnecke macht ein Signal. Und dein Gehirn hört es!",
+  "Das Trommelfell ist wie eine kleine Trommel. Wenn Schall kommt, wackelt sie ganz schnell. Klicke darauf und hör genau hin!",
+  "Willkommen im Hörlabor! Probier verschiedene Töne aus. Hoch wie ein kleiner Vogel, tief wie ein großer Elefant. Laut oder leise. Was magst du am liebsten?",
+  "Deine Ohren sind ganz empfindlich. Pass gut auf sie auf! Hör Musik nicht zu laut, halte die Ohren zu bei Krach, und steck nie etwas hinein."
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS
+});
+
+// ============ Web Audio ============
+let ac = null;
+function audioCtx() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+  return ac;
+}
+
+function playTone(freq, duration = 1, volume = 0.18) {
+  const ctx = audioCtx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'sine';
+  o.frequency.value = freq;
+  const t = ctx.currentTime;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(volume, t+0.05);
+  g.gain.linearRampToValueAtTime(volume, t+duration-0.1);
+  g.gain.linearRampToValueAtTime(0, t+duration);
+  o.start(t); o.stop(t+duration+0.05);
+  drawVisualizer(freq, duration);
+}
+
+function playMelody(type) {
+  const ctx = audioCtx();
+  const seq = {
+    cat: [{f:700,d:0.3,t:'sine'},{f:500,d:0.4,t:'sine'}],
+    bird: [{f:2000,d:0.08,t:'sine'},{f:2400,d:0.08,t:'sine'},{f:1800,d:0.1,t:'sine'},{f:2200,d:0.08,t:'sine'}],
+    cow: [{f:120,d:0.6,t:'sawtooth'},{f:90,d:0.5,t:'sawtooth'}],
+    bell: [{f:880,d:0.15,t:'triangle'},{f:1175,d:0.6,t:'triangle'}]
+  };
+  const notes = seq[type];
+  let t = ctx.currentTime;
+  notes.forEach(n => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = n.t; o.frequency.value = n.f;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.2, t+0.02);
+    g.gain.linearRampToValueAtTime(0, t+n.d);
+    o.start(t); o.stop(t+n.d+0.05);
+    t += n.d;
+  });
+  drawVisualizer(notes[0].f, notes.reduce((s,n)=>s+n.d,0));
+}
+
+function drawVisualizer(freq, duration) {
+  const path = document.getElementById('vizPath');
+  if (!path) return;
+  // Sine wave path - frequency affects how many oscillations
+  const cycles = Math.max(2, Math.min(40, freq / 80));
+  const points = 200;
+  let d = '';
+  for (let i = 0; i <= points; i++) {
+    const x = (i / points) * 400;
+    const y = 50 + Math.sin((i / points) * Math.PI * 2 * cycles) * 35;
+    d += (i === 0 ? 'M' : 'L') + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+  }
+  path.setAttribute('d', d);
+  path.style.transition = 'none';
+  path.style.opacity = '1';
+  // fade out
+  setTimeout(() => {
+    path.style.transition = 'opacity ' + duration + 's';
+    path.style.opacity = '0.2';
+  }, 50);
+}
+
+// Eardrum
+const drum = document.getElementById('eardrum');
+drum.addEventListener('click', () => {
+  drum.classList.remove('vibrating');
+  void drum.offsetWidth;
+  drum.classList.add('vibrating');
+  // play a drum-like sound
+  const ctx = audioCtx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'sine';
+  const t = ctx.currentTime;
+  o.frequency.setValueAtTime(200, t);
+  o.frequency.exponentialRampToValueAtTime(60, t+0.3);
+  g.gain.setValueAtTime(0.4, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+  o.start(t); o.stop(t+0.45);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maus-Schule</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><polygon points="4,2 4,24 11,18 16,28 19,26 14,17 22,17" fill="%23d81b60" stroke="%23fff" stroke-width="2"/></svg>') 4 2, default; }
+
+  .level-info {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.9);
+    padding: 12px 28px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: bold;
+    color: #6a1b9a;
+    z-index: 40;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+  .counter { color: #d81b60; }
+
+  .play-area {
+    position: absolute;
+    inset: 130px 20px 100px;
+    border-radius: 30px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.4);
+    border: 4px dashed rgba(106,27,154,0.3);
+  }
+
+  /* Floating collectibles */
+  .collectible {
+    position: absolute;
+    font-size: 50px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s, opacity 0.4s;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+  }
+  .collectible.collected {
+    transform: scale(2) rotate(180deg);
+    opacity: 0;
+  }
+  .collectible.hovered {
+    transform: scale(1.4);
+  }
+
+  .butterfly {
+    position: absolute;
+    font-size: 60px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    animation: butterfly-fly 8s ease-in-out infinite;
+  }
+  @keyframes butterfly-fly {
+    0%, 100% { transform: translate(0, 0) rotate(-5deg); }
+    25% { transform: translate(30px, -20px) rotate(5deg); }
+    50% { transform: translate(60px, 0) rotate(-5deg); }
+    75% { transform: translate(30px, 20px) rotate(5deg); }
+  }
+  .butterfly.touched {
+    animation: sparkle-pop 0.6s ease-out;
+    color: #ffd700;
+    filter: drop-shadow(0 0 20px gold);
+  }
+  @keyframes sparkle-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.6) rotate(360deg); }
+    100% { transform: scale(1.2); }
+  }
+
+  .bubble {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(180,220,255,0.6) 40%, rgba(100,160,255,0.3) 70%, rgba(100,160,255,0.1));
+    border: 2px solid rgba(255,255,255,0.7);
+    cursor: pointer;
+    box-shadow: inset -8px -8px 12px rgba(100,160,255,0.4), 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+  }
+  .bubble:hover { transform: scale(1.1); }
+  .bubble.popped {
+    animation: pop 0.4s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+    100% { transform: scale(0.1); opacity: 0; }
+  }
+  .bubble.rising {
+    animation: rise 6s linear forwards;
+  }
+  @keyframes rise {
+    from { bottom: -100px; opacity: 1; }
+    to { bottom: calc(100% + 100px); opacity: 1; }
+  }
+
+  /* Drag-and-drop animals */
+  .drag-row {
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+    padding: 30px;
+    gap: 40px;
+  }
+  .animal-stack, .home-stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 16px;
+    flex: 1;
+  }
+  .animal {
+    font-size: 70px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    transition: transform 0.15s;
+    margin: 0 auto;
+  }
+  .animal:active { cursor: grabbing; transform: scale(1.15); }
+  .animal.dragging { z-index: 1000; opacity: 0.85; pointer-events: none; }
+  .animal.placed {
+    cursor: default;
+    background: rgba(85, 239, 196, 0.6);
+    animation: pulse 1.4s ease-in-out;
+  }
+  .home {
+    font-size: 80px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 30px;
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    border: 4px dashed rgba(106,27,154,0.4);
+    margin: 0 auto;
+    transition: all 0.2s;
+  }
+  .home.drag-over {
+    transform: scale(1.15);
+    border-color: #00b894;
+    background: rgba(85, 239, 196, 0.3);
+  }
+  .home.filled {
+    background: linear-gradient(135deg, #fff8dc, #ffd700);
+    border-style: solid;
+  }
+
+  /* Treasure chests */
+  .chest {
+    position: absolute;
+    font-size: 100px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+  }
+  .chest:hover { transform: scale(1.1) rotate(-5deg); }
+  .chest.opened {
+    animation: chest-open 0.8s ease-out forwards;
+  }
+  @keyframes chest-open {
+    0% { transform: scale(1) rotate(0); }
+    30% { transform: scale(1.3) rotate(-10deg); }
+    60% { transform: scale(1.4) rotate(10deg); }
+    100% { transform: scale(1.2) rotate(0); }
+  }
+  .prize {
+    position: absolute;
+    font-size: 80px;
+    animation: prize-fly 1.5s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes prize-fly {
+    0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+    30% { transform: translate(0, -120px) scale(1.2); opacity: 1; }
+    100% { transform: translate(0, -200px) scale(1); opacity: 0; }
+  }
+
+  /* Celebration confetti */
+  .confetti-piece {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    animation: confetti-fall 3s linear forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-100px) rotate(0); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0.5; }
+  }
+
+  /* trail star */
+  .trail-star {
+    position: fixed;
+    pointer-events: none;
+    font-size: 24px;
+    animation: trail-fade 1s ease-out forwards;
+    z-index: 200;
+  }
+  @keyframes trail-fade {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.3); }
+  }
+
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700, #ffb700);
+    color: #5a3a00;
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 14px;
+    box-shadow: 0 4px 0 #8a6500;
+  }
+
+  .scene.active.fullscreen-stage > h2,
+  .scene.active.fullscreen-stage > p {
+    position: absolute;
+    top: 130px;
+    z-index: 30;
+    background: rgba(255,255,255,0.85);
+    padding: 8px 24px;
+    border-radius: 20px;
+  }
+  .scene.fullscreen-stage > p { top: 200px; font-size: 18px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <a class="home-btn" href="../../index.html" title="Zurück zur Themenauswahl">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn" title="Vorlesen an/aus">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <!-- Scene 0: Welcome -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🖱️✨</div>
+    <h1>Maus-Schule</h1>
+    <p>Hi! Heute lernen wir zusammen, wie man die <b style="color:#d81b60">Computer-Maus</b> benutzt.<br/>
+       In sechs lustigen Spielen wirst du zum Maus-Profi!</p>
+    <button class="green" onclick="engine.next()">Los geht's! 🚀</button>
+  </section>
+
+  <!-- Scene 1: Move the mouse - collect stars -->
+  <section class="scene fullscreen-stage" data-scene="1">
+    <h2>Level 1: Bewegen</h2>
+    <p>Bewege die Maus und sammle alle Sterne!</p>
+    <div class="play-area" id="trail-area"></div>
+    <button class="green" id="lvl1-next" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 2: Hover butterflies -->
+  <section class="scene fullscreen-stage" data-scene="2">
+    <h2>Level 2: Drüberfahren</h2>
+    <p>Fahre mit der Maus über die Schmetterlinge — sie funkeln!</p>
+    <div class="play-area" id="butterfly-area"></div>
+    <button class="green" id="lvl2-next" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 3: Click bubbles -->
+  <section class="scene fullscreen-stage" data-scene="3">
+    <h2>Level 3: Klicken</h2>
+    <p>Klicke die Seifenblasen — POP!</p>
+    <div class="play-area" id="bubble-area"></div>
+    <button class="green" id="lvl3-next" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 4: Drag animals to homes -->
+  <section class="scene fullscreen-stage" data-scene="4">
+    <h2>Level 4: Ziehen</h2>
+    <p>Bring jedes Tier nach Hause! Drücken, halten, ziehen.</p>
+    <div class="play-area">
+      <div class="drag-row">
+        <div class="animal-stack" id="animals">
+          <div class="animal" draggable="true" data-pair="cow">🐮</div>
+          <div class="animal" draggable="true" data-pair="fish">🐠</div>
+          <div class="animal" draggable="true" data-pair="bird">🐦</div>
+          <div class="animal" draggable="true" data-pair="dog">🐶</div>
+        </div>
+        <div class="home-stack" id="homes">
+          <div class="home" data-pair="bird">🌳</div>
+          <div class="home" data-pair="cow">🏚️</div>
+          <div class="home" data-pair="dog">🏠</div>
+          <div class="home" data-pair="fish">💧</div>
+        </div>
+      </div>
+    </div>
+    <button class="green" id="lvl4-next" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Double-click chests -->
+  <section class="scene fullscreen-stage" data-scene="5">
+    <h2>Level 5: Doppelklick</h2>
+    <p>Klicke ganz schnell zwei mal auf eine Schatzkiste!</p>
+    <div class="play-area" id="chest-area"></div>
+    <button class="green" id="lvl5-next" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 6: Celebration -->
+  <section class="scene" data-scene="6" style="background:linear-gradient(180deg,#ffd700 0%,#ff8a65 50%,#ec407a 100%);">
+    <div class="big-emoji pulse">🏆</div>
+    <h1 style="color:#fff;">Du bist ein Maus-Profi!</h1>
+    <p style="color:#fff;">Wow, du hast alle Level geschafft!<br/>
+       Bewegen, Drüberfahren, Klicken, Ziehen und Doppelklick — alles kannst du jetzt!</p>
+    <div style="display:flex;gap:14px;margin-top:14px;">
+      <button class="secondary" onclick="engine.goTo(0)">🔁 Nochmal spielen</button>
+      <button class="green" onclick="window.location.href='../../index.html'">🏠 Andere Reise</button>
+    </div>
+    <div id="confetti-host" style="position:absolute;inset:0;pointer-events:none;"></div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button class="secondary" id="prevBtn">⬅️ Zurück</button>
+</div>
+
+<div class="level-info" id="levelInfo" style="display:none;">
+  <span id="levelLabel">Sterne:</span>
+  <span class="counter" id="levelCount">0 / 0</span>
+</div>
+
+<script src="../../shared/engine.js"></script>
+<script>
+// =================== Sound effects via Web Audio ===================
+let ac = null;
+function audioCtx() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+  return ac;
+}
+function sfx(type) {
+  try {
+    const ctx = audioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    const t = ctx.currentTime;
+    if (type === 'pop') {
+      o.type = 'sine'; o.frequency.setValueAtTime(900, t);
+      o.frequency.exponentialRampToValueAtTime(180, t+0.18);
+      g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+      o.start(t); o.stop(t+0.22);
+    } else if (type === 'collect') {
+      o.type = 'triangle'; o.frequency.setValueAtTime(660, t);
+      o.frequency.exponentialRampToValueAtTime(1320, t+0.15);
+      g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+      o.start(t); o.stop(t+0.22);
+    } else if (type === 'sparkle') {
+      o.type = 'sine'; o.frequency.setValueAtTime(1500, t);
+      o.frequency.exponentialRampToValueAtTime(2400, t+0.12);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.15);
+      o.start(t); o.stop(t+0.18);
+    } else if (type === 'win') {
+      [523, 659, 784, 1047].forEach((freq, i) => {
+        const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.type = 'triangle'; o2.frequency.value = freq;
+        const start = t + i*0.12;
+        g2.gain.setValueAtTime(0.3, start); g2.gain.exponentialRampToValueAtTime(0.001, start+0.3);
+        o2.start(start); o2.stop(start+0.32);
+      });
+    } else if (type === 'open') {
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(220, t);
+      o.frequency.linearRampToValueAtTime(440, t+0.25);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+      o.start(t); o.stop(t+0.32);
+    }
+  } catch (e) {}
+}
+
+// =================== Engine setup ===================
+const SCENE_TEXTS = [
+  "Hallo! Heute lernen wir, wie man die Maus benutzt. Die Maus ist dein Helfer auf dem Computer. Bist du bereit?",
+  "Level eins: Bewegen. Bewege die Maus auf dem Tisch. Sammle alle Sterne ein, indem du mit dem Zeiger drüber fährst!",
+  "Level zwei: Drüber fahren. Fahre mit der Maus über die Schmetterlinge. Sie funkeln, wenn du sie berührst!",
+  "Level drei: Klicken. Drücke einmal kurz auf den linken Knopf von der Maus, um die Seifenblasen zerplatzen zu lassen!",
+  "Level vier: Ziehen. Drücke auf ein Tier, halte den Knopf gedrückt, und ziehe es zu seinem Zuhause!",
+  "Level fünf: Doppelklick. Klicke ganz schnell zwei mal hintereinander auf die Schatzkiste, um sie zu öffnen!",
+  "Du hast es geschafft! Du bist jetzt ein echter Maus-Profi! Ich bin so stolz auf dich!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: handleSceneEnter,
+  onSceneLeave: handleSceneLeave
+});
+
+const info = document.getElementById('levelInfo');
+function setCounter(label, val, max) {
+  info.style.display = 'flex';
+  document.getElementById('levelLabel').textContent = label + ':';
+  document.getElementById('levelCount').textContent = val + ' / ' + max;
+}
+function hideCounter() { info.style.display = 'none'; }
+
+function handleSceneEnter(idx) {
+  if (idx === 1) initLevel1();
+  else if (idx === 2) initLevel2();
+  else if (idx === 3) initLevel3();
+  else if (idx === 4) initLevel4();
+  else if (idx === 5) initLevel5();
+  else if (idx === 6) initFinal();
+  else hideCounter();
+}
+function handleSceneLeave(idx) {
+  if (idx === 1) cleanupLevel1();
+  if (idx === 3) cleanupLevel3();
+}
+
+// =================== LEVEL 1: Move & collect stars ===================
+let lvl1Cleanup = null;
+function initLevel1() {
+  const area = document.getElementById('trail-area');
+  area.innerHTML = '';
+  const STARS = 8;
+  let collected = 0;
+  setCounter('Sterne', 0, STARS);
+  const stars = [];
+  const rect = area.getBoundingClientRect();
+  for (let i = 0; i < STARS; i++) {
+    const s = document.createElement('div');
+    s.className = 'collectible';
+    s.textContent = ['⭐','🌟','✨','💫'][i % 4];
+    s.style.left = (Math.random()*(rect.width-60)) + 'px';
+    s.style.top = (Math.random()*(rect.height-60)) + 'px';
+    area.appendChild(s);
+    stars.push(s);
+  }
+  function trail(e) {
+    const t = document.createElement('div');
+    t.className = 'trail-star';
+    t.textContent = '✨';
+    t.style.left = (e.clientX-12) + 'px';
+    t.style.top = (e.clientY-12) + 'px';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 1000);
+  }
+  function check(e) {
+    const px = e.clientX, py = e.clientY;
+    stars.forEach(s => {
+      if (s.classList.contains('collected')) return;
+      const r = s.getBoundingClientRect();
+      const cx = r.left + r.width/2, cy = r.top + r.height/2;
+      if (Math.hypot(px-cx, py-cy) < 60) {
+        s.classList.add('collected');
+        collected++;
+        sfx('collect');
+        setCounter('Sterne', collected, STARS);
+        if (collected >= STARS) {
+          sfx('win');
+          document.getElementById('lvl1-next').style.display = 'inline-block';
+        }
+      }
+    });
+  }
+  let last = 0;
+  function onMove(e) {
+    const now = performance.now();
+    if (now - last > 40) { trail(e); last = now; }
+    check(e);
+  }
+  document.addEventListener('mousemove', onMove);
+  lvl1Cleanup = () => {
+    document.removeEventListener('mousemove', onMove);
+    document.querySelectorAll('.trail-star').forEach(el => el.remove());
+  };
+  document.getElementById('lvl1-next').style.display = 'none';
+}
+function cleanupLevel1() { if (lvl1Cleanup) lvl1Cleanup(); lvl1Cleanup = null; }
+
+// =================== LEVEL 2: Hover butterflies ===================
+function initLevel2() {
+  const area = document.getElementById('butterfly-area');
+  area.innerHTML = '';
+  const N = 6;
+  let touched = 0;
+  setCounter('Schmetterlinge', 0, N);
+  const rect = area.getBoundingClientRect();
+  const emojis = ['🦋','🦋','🦋','🦋','🦋','🦋'];
+  for (let i = 0; i < N; i++) {
+    const b = document.createElement('div');
+    b.className = 'butterfly';
+    b.textContent = emojis[i];
+    b.style.left = (40 + Math.random()*(rect.width-120)) + 'px';
+    b.style.top = (40 + Math.random()*(rect.height-120)) + 'px';
+    b.style.animationDelay = (Math.random()*2) + 's';
+    b.style.animationDuration = (6 + Math.random()*4) + 's';
+    b.addEventListener('mouseenter', () => {
+      if (b.dataset.touched) return;
+      b.dataset.touched = '1';
+      b.classList.add('touched');
+      sfx('sparkle');
+      touched++;
+      setCounter('Schmetterlinge', touched, N);
+      if (touched >= N) {
+        sfx('win');
+        document.getElementById('lvl2-next').style.display = 'inline-block';
+      }
+    });
+    area.appendChild(b);
+  }
+  document.getElementById('lvl2-next').style.display = 'none';
+}
+
+// =================== LEVEL 3: Click bubbles ===================
+let lvl3Timer = null;
+function initLevel3() {
+  const area = document.getElementById('bubble-area');
+  area.innerHTML = '';
+  const TARGET = 10;
+  let popped = 0;
+  setCounter('Blasen', 0, TARGET);
+  function spawn() {
+    const rect = area.getBoundingClientRect();
+    const b = document.createElement('div');
+    b.className = 'bubble rising';
+    const size = 50 + Math.random()*60;
+    b.style.width = b.style.height = size + 'px';
+    b.style.left = (Math.random()*(rect.width-size)) + 'px';
+    b.style.animationDuration = (4 + Math.random()*4) + 's';
+    b.onclick = () => {
+      if (b.classList.contains('popped')) return;
+      b.classList.add('popped');
+      sfx('pop');
+      popped++;
+      setCounter('Blasen', popped, TARGET);
+      if (popped >= TARGET) {
+        sfx('win');
+        document.getElementById('lvl3-next').style.display = 'inline-block';
+      }
+    };
+    area.appendChild(b);
+    setTimeout(() => b.remove(), 9000);
+  }
+  lvl3Timer = setInterval(spawn, 600);
+  for (let i = 0; i < 3; i++) setTimeout(spawn, i*200);
+  document.getElementById('lvl3-next').style.display = 'none';
+}
+function cleanupLevel3() { if (lvl3Timer) clearInterval(lvl3Timer); lvl3Timer = null; }
+
+// =================== LEVEL 4: Drag animals ===================
+function initLevel4() {
+  const animals = document.querySelectorAll('#animals .animal');
+  const homes = document.querySelectorAll('#homes .home');
+  let placed = 0;
+  const TARGET = animals.length;
+  setCounter('Tiere zuhause', 0, TARGET);
+  document.getElementById('lvl4-next').style.display = 'none';
+
+  // Reset state
+  animals.forEach(a => { a.classList.remove('placed'); a.style.pointerEvents = 'auto'; });
+  homes.forEach(h => h.classList.remove('filled', 'drag-over'));
+
+  // Native HTML5 drag for desktop; pointer fallback for touch
+  animals.forEach(animal => {
+    animal.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', animal.dataset.pair);
+      animal.classList.add('dragging');
+    });
+    animal.addEventListener('dragend', () => animal.classList.remove('dragging'));
+    // Touch / pointer fallback
+    animal.addEventListener('pointerdown', startDrag);
+  });
+  homes.forEach(home => {
+    home.addEventListener('dragover', e => { e.preventDefault(); home.classList.add('drag-over'); });
+    home.addEventListener('dragleave', () => home.classList.remove('drag-over'));
+    home.addEventListener('drop', e => {
+      e.preventDefault();
+      home.classList.remove('drag-over');
+      const pair = e.dataTransfer.getData('text/plain');
+      tryPlace(pair, home);
+    });
+  });
+
+  function tryPlace(pair, home) {
+    if (home.classList.contains('filled')) return;
+    if (home.dataset.pair === pair) {
+      home.classList.add('filled');
+      const animal = document.querySelector('#animals .animal[data-pair="'+pair+'"]');
+      if (animal) {
+        home.textContent = animal.textContent;
+        animal.classList.add('placed');
+        animal.style.pointerEvents = 'none';
+        animal.setAttribute('draggable','false');
+        animal.style.opacity = '0.3';
+      }
+      sfx('collect');
+      placed++;
+      setCounter('Tiere zuhause', placed, TARGET);
+      if (placed >= TARGET) {
+        sfx('win');
+        document.getElementById('lvl4-next').style.display = 'inline-block';
+      }
+    } else {
+      sfx('pop');
+    }
+  }
+
+  // Pointer-based drag for touch / non-HTML5
+  let dragEl = null, dragOffsetX = 0, dragOffsetY = 0, dragStartLeft = 0, dragStartTop = 0;
+  function startDrag(e) {
+    if (e.pointerType === 'mouse') return; // let native drag handle desktop
+    const animal = e.currentTarget;
+    if (animal.classList.contains('placed')) return;
+    dragEl = animal;
+    const r = animal.getBoundingClientRect();
+    dragOffsetX = e.clientX - r.left;
+    dragOffsetY = e.clientY - r.top;
+    dragStartLeft = animal.style.left;
+    dragStartTop = animal.style.top;
+    animal.classList.add('dragging');
+    animal.style.position = 'fixed';
+    animal.style.left = (e.clientX - dragOffsetX) + 'px';
+    animal.style.top = (e.clientY - dragOffsetY) + 'px';
+    document.addEventListener('pointermove', onPMove);
+    document.addEventListener('pointerup', onPUp, { once: true });
+  }
+  function onPMove(e) {
+    if (!dragEl) return;
+    dragEl.style.left = (e.clientX - dragOffsetX) + 'px';
+    dragEl.style.top = (e.clientY - dragOffsetY) + 'px';
+  }
+  function onPUp(e) {
+    document.removeEventListener('pointermove', onPMove);
+    if (!dragEl) return;
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    const home = target && target.closest('.home');
+    dragEl.classList.remove('dragging');
+    if (home) tryPlace(dragEl.dataset.pair, home);
+    // restore position styles
+    dragEl.style.position = '';
+    dragEl.style.left = '';
+    dragEl.style.top = '';
+    dragEl = null;
+  }
+}
+
+// =================== LEVEL 5: Double-click chests ===================
+function initLevel5() {
+  const area = document.getElementById('chest-area');
+  area.innerHTML = '';
+  const N = 4;
+  let opened = 0;
+  setCounter('Schatzkisten', 0, N);
+  document.getElementById('lvl5-next').style.display = 'none';
+  const rect = area.getBoundingClientRect();
+  const prizes = ['💎','🏆','🎁','👑','💰','🍭'];
+  for (let i = 0; i < N; i++) {
+    const c = document.createElement('div');
+    c.className = 'chest';
+    c.textContent = '🎁';
+    c.style.left = (60 + (rect.width-200)*(i/(N-1))) + 'px';
+    c.style.top = (rect.height/2 - 50 + (i%2 ? 60 : -60)) + 'px';
+    c.addEventListener('click', () => sfx('pop'));
+    c.addEventListener('dblclick', () => {
+      if (c.dataset.opened) return;
+      c.dataset.opened = '1';
+      c.classList.add('opened');
+      c.textContent = '📦';
+      sfx('open');
+      // launch prize
+      const p = document.createElement('div');
+      p.className = 'prize';
+      p.textContent = prizes[i % prizes.length];
+      p.style.left = c.style.left;
+      p.style.top = c.style.top;
+      area.appendChild(p);
+      setTimeout(() => p.remove(), 1500);
+      opened++;
+      setCounter('Schatzkisten', opened, N);
+      if (opened >= N) {
+        sfx('win');
+        document.getElementById('lvl5-next').style.display = 'inline-block';
+      }
+    });
+    area.appendChild(c);
+  }
+}
+
+// =================== FINAL: Confetti ===================
+function initFinal() {
+  hideCounter();
+  const host = document.getElementById('confetti-host');
+  host.innerHTML = '';
+  sfx('win');
+  setTimeout(() => sfx('win'), 400);
+  const colors = ['#ff6b9d','#74b9ff','#55efc4','#ffd700','#d6a2ff','#fdcb6e'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.background = colors[i%colors.length];
+    p.style.left = (Math.random()*100) + 'vw';
+    p.style.animationDelay = (Math.random()*2) + 's';
+    p.style.animationDuration = (2 + Math.random()*2) + 's';
+    if (i%3 === 0) p.style.borderRadius = '50%';
+    host.appendChild(p);
+  }
+}
+</script>
+</body>
+</html>
