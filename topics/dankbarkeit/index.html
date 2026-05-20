@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dankbarkeit</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #fff8c8 0%, #ffd6e8 50%, #d6a2ff 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .heart-rise {
+    position: absolute;
+    font-size: 30px;
+    pointer-events: none;
+    animation: heart-rise 1.6s ease-out forwards;
+  }
+  @keyframes heart-rise {
+    0%   { transform: scale(0); opacity: 0; }
+    20%  { transform: scale(1.4); opacity: 1; }
+    100% { transform: translateY(-200px) scale(0.6); opacity: 0; }
+  }
+
+  .gratitude-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    min-height: 360px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 28px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    margin: 14px 0;
+  }
+  .gratitude-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 14px;
+  }
+  .g-item {
+    background: rgba(255,255,255,0.9);
+    border: 4px solid transparent;
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+  }
+  .g-item:hover { transform: translateY(-6px) scale(1.06) rotate(-2deg); border-color: #ec407a; }
+  .g-item.thanked {
+    background: linear-gradient(135deg, rgba(255,215,0,0.4), rgba(236,64,122,0.3));
+    border-color: #ffd700;
+    animation: thanks-glow 1.2s ease-in-out;
+  }
+  @keyframes thanks-glow {
+    0%, 100% { box-shadow: 0 0 0 rgba(255,215,0,0); }
+    50%      { box-shadow: 0 0 28px rgba(255,215,0,0.8); }
+  }
+  .g-item .emoji { font-size: 60px; display: block; }
+  .g-item .label { font-weight: bold; color: #6a1b9a; font-size: 16px; }
+
+  .gratitude-meter {
+    background: rgba(255,255,255,0.9);
+    padding: 12px 26px;
+    border-radius: 18px;
+    color: #6a1b9a;
+    font-weight: bold;
+    font-size: 22px;
+    margin-top: 10px;
+  }
+
+  .feeling-cards {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+  .feeling {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 18px;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .feeling-cards .feeling:nth-child(2) { animation-delay: 0.4s; }
+  .feeling-cards .feeling:nth-child(3) { animation-delay: 0.8s; }
+  .feeling .emoji { font-size: 64px; display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🙏✨</div>
+    <h1>Dankbarkeit</h1>
+    <p>"Danke" — ein winzig kleines Wort.<br/>Aber es macht ganz viel Großes in der Welt! 💫</p>
+    <button class="purple" onclick="engine.next()">Erzähl mir mehr! 💕</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Was ist Dankbarkeit?</h2>
+    <p>Dankbarkeit heißt: <b style="color:#6a1b9a">sehen, was du hast</b> und dich darüber freuen.</p>
+    <div class="feeling-cards">
+      <div class="feeling"><span class="emoji">🌞</span><div class="label">Die Sonne</div><p style="margin:0;font-size:14px">scheint für dich!</p></div>
+      <div class="feeling"><span class="emoji">🍽️</span><div class="label">Dein Essen</div><p style="margin:0;font-size:14px">macht dich satt</p></div>
+      <div class="feeling"><span class="emoji">🤗</span><div class="label">Deine Familie</div><p style="margin:0;font-size:14px">hat dich lieb</p></div>
+    </div>
+    <p>Auch <b>kleine Sachen</b> sind oft riesengroß! 🌷</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Sag "Danke"!</h2>
+    <p>Klick auf Dinge, für die du dankbar bist — und schau, wie Herzen aufsteigen! 💕</p>
+    <div class="gratitude-stage" id="stage">
+      <div class="gratitude-grid">
+        <div class="g-item" data-name="Mama"><span class="emoji">👩</span><div class="label">Mama</div></div>
+        <div class="g-item" data-name="Papa"><span class="emoji">👨</span><div class="label">Papa</div></div>
+        <div class="g-item" data-name="Essen"><span class="emoji">🍎</span><div class="label">Essen</div></div>
+        <div class="g-item" data-name="Sonne"><span class="emoji">☀️</span><div class="label">Sonne</div></div>
+        <div class="g-item" data-name="Kuscheltier"><span class="emoji">🧸</span><div class="label">Kuscheltier</div></div>
+        <div class="g-item" data-name="Freunde"><span class="emoji">👯</span><div class="label">Freunde</div></div>
+        <div class="g-item" data-name="Zuhause"><span class="emoji">🏠</span><div class="label">Zuhause</div></div>
+        <div class="g-item" data-name="Bett"><span class="emoji">🛏️</span><div class="label">Mein Bett</div></div>
+        <div class="g-item" data-name="Bücher"><span class="emoji">📖</span><div class="label">Bücher</div></div>
+        <div class="g-item" data-name="Lachen"><span class="emoji">😄</span><div class="label">Lachen</div></div>
+        <div class="g-item" data-name="Spielen"><span class="emoji">🧩</span><div class="label">Spielen</div></div>
+        <div class="g-item" data-name="Natur"><span class="emoji">🌳</span><div class="label">Bäume</div></div>
+      </div>
+    </div>
+    <div class="gratitude-meter">💖 Dankeschön: <span id="thanks">0</span></div>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Dankbarkeit macht glücklich</h2>
+    <p>Wenn du oft "Danke" sagst, fühlst du dich <b style="color:#6a1b9a">leichter</b> und <b style="color:#ec407a">glücklicher</b>! 🌈</p>
+    <div style="display:flex;gap:30px;font-size:60px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;">
+      <span class="pulse">😐</span>
+      <span style="font-size:40px;">➕</span>
+      <span class="pulse" style="animation-delay:0.3s">🙏</span>
+      <span style="font-size:40px;">=</span>
+      <span class="pulse" style="animation-delay:0.6s">😊✨</span>
+    </div>
+    <p style="font-size:18px;">💡 <b>Tipp:</b> Bevor du schläfst, denk an drei schöne Sachen vom Tag.</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🙏💕</div>
+    <h2>Danke, dass es dich gibt!</h2>
+    <p>Du bist auch ein Geschenk für andere!<br/>Wenn du Danke sagst, machst du jemanden glücklich. 🌟</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Danke, ein winzig kleines Wort. Aber es macht ganz viel Großes in der Welt!",
+  "Was ist Dankbarkeit? Dankbarkeit heißt: sehen, was du hast, und dich darüber freuen. Die Sonne scheint für dich, dein Essen macht dich satt, deine Familie hat dich lieb. Auch kleine Sachen sind oft riesengroß!",
+  "Sag Danke! Klick auf Dinge, für die du dankbar bist, und schau, wie Herzen aufsteigen!",
+  "Dankbarkeit macht glücklich! Wenn du oft Danke sagst, fühlst du dich leichter und glücklicher. Tipp: Bevor du schläfst, denk an drei schöne Sachen vom Tag.",
+  "Danke, dass es dich gibt! Du bist auch ein Geschenk für andere. Wenn du Danke sagst, machst du jemanden glücklich!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+const thanked = new Set();
+document.querySelectorAll('.g-item').forEach(item => {
+  item.addEventListener('click', () => {
+    item.classList.remove('thanked'); void item.offsetWidth;
+    item.classList.add('thanked');
+    thanked.add(item.dataset.name);
+    document.getElementById('thanks').textContent = String(thanked.size);
+    // Spawn rising hearts
+    const stage = document.getElementById('stage');
+    const r = item.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    for (let i = 0; i < 4; i++) {
+      const h = document.createElement('span');
+      h.className = 'heart-rise';
+      h.textContent = ['💕','💖','✨','🌟'][i];
+      h.style.left = (r.left + r.width/2 - sr.left + (Math.random()-0.5)*40) + 'px';
+      h.style.top = (r.top - sr.top + 20) + 'px';
+      h.style.animationDelay = (i*0.08) + 's';
+      stage.appendChild(h);
+      setTimeout(() => h.remove(), 1700);
+    }
+    sayDanke(item.dataset.name);
+  });
+});
+
+function sayDanke(name) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance('Danke ' + name + '!');
+  u.lang = 'de-DE'; u.rate = 0.95; u.pitch = 1.2;
+  const voices = speechSynthesis.getVoices();
+  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
+  if (de) u.voice = de;
+  speechSynthesis.speak(u);
+}
+</script>
+</body>
+</html>

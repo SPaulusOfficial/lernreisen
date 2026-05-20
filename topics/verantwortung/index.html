@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verantwortung</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #b5e8ff 0%, #d4ffd6 50%, #fff8c8 100%); }
+  h1, h2 { color: #0984e3; text-shadow: 2px 2px 0 #fff; }
+
+  .care-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 14px 0;
+  }
+  .care {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .care-grid .care:nth-child(2) { animation-delay: 0.3s; }
+  .care-grid .care:nth-child(3) { animation-delay: 0.6s; }
+  .care-grid .care:nth-child(4) { animation-delay: 0.9s; }
+  .care:hover { transform: translateY(-6px) scale(1.05); }
+  .care .emoji { font-size: 60px; display: block; margin-bottom: 4px; }
+  .care h3 { color: #0984e3; margin: 4px 0; font-size: 18px; }
+  .care p { margin: 0; font-size: 14px; }
+
+  /* Plant care game */
+  .plant-stage {
+    position: relative;
+    width: min(95vw, 480px);
+    margin: 12px 0;
+  }
+  .plant-stage svg { width: 100%; height: auto; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.18)); }
+  .happiness-bar {
+    height: 22px;
+    width: 100%;
+    background: #e0e0e0;
+    border-radius: 11px;
+    overflow: hidden;
+    margin: 6px 0;
+    border: 2px solid #fff;
+  }
+  .happiness-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #ffd166, #55efc4);
+    transition: width 0.5s ease;
+  }
+  .action-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .action-btn {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    padding: 14px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 5px 0 #074a87;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
+  }
+  .action-btn:hover { transform: translateY(-3px); }
+  .action-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #074a87; }
+
+  .plant-status {
+    background: rgba(255,255,255,0.92);
+    padding: 12px 24px;
+    border-radius: 18px;
+    color: #0984e3;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .day-counter {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 16px;
+    border-radius: 14px;
+    color: #0984e3;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌱🤝</div>
+    <h1>Verantwortung</h1>
+    <p>Verantwortung ist ein großes Wort.<br/>Es heißt: <b style="color:#0984e3">sich kümmern</b>!</p>
+    <button class="secondary" onclick="engine.next()">Was heißt das? 🤔</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wofür kann man sorgen?</h2>
+    <div class="care-grid">
+      <div class="care"><span class="emoji">🦷</span><h3>Für deinen Körper</h3><p>Zähne putzen, gesund essen</p></div>
+      <div class="care"><span class="emoji">🧸</span><h3>Für deine Sachen</h3><p>Spielsachen aufräumen</p></div>
+      <div class="care"><span class="emoji">🐶</span><h3>Für Haustiere</h3><p>Füttern, kuscheln</p></div>
+      <div class="care"><span class="emoji">🌱</span><h3>Für Pflanzen</h3><p>Gießen, lieb sein</p></div>
+      <div class="care"><span class="emoji">🤝</span><h3>Für Freunde</h3><p>Da sein, helfen</p></div>
+      <div class="care"><span class="emoji">🗑️</span><h3>Für die Natur</h3><p>Müll nicht wegwerfen</p></div>
+    </div>
+    <p>Verantwortung heißt: was du anfängst, das machst du auch fertig! 💪</p>
+    <button class="secondary" onclick="engine.next()">Ausprobieren! 🌿</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Kümmer dich um deine Pflanze!</h2>
+    <p style="font-size:18px;">Diese Pflanze braucht dich. Sieh, was sie braucht und drück den passenden Knopf!</p>
+    <div class="plant-stage">
+      <svg viewBox="0 0 200 280">
+        <polygon points="60,230 140,230 132,275 68,275" fill="#bf6c3a" stroke="#7a3e10" stroke-width="2"/>
+        <ellipse cx="100" cy="232" rx="40" ry="6" fill="#3e2723"/>
+        <line id="vStem" x1="100" y1="232" x2="100" y2="140" stroke="#4caf50" stroke-width="6" stroke-linecap="round"/>
+        <ellipse id="vLeaf1" cx="80" cy="180" rx="18" ry="10" fill="#66bb6a" transform="rotate(-30 80 180)"/>
+        <ellipse id="vLeaf2" cx="120" cy="155" rx="18" ry="10" fill="#66bb6a" transform="rotate(30 120 155)"/>
+        <text id="vFace" x="100" y="120" text-anchor="middle" font-size="40">🙂</text>
+      </svg>
+    </div>
+    <div class="happiness-bar"><div class="happiness-fill" id="happyFill" style="width:60%"></div></div>
+    <div class="plant-status" id="plantStatus">Wie geht es deiner Pflanze?</div>
+    <div class="action-row">
+      <button class="action-btn" onclick="doAction('water')">💧 Gießen</button>
+      <button class="action-btn" onclick="doAction('sun')">☀️ Sonne</button>
+      <button class="action-btn" onclick="doAction('talk')">💬 Liebes sagen</button>
+      <button class="action-btn" onclick="doAction('clean')">🧹 Boden putzen</button>
+    </div>
+    <div class="day-counter">📅 Tag: <span id="day">1</span> • ❤️ Pflanze ist <span id="mood">glücklich</span></div>
+    <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <div class="big-emoji pulse">🌱💪</div>
+    <h2>Du schaffst das!</h2>
+    <p>Wenn du dich um etwas kümmerst, freut sich was oder jemand.<br/>
+       Du wirst stolz auf dich — und andere können dir vertrauen! ✨</p>
+    <button class="secondary" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Auch beim Fehler machen!</h2>
+    <p>Wenn was kaputt geht oder du was Falsches gemacht hast — sag es!<br/>
+       Verantwortung heißt auch: <b style="color:#0984e3">"Das war ich"</b> sagen können, und es wieder gut machen. 🛠️</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Verantwortung ist ein großes Wort. Es heißt: sich kümmern!",
+  "Wofür kann man sorgen? Für deinen Körper, für deine Sachen, für Haustiere, für Pflanzen, für Freunde, und für die Natur. Verantwortung heißt: was du anfängst, das machst du auch fertig!",
+  "Kümmer dich um deine Pflanze! Sie braucht dich. Sieh, was sie braucht und drück den passenden Knopf. Aber Achtung: zu viel ist auch nicht gut!",
+  "Du schaffst das! Wenn du dich um etwas kümmerst, freut sich was oder jemand. Du wirst stolz auf dich, und andere können dir vertrauen!",
+  "Auch beim Fehler machen! Wenn was kaputt geht oder du was Falsches gemacht hast, sag es! Verantwortung heißt auch: Das war ich sagen können, und es wieder gut machen."
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 2) initPlant(); } });
+
+let happy = 60, day = 1, lastAction = null;
+
+function initPlant() {
+  happy = 60; day = 1; lastAction = null;
+  update();
+}
+
+function doAction(act) {
+  // Diminishing returns / penalty for over-doing same action
+  let delta = 18;
+  if (lastAction === act) delta = -10; // overdoing
+  happy = Math.max(0, Math.min(100, happy + delta));
+  lastAction = act;
+  day++;
+  if (day % 4 === 0) happy = Math.max(0, happy - 12); // time passes, plant gets thirsty
+  update();
+}
+
+function update() {
+  document.getElementById('happyFill').style.width = happy + '%';
+  document.getElementById('day').textContent = String(day);
+  let mood, face, leaf;
+  if (happy >= 80) { mood = 'super glücklich!'; face = '😊'; leaf = '#66bb6a'; }
+  else if (happy >= 60) { mood = 'glücklich'; face = '🙂'; leaf = '#7cb342'; }
+  else if (happy >= 40) { mood = 'OK'; face = '😐'; leaf = '#8bc34a'; }
+  else if (happy >= 20) { mood = 'traurig'; face = '😔'; leaf = '#a4ad77'; }
+  else { mood = 'sehr traurig'; face = '😢'; leaf = '#7a6a3a'; }
+  document.getElementById('mood').textContent = mood;
+  document.getElementById('vFace').textContent = face;
+  document.getElementById('vLeaf1').setAttribute('fill', leaf);
+  document.getElementById('vLeaf2').setAttribute('fill', leaf);
+
+  const status = document.getElementById('plantStatus');
+  if (lastAction === null) status.textContent = 'Wie geht es deiner Pflanze?';
+  else if (happy >= 80) status.textContent = '🌟 Deine Pflanze blüht auf!';
+  else if (happy < 30) status.textContent = '😢 Sie braucht jetzt was anderes...';
+  else status.textContent = '🌿 Wechsle ab — sie braucht alles ein bisschen.';
+}
+</script>
+</body>
+</html>

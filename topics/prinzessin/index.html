@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Im Prinzessinnen-Schloss</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffd6e8 0%, #f8c8e8 30%, #e0b4ff 60%, #ffd9f7 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  /* Sparkle background */
+  .sparkle-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .sparkle-bg span {
+    position: absolute;
+    font-size: 22px;
+    animation: sparkle-twinkle 2.5s ease-in-out infinite, sparkle-rise 14s linear infinite;
+  }
+  @keyframes sparkle-twinkle {
+    0%, 100% { opacity: 0.4; transform: scale(1) rotate(0); }
+    50%      { opacity: 1; transform: scale(1.3) rotate(15deg); }
+  }
+  @keyframes sparkle-rise {
+    from { bottom: -30px; }
+    to   { bottom: 110vh; }
+  }
+
+  /* Princess pick */
+  .princess-row {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 18px 0;
+  }
+  .princess-card {
+    background: rgba(255,255,255,0.92);
+    border: 5px solid transparent;
+    border-radius: 30px;
+    padding: 18px;
+    width: 180px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 18px rgba(106,27,154,0.2);
+  }
+  .princess-card:hover {
+    transform: translateY(-10px) scale(1.06) rotate(-2deg);
+    border-color: #ec407a;
+  }
+  .princess-card.chosen {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, #fff, #fff5e0);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255,215,0,0.6), 0 14px 24px rgba(0,0,0,0.15);
+  }
+  .princess-emoji {
+    font-size: 110px;
+    display: block;
+    line-height: 1;
+    margin-bottom: 4px;
+    animation: princess-bow 4s ease-in-out infinite;
+  }
+  .princess-card:nth-child(2) .princess-emoji { animation-delay: 0.4s; }
+  .princess-card:nth-child(3) .princess-emoji { animation-delay: 0.8s; }
+  .princess-card:nth-child(4) .princess-emoji { animation-delay: 1.2s; }
+  @keyframes princess-bow {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-8px) rotate(2deg); }
+  }
+  .princess-card h3 { color: #6a1b9a; margin: 0; }
+
+  /* Crown decorating */
+  .crown-stage {
+    position: relative;
+    width: min(95vw, 480px);
+    height: 280px;
+    margin: 14px 0;
+  }
+  .crown-svg { width: 100%; height: 100%; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.2)); }
+  .crown-base {
+    fill: url(#crownGrad);
+    stroke: #b8860b;
+    stroke-width: 3;
+  }
+  .slot {
+    fill: rgba(255,255,255,0.4);
+    stroke: #b8860b;
+    stroke-width: 2;
+    stroke-dasharray: 4;
+    cursor: pointer;
+    transition: fill 0.3s;
+  }
+  .slot:hover { fill: rgba(255,255,255,0.7); }
+  .slot.next { animation: slot-glow 1.4s ease-in-out infinite; }
+  @keyframes slot-glow {
+    0%, 100% { fill: rgba(255,255,200,0.4); }
+    50%      { fill: rgba(255,215,0,0.7); }
+  }
+  .placed-jewel {
+    animation: jewel-place 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes jewel-place {
+    0%   { transform: scale(0) rotate(-180deg); }
+    60%  { transform: scale(1.3) rotate(20deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  .jewel-picker {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 6px 0;
+    background: rgba(255,255,255,0.55);
+    padding: 12px;
+    border-radius: 22px;
+  }
+  .jewel-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    cursor: pointer;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    background: none;
+    padding: 0;
+  }
+  .jewel-btn:hover { transform: scale(1.15) rotate(-6deg); }
+  .jewel-btn.selected { border-color: #ffd700; box-shadow: 0 0 16px rgba(255,215,0,0.7); }
+
+  .crown-counter {
+    background: rgba(255,255,255,0.92);
+    padding: 10px 24px;
+    border-radius: 18px;
+    color: #6a1b9a;
+    font-weight: bold;
+    font-size: 22px;
+    margin-top: 6px;
+  }
+
+  /* Dress matching */
+  .dress-task {
+    background: linear-gradient(135deg, #6a1b9a, #ec407a);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 22px;
+    margin: 8px 0;
+    text-align: center;
+  }
+  .dress-task .target-color {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    vertical-align: middle;
+    margin: 0 6px;
+  }
+  .dress-row {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  .dress {
+    width: 130px;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    user-select: none;
+  }
+  .dress:hover { transform: translateY(-8px) scale(1.06); }
+  .dress.gone { animation: dress-fly 0.6s ease-in forwards; pointer-events: none; }
+  @keyframes dress-fly {
+    0%   { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.3) translateY(80px); opacity: 0; }
+  }
+  .dress.wrong { animation: dress-shake 0.4s ease-in-out; }
+  @keyframes dress-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-8px); }
+    75%      { transform: translateX(8px); }
+  }
+  .dress svg { width: 100%; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15)); }
+
+  .princess-stage {
+    text-align: center;
+    margin: 10px 0;
+  }
+  .princess-stage .pemoji {
+    font-size: 110px;
+    display: inline-block;
+    animation: princess-bow 3s ease-in-out infinite;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.18));
+  }
+  .princess-stage .crown-on {
+    font-size: 50px;
+    display: block;
+    margin-bottom: -20px;
+    animation: crown-shine 2s ease-in-out infinite;
+  }
+  @keyframes crown-shine {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(255,215,0,0.5)); }
+    50%      { filter: drop-shadow(0 0 22px rgba(255,215,0,1)); }
+  }
+
+  /* Ball / final scene */
+  .ballroom {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: linear-gradient(180deg, #6a1b9a 0%, #ec407a 60%, #ffd700 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+    margin: 14px 0;
+  }
+  .dancer {
+    position: absolute;
+    bottom: 20px;
+    font-size: 80px;
+    animation: dance-step 1.5s ease-in-out infinite;
+    transform-origin: bottom center;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.2));
+  }
+  @keyframes dance-step {
+    0%, 100% { transform: translateX(0) rotate(-5deg); }
+    50%      { transform: translateX(20px) rotate(5deg); }
+  }
+  .confetti-bit {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    animation: confetti-fall 4s linear infinite;
+  }
+  @keyframes confetti-fall {
+    0%   { transform: translateY(-30px) rotate(0); opacity: 1; }
+    100% { transform: translateY(360px) rotate(720deg); opacity: 0; }
+  }
+  .chandelier {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 60px;
+    animation: chand-sway 4s ease-in-out infinite;
+  }
+  @keyframes chand-sway {
+    0%, 100% { transform: translateX(-50%) rotate(-4deg); }
+    50%      { transform: translateX(-50%) rotate(4deg); }
+  }
+
+  .stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .stat {
+    background: rgba(255,255,255,0.92);
+    padding: 8px 18px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #6a1b9a;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <div class="sparkle-bg" id="sparkleBg"></div>
+
+  <!-- Scene 0: Welcome -->
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👸🏰✨</div>
+    <h1>Im Prinzessinnen-Schloss</h1>
+    <p>Willkommen, kleine Prinzessin! 💖<br/>Heute gehst du auf eine königliche Reise:<br/>
+       eine Prinzessin wählen, eine Krone schmücken und tanzen!</p>
+    <button class="purple" onclick="engine.next()">Komm mit! 👑</button>
+  </section>
+
+  <!-- Scene 1: Pick a princess -->
+  <section class="scene" data-scene="1">
+    <h2>Wähle deine Prinzessin</h2>
+    <p>Welche möchtest du heute sein?</p>
+    <div class="princess-row" id="princessRow">
+      <div class="princess-card" data-emoji="👸🏻" data-name="Rosa"><span class="princess-emoji">👸🏻</span><h3>Rosa</h3></div>
+      <div class="princess-card" data-emoji="👸🏽" data-name="Mira"><span class="princess-emoji">👸🏽</span><h3>Mira</h3></div>
+      <div class="princess-card" data-emoji="👸🏾" data-name="Lila"><span class="princess-emoji">👸🏾</span><h3>Lila</h3></div>
+      <div class="princess-card" data-emoji="👸" data-name="Belle"><span class="princess-emoji">👸</span><h3>Belle</h3></div>
+    </div>
+    <button class="purple" id="pickNext" style="display:none;" onclick="engine.next()">Weiter zur Krone 👑</button>
+  </section>
+
+  <!-- Scene 2: Decorate the crown - counting -->
+  <section class="scene" data-scene="2">
+    <h2>Schmücke die Krone! 👑</h2>
+    <p>Wähl einen Edelstein, klick dann auf die <b>glitzernden Plätze</b> in der Krone — zähle mit mir!</p>
+    <div class="crown-stage">
+      <svg class="crown-svg" viewBox="0 0 480 280">
+        <defs>
+          <linearGradient id="crownGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffd700"/>
+            <stop offset="1" stop-color="#b8860b"/>
+          </linearGradient>
+        </defs>
+        <!-- Crown body -->
+        <path class="crown-base" d="M 60 200 L 60 130 L 130 160 L 180 90 L 240 150 L 300 90 L 350 160 L 420 130 L 420 200 Z"/>
+        <!-- Base band -->
+        <rect class="crown-base" x="50" y="200" width="380" height="36" rx="4"/>
+        <!-- Jewel slots -->
+        <circle class="slot next" id="slot-0" data-idx="0" cx="120" cy="218" r="12"/>
+        <circle class="slot" id="slot-1" data-idx="1" cx="170" cy="218" r="12"/>
+        <circle class="slot" id="slot-2" data-idx="2" cx="220" cy="218" r="12"/>
+        <circle class="slot" id="slot-3" data-idx="3" cx="270" cy="218" r="12"/>
+        <circle class="slot" id="slot-4" data-idx="4" cx="320" cy="218" r="12"/>
+        <circle class="slot" id="slot-5" data-idx="5" cx="370" cy="218" r="12"/>
+        <!-- Bigger jewels on top points -->
+        <circle class="slot" id="slot-6" data-idx="6" cx="180" cy="100" r="14"/>
+        <circle class="slot" id="slot-7" data-idx="7" cx="240" cy="150" r="14"/>
+        <circle class="slot" id="slot-8" data-idx="8" cx="300" cy="100" r="14"/>
+        <!-- Decorative dot -->
+        <circle class="slot" id="slot-9" data-idx="9" cx="240" cy="60" r="16"/>
+      </svg>
+    </div>
+    <div class="jewel-picker" id="jewelPicker">
+      <button class="jewel-btn selected" data-jewel="💎">💎</button>
+      <button class="jewel-btn" data-jewel="❤️">❤️</button>
+      <button class="jewel-btn" data-jewel="💖">💖</button>
+      <button class="jewel-btn" data-jewel="💜">💜</button>
+      <button class="jewel-btn" data-jewel="💙">💙</button>
+      <button class="jewel-btn" data-jewel="💚">💚</button>
+      <button class="jewel-btn" data-jewel="🔶">🔶</button>
+    </div>
+    <div class="crown-counter">✨ Edelsteine: <span id="jewelCount">0</span> von 10</div>
+    <button class="purple" id="crownNext" style="display:none;" onclick="engine.next()">Weiter zum Kleid 👗</button>
+  </section>
+
+  <!-- Scene 3: Pick the right dress (color matching) -->
+  <section class="scene" data-scene="3">
+    <h2>Such das passende Kleid</h2>
+    <div class="princess-stage">
+      <span class="crown-on">👑</span>
+      <span class="pemoji" id="princessShow">👸</span>
+    </div>
+    <div class="dress-task" id="dressTask">
+      <span>Such das</span>
+      <span class="target-color" id="targetColor"></span>
+      <span id="targetName">rote</span>
+      <span>Kleid!</span>
+    </div>
+    <div class="dress-row" id="dressRow"></div>
+    <div class="stats">
+      <span class="stat">👗 Geschafft: <span id="dressCorrect">0</span> / 5</span>
+    </div>
+    <button class="purple" id="dressNext" style="display:none;" onclick="engine.next()">Auf zum Ball! 🎉</button>
+  </section>
+
+  <!-- Scene 4: Royal Ball -->
+  <section class="scene" data-scene="4">
+    <h2>Königlicher Ball! 🎉</h2>
+    <p>Tanzt mit deiner Prinzessin im Schloss!</p>
+    <div class="ballroom" id="ballroom">
+      <span class="chandelier">💎</span>
+      <span class="dancer" id="dancer1" style="left:15%;animation-delay:0s">👸</span>
+      <span class="dancer" id="dancer2" style="left:38%;font-size:70px;animation-delay:0.3s">🤴</span>
+      <span class="dancer" id="dancer3" style="left:62%;animation-delay:0.6s">👸🏽</span>
+      <span class="dancer" id="dancer4" style="right:8%;font-size:65px;animation-delay:0.9s">🧚‍♀️</span>
+    </div>
+    <button class="small green" onclick="moreConfetti()">🎊 Mehr Konfetti!</button>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px;">Weiter ➡️</button>
+  </section>
+
+  <!-- Scene 5: Done -->
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">👸✨👑</div>
+    <h2>Du bist eine echte Prinzessin!</h2>
+    <p>Du hast eine Krone geschmückt, dein Kleid gefunden und im Schloss getanzt!<br/>
+       Du bist mutig, klug und wunderschön — genau wie du bist! 💖</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal spielen</button>
+  </section>
+
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Willkommen, kleine Prinzessin! Heute gehst du auf eine königliche Reise: eine Prinzessin wählen, eine Krone schmücken und beim Ball tanzen!",
+  "Wähle deine Prinzessin! Welche möchtest du heute sein? Klick auf eine und sie ist dabei!",
+  "Schmücke deine Krone! Wähl unten einen Edelstein und klick auf die glitzernden Plätze in der Krone. Lass uns mitzählen!",
+  "Such das passende Kleid! Welches hat die richtige Farbe? Klick es an!",
+  "Königlicher Ball! Schau, wie alle tanzen! Drück auf Mehr Konfetti für noch mehr Spaß!",
+  "Du bist eine echte Prinzessin! Du hast eine Krone geschmückt, dein Kleid gefunden und im Schloss getanzt! Du bist mutig, klug und wunderschön, genau wie du bist!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneEnter: (i) => {
+    if (i === 4) startBall();
+    if (i === 2) resetCrown();
+    if (i === 3) startDressGame();
+  }
+});
+
+// Sparkle background
+const bg = document.getElementById('sparkleBg');
+const sparkles = ['✨','⭐','💖','💎'];
+for (let i = 0; i < 18; i++) {
+  const s = document.createElement('span');
+  s.textContent = sparkles[i % sparkles.length];
+  s.style.left = (Math.random() * 100) + '%';
+  s.style.animationDelay = (Math.random() * 14) + 's';
+  s.style.animationDuration = (10 + Math.random() * 8) + 's, ' + (1.5 + Math.random() * 2) + 's';
+  bg.appendChild(s);
+}
+
+// =========== Princess pick ===========
+let chosenPrincess = '👸';
+document.querySelectorAll('.princess-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.princess-card').forEach(c => c.classList.remove('chosen'));
+    card.classList.add('chosen');
+    chosenPrincess = card.dataset.emoji;
+    document.getElementById('pickNext').style.display = 'inline-block';
+    sfx('chime');
+  });
+});
+
+// =========== Crown jewels ===========
+let currentJewel = '💎';
+let jewelsPlaced = 0;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+document.querySelectorAll('.jewel-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.jewel-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentJewel = btn.dataset.jewel;
+  });
+});
+
+document.querySelectorAll('.slot').forEach(slot => {
+  slot.addEventListener('click', () => placeJewel(slot));
+});
+
+function placeJewel(slot) {
+  if (slot.dataset.placed) return;
+  slot.dataset.placed = '1';
+  const idx = parseInt(slot.dataset.idx, 10);
+  slot.classList.remove('next');
+  // Hide the slot circle and add a text element with the jewel emoji
+  slot.style.opacity = '0';
+  const svg = document.querySelector('.crown-svg');
+  const cx = parseFloat(slot.getAttribute('cx'));
+  const cy = parseFloat(slot.getAttribute('cy'));
+  const r = parseFloat(slot.getAttribute('r'));
+  const text = document.createElementNS(SVG_NS, 'text');
+  text.setAttribute('x', String(cx));
+  text.setAttribute('y', String(cy + r * 0.8));
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('font-size', String(r * 2.4));
+  text.textContent = currentJewel;
+  text.setAttribute('class', 'placed-jewel');
+  svg.appendChild(text);
+  jewelsPlaced++;
+  document.getElementById('jewelCount').textContent = String(jewelsPlaced);
+  countAloud(jewelsPlaced);
+  sfx('chime');
+  // Highlight next slot
+  const nextSlot = document.querySelector('.slot:not([data-placed])');
+  if (nextSlot) nextSlot.classList.add('next');
+  if (jewelsPlaced >= 10) {
+    sfx('win');
+    document.getElementById('crownNext').style.display = 'inline-block';
+  }
+}
+
+function resetCrown() {
+  jewelsPlaced = 0;
+  document.getElementById('jewelCount').textContent = '0';
+  document.getElementById('crownNext').style.display = 'none';
+  document.querySelectorAll('.slot').forEach((s, i) => {
+    delete s.dataset.placed;
+    s.style.opacity = '1';
+    s.classList.toggle('next', i === 0);
+  });
+  document.querySelectorAll('.placed-jewel').forEach(j => j.remove());
+}
+
+function countAloud(n) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(String(n));
+  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.25;
+  const voices = speechSynthesis.getVoices();
+  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
+  if (de) u.voice = de;
+  speechSynthesis.speak(u);
+}
+
+// =========== Dress matching ===========
+const DRESSES = [
+  { name: 'rote',   color: '#e74c3c', stroke: '#a02020' },
+  { name: 'blaue',  color: '#3498db', stroke: '#1a5a8e' },
+  { name: 'grüne',  color: '#27ae60', stroke: '#155a30' },
+  { name: 'gelbe',  color: '#f1c40f', stroke: '#a0850a' },
+  { name: 'rosa',   color: '#ff6b9d', stroke: '#a04062' },
+  { name: 'lila',   color: '#9b59b6', stroke: '#5a306a' }
+];
+let dressRound = 0;
+let dressCorrect = 0;
+let dressTarget = null;
+
+function startDressGame() {
+  dressRound = 0;
+  dressCorrect = 0;
+  document.getElementById('dressCorrect').textContent = '0';
+  document.getElementById('dressNext').style.display = 'none';
+  document.getElementById('princessShow').textContent = chosenPrincess;
+  nextDressRound();
+}
+
+function dressSvg(d) {
+  return '<svg viewBox="0 0 120 160">' +
+    '<path d="M 60 20 L 50 30 L 50 50 L 20 110 L 20 150 L 100 150 L 100 110 L 70 50 L 70 30 Z" fill="' + d.color + '" stroke="' + d.stroke + '" stroke-width="3" stroke-linejoin="round"/>' +
+    '<circle cx="60" cy="20" r="8" fill="#ffd3b6"/>' +
+    '<circle cx="35" cy="105" r="6" fill="#fff" opacity="0.6"/>' +
+    '<circle cx="60" cy="120" r="6" fill="#fff" opacity="0.6"/>' +
+    '<circle cx="85" cy="105" r="6" fill="#fff" opacity="0.6"/>' +
+  '</svg>';
+}
+
+function nextDressRound() {
+  // Pick 4 random dresses, one is the target
+  const shuffled = [...DRESSES].sort(() => Math.random() - 0.5);
+  const choices = shuffled.slice(0, 4);
+  dressTarget = choices[Math.floor(Math.random() * choices.length)];
+  document.getElementById('targetColor').style.background = dressTarget.color;
+  document.getElementById('targetName').textContent = dressTarget.name;
+  const row = document.getElementById('dressRow');
+  row.innerHTML = '';
+  choices.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'dress';
+    el.innerHTML = dressSvg(d);
+    el.onclick = () => checkDress(el, d);
+    row.appendChild(el);
+  });
+}
+
+function checkDress(el, d) {
+  if (d.name === dressTarget.name) {
+    el.classList.add('gone');
+    sfx('chime');
+    dressCorrect++;
+    document.getElementById('dressCorrect').textContent = String(dressCorrect);
+    setTimeout(() => {
+      dressRound++;
+      if (dressRound >= 5) {
+        sfx('win');
+        document.getElementById('dressTask').innerHTML = '🎉 Super! Du hast alle Farben gefunden!';
+        document.getElementById('dressNext').style.display = 'inline-block';
+        document.getElementById('dressRow').innerHTML = '';
+      } else {
+        nextDressRound();
+      }
+    }, 700);
+  } else {
+    el.classList.add('wrong');
+    sfx('nope');
+    setTimeout(() => el.classList.remove('wrong'), 500);
+  }
+}
+
+// =========== Ball ===========
+let confettiTimer = null;
+function startBall() {
+  // Use chosen princess as dancer1
+  document.getElementById('dancer1').textContent = chosenPrincess;
+  moreConfetti();
+  if (confettiTimer) clearInterval(confettiTimer);
+  confettiTimer = setInterval(moreConfetti, 1500);
+  setTimeout(() => { if (confettiTimer) { clearInterval(confettiTimer); confettiTimer = null; } }, 12000);
+}
+
+function moreConfetti() {
+  const room = document.getElementById('ballroom');
+  const colors = ['#ff6b9d','#74b9ff','#55efc4','#ffd700','#d6a2ff','#fdcb6e','#fff'];
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-bit';
+    c.style.background = colors[i % colors.length];
+    if (i % 3 === 0) c.style.borderRadius = '50%';
+    c.style.left = (Math.random() * 100) + '%';
+    c.style.top = '-30px';
+    c.style.animationDelay = (Math.random() * 0.6) + 's';
+    c.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+    room.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+  sfx('chime');
+}
+
+// =========== Sound FX ===========
+let ac = null;
+function sfx(type) {
+  try {
+    if (!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+    const t = ac.currentTime;
+    if (type === 'chime') {
+      [1200, 1500, 1800].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.15, t + i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.06 + 0.4);
+        o.start(t + i*0.06); o.stop(t + i*0.06 + 0.45);
+      });
+    } else if (type === 'nope') {
+      const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'sine'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(180, t+0.25);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+      o.start(t); o.stop(t+0.32);
+    } else if (type === 'win') {
+      [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => {
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.22, t + i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.1 + 0.3);
+        o.start(t + i*0.1); o.stop(t + i*0.1 + 0.32);
+      });
+    }
+  } catch(e){}
+}
+</script>
+</body>
+</html>

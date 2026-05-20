@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Selbstliebe</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffd6e8 0%, #ffeaa7 50%, #d4ffd6 100%); }
+  h1, h2 { color: #d6336c; text-shadow: 2px 2px 0 #fff; }
+
+  /* Mirror */
+  .mirror-stage {
+    position: relative;
+    width: min(80vw, 320px);
+    margin: 14px 0;
+  }
+  .mirror {
+    background: radial-gradient(circle at 30% 30%, #fff, #ffd6e8 50%, #ff9eb1);
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    border: 14px solid #ffd700;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.2), inset 0 0 24px rgba(255,255,255,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mirror::before {
+    content: '✨';
+    position: absolute;
+    top: 10%;
+    left: 20%;
+    font-size: 24px;
+    animation: spark 2s ease-in-out infinite;
+  }
+  .mirror::after {
+    content: '✨';
+    position: absolute;
+    bottom: 18%;
+    right: 18%;
+    font-size: 20px;
+    animation: spark 2.5s ease-in-out infinite 0.5s;
+  }
+  @keyframes spark {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50%      { opacity: 1; transform: scale(1.3); }
+  }
+  .you-emoji {
+    font-size: clamp(140px, 25vw, 200px);
+    z-index: 2;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    animation: gentle-bob 4s ease-in-out infinite;
+  }
+  @keyframes gentle-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  /* Affirmation buttons */
+  .affirm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 14px 0;
+  }
+  .affirm {
+    background: linear-gradient(135deg, #ffd6e8, #ff9eb1);
+    color: #6a1b9a;
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    user-select: none;
+    font-size: 18px;
+    border: 4px solid transparent;
+  }
+  .affirm:hover { transform: translateY(-6px) scale(1.04); border-color: #ffd700; }
+  .affirm.said {
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #5a3a00;
+    animation: said-pulse 0.8s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes said-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.1); box-shadow: 0 0 30px rgba(255,215,0,0.8); }
+  }
+  .affirm .icon { font-size: 36px; display: block; margin-bottom: 6px; }
+
+  /* Care for yourself */
+  .care-self {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    max-width: 800px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .care-self-item {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .care-self .care-self-item:nth-child(2) { animation-delay: 0.3s; }
+  .care-self .care-self-item:nth-child(3) { animation-delay: 0.6s; }
+  .care-self .care-self-item:nth-child(4) { animation-delay: 0.9s; }
+  .care-self .care-self-item:nth-child(5) { animation-delay: 1.2s; }
+  .care-self-item .emoji { font-size: 50px; display: block; }
+  .care-self-item p { font-size: 14px; margin: 0; color: #6a1b9a; font-weight: bold; }
+
+  .hug-button {
+    font-size: 24px !important;
+    padding: 18px 36px !important;
+    background: linear-gradient(135deg, #ff6b9d, #d6336c) !important;
+    box-shadow: 0 8px 0 #8e1f4e, 0 10px 18px rgba(0,0,0,0.2) !important;
+  }
+  .hug-button:active { box-shadow: 0 2px 0 #8e1f4e !important; }
+
+  .heart-burst {
+    position: absolute;
+    font-size: 32px;
+    pointer-events: none;
+    animation: burst 1.5s ease-out forwards;
+  }
+  @keyframes burst {
+    0%   { transform: translate(0,0) scale(0); opacity: 0; }
+    20%  { transform: translate(var(--dx, 0), var(--dy, 0)) scale(1.3); opacity: 1; }
+    100% { transform: translate(calc(var(--dx, 0) * 2), calc(var(--dy, 0) * 2)) scale(0.5); opacity: 0; }
+  }
+
+  .affirm-counter {
+    background: rgba(255,255,255,0.92);
+    padding: 10px 26px;
+    border-radius: 18px;
+    color: #d6336c;
+    font-weight: bold;
+    font-size: 22px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">💖🪞</div>
+    <h1>Selbstliebe</h1>
+    <p>Es gibt eine ganz wichtige Person, die du lieben darfst:<br/><b style="color:#d6336c">DICH!</b> 💖</p>
+    <button class="purple" onclick="engine.next()">Komm mit! 💕</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Schau in den Spiegel</h2>
+    <p>Was siehst du?</p>
+    <div class="mirror-stage">
+      <div class="mirror">
+        <span class="you-emoji">🧒</span>
+      </div>
+    </div>
+    <p style="font-size:20px;max-width:600px;">
+      Du siehst <b style="color:#d6336c">DICH</b>!<br/>
+      Mit deinen Augen, deinem Lachen, deiner ganz besonderen Art.<br/>
+      <b>Es gibt nur einmal dich auf der Welt</b> — und das ist wunderschön!
+    </p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Sag dir was Liebes!</h2>
+    <p>Klick auf einen Spruch — und sag ihn dir selbst! Dein Herz wird warm. 💕</p>
+    <div class="affirm-grid" id="affirmGrid">
+      <div class="affirm" data-text="Ich bin wundervoll!"><span class="icon">⭐</span>Ich bin wundervoll!</div>
+      <div class="affirm" data-text="Ich bin mutig!"><span class="icon">🦁</span>Ich bin mutig!</div>
+      <div class="affirm" data-text="Ich darf Fehler machen!"><span class="icon">🤗</span>Ich darf Fehler machen!</div>
+      <div class="affirm" data-text="Ich bin liebenswert!"><span class="icon">💖</span>Ich bin liebenswert!</div>
+      <div class="affirm" data-text="Ich bin klug!"><span class="icon">🧠</span>Ich bin klug!</div>
+      <div class="affirm" data-text="Ich bin genau richtig, wie ich bin!"><span class="icon">🌟</span>Ich bin richtig, so wie ich bin!</div>
+      <div class="affirm" data-text="Ich kann das schaffen!"><span class="icon">💪</span>Ich kann das schaffen!</div>
+      <div class="affirm" data-text="Ich bin geliebt!"><span class="icon">🌈</span>Ich bin geliebt!</div>
+    </div>
+    <div class="affirm-counter">💖 Liebes gesagt: <span id="affirmCount">0</span> / 8</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Pass auf dich auf!</h2>
+    <p>Selbstliebe heißt auch: gut zu dir sein.</p>
+    <div class="care-self">
+      <div class="care-self-item"><span class="emoji">🛀</span><p>Sauber machen</p></div>
+      <div class="care-self-item"><span class="emoji">🥦</span><p>Gut essen</p></div>
+      <div class="care-self-item"><span class="emoji">😴</span><p>Genug schlafen</p></div>
+      <div class="care-self-item"><span class="emoji">🏃</span><p>Bewegen</p></div>
+      <div class="care-self-item"><span class="emoji">😌</span><p>Auf Gefühle hören</p></div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Umarme dich selbst!</h2>
+    <p>Du darfst dich selbst umarmen!<br/>Drück die Hände um deinen Bauch und sag: <b style="color:#d6336c">"Ich hab mich lieb!"</b> 🤗💖</p>
+    <button class="hug-button" id="hugBtn" onclick="hug(this)">🤗 Selber umarmen!</button>
+    <p id="hugMsg" style="margin-top:14px;font-size:20px;color:#d6336c;font-weight:bold;height:30px;"></p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">💖✨</div>
+    <h2>Du bist genug</h2>
+    <p style="font-size:22px;line-height:1.5;">
+      Du musst niemand anders sein.<br/>
+      Du musst nichts mehr schaffen.<br/>
+      Du bist <b style="color:#d6336c">jetzt schon</b> wundervoll! 🌟
+    </p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Es gibt eine ganz wichtige Person, die du lieben darfst: DICH!",
+  "Schau in den Spiegel. Du siehst DICH! Mit deinen Augen, deinem Lachen, deiner ganz besonderen Art. Es gibt nur einmal dich auf der Welt, und das ist wunderschön!",
+  "Sag dir was Liebes! Klick auf einen Spruch und sag ihn dir selbst! Dein Herz wird warm.",
+  "Pass auf dich auf! Selbstliebe heißt auch: gut zu dir sein. Sauber machen, gut essen, genug schlafen, bewegen, und auf deine Gefühle hören.",
+  "Umarme dich selbst! Du darfst dich selbst umarmen! Drück die Hände um deinen Bauch und sag: Ich hab mich lieb!",
+  "Du bist genug. Du musst niemand anders sein. Du musst nichts mehr schaffen. Du bist jetzt schon wundervoll!"
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+
+const said = new Set();
+document.querySelectorAll('.affirm').forEach(a => {
+  a.addEventListener('click', () => {
+    a.classList.remove('said'); void a.offsetWidth;
+    a.classList.add('said');
+    said.add(a.dataset.text);
+    document.getElementById('affirmCount').textContent = String(said.size);
+    sayText(a.dataset.text);
+  });
+});
+
+function sayText(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.2;
+  const voices = speechSynthesis.getVoices();
+  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
+  if (de) u.voice = de;
+  speechSynthesis.speak(u);
+}
+
+function hug(btn) {
+  document.getElementById('hugMsg').textContent = '💖 Ich hab mich lieb! 💖';
+  sayText('Ich hab mich lieb!');
+  // Heart burst around button
+  const r = btn.getBoundingClientRect();
+  const cx = r.left + r.width/2;
+  const cy = r.top + r.height/2;
+  for (let i = 0; i < 12; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart-burst';
+    h.textContent = ['💖','💕','💞','🌟','✨'][i%5];
+    h.style.position = 'fixed';
+    h.style.left = cx + 'px';
+    h.style.top = cy + 'px';
+    h.style.zIndex = 1000;
+    const angle = (i / 12) * Math.PI * 2;
+    h.style.setProperty('--dx', Math.cos(angle)*60 + 'px');
+    h.style.setProperty('--dy', Math.sin(angle)*60 + 'px');
+    h.style.animationDelay = (i*0.04) + 's';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1800);
+  }
+}
+</script>
+</body>
+</html>

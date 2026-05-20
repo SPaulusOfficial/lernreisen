@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bescheidenheit</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #e8f4ff 0%, #d4ffd6 50%, #fff8c8 100%); }
+  h1, h2 { color: #1b5e20; text-shadow: 2px 2px 0 #fff; }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: min(95vw, 800px);
+    margin: 14px 0;
+  }
+  .compare-card {
+    border-radius: 26px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  }
+  .compare-card .emoji { font-size: 80px; display: block; margin-bottom: 6px; }
+  .compare-card .quote {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 14px;
+    border-radius: 14px;
+    font-style: italic;
+    color: #2a2a4a;
+  }
+  .compare-card.bad { background: linear-gradient(135deg, rgba(255,107,107,0.3), rgba(192,57,43,0.2)); }
+  .compare-card.good { background: linear-gradient(135deg, rgba(85,239,196,0.4), rgba(0,184,148,0.3)); }
+  .compare-card h3 { margin-bottom: 6px; }
+  .bad h3 { color: #c0392b; }
+  .good h3 { color: #00b894; }
+
+  .scenario {
+    background: rgba(255,255,255,0.92);
+    padding: 18px 26px;
+    border-radius: 24px;
+    font-size: 22px;
+    color: #1b5e20;
+    text-align: center;
+    max-width: 700px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    margin: 10px 0;
+  }
+  .choice-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .choice-btn {
+    background: rgba(255,255,255,0.95);
+    color: #1b5e20;
+    border: 4px solid #1b5e20;
+    border-radius: 22px;
+    padding: 14px 24px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #0c3a10;
+    transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+    max-width: 280px;
+    text-align: left;
+  }
+  .choice-btn:hover { transform: translateY(-3px); }
+  .choice-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #0c3a10; }
+  .choice-btn.right { background: linear-gradient(135deg, #55efc4, #00b894); color: #fff; border-color: #00b894; box-shadow: 0 5px 0 #006a52; }
+  .choice-btn.wrong { animation: shake 0.4s ease-in-out; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-8px); }
+    75%      { transform: translateX(8px); }
+  }
+
+  .feedback {
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #5a3a00;
+    padding: 14px 24px;
+    border-radius: 18px;
+    font-size: 18px;
+    margin: 8px 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    max-width: 700px;
+    text-align: center;
+  }
+  .feedback.show { opacity: 1; }
+
+  .stats {
+    background: rgba(255,255,255,0.85);
+    padding: 8px 20px;
+    border-radius: 18px;
+    color: #1b5e20;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🌱😊</div>
+    <h1>Bescheiden sein</h1>
+    <p>Du kannst was super toll!<br/>Aber wie sagst du es?<br/>Und wie verhältst du dich, wenn du gewinnst?</p>
+    <button class="green" onclick="engine.next()">Erzähl mir! 🌟</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Was ist Bescheidenheit?</h2>
+    <p>Bescheiden sein heißt: <b style="color:#1b5e20">nicht angeben</b> mit dem, was du kannst — auch wenn du stolz bist.</p>
+    <div class="compare-row">
+      <div class="compare-card bad">
+        <span class="emoji">😎</span>
+        <h3>So nicht:</h3>
+        <div class="quote">"Ich bin viel besser als ihr!"</div>
+      </div>
+      <div class="compare-card good">
+        <span class="emoji">😊</span>
+        <h3>Lieber so:</h3>
+        <div class="quote">"Ich hab Glück gehabt, das war auch nett von dir!"</div>
+      </div>
+    </div>
+    <button class="green" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Was würdest du tun?</h2>
+    <div class="scenario" id="scenario">Lade...</div>
+    <div class="choice-row" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="stats">📊 Runde <span id="round">1</span> / 4 • ⭐ Richtig: <span id="correct">0</span></div>
+    <button class="green" id="bescheidenNext" style="display:none;margin-top:8px" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Warum ist Bescheidenheit toll? 🌱</h2>
+    <p style="font-size:20px;line-height:1.5;">
+      ✨ Andere fühlen sich nicht klein neben dir.<br/>
+      🤝 Du wirst zum guten Freund.<br/>
+      💪 Du musst nichts beweisen — du bist toll, so wie du bist.
+    </p>
+    <button class="green" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <div class="big-emoji pulse">🌱💚</div>
+    <h2>Stolz ohne Angeben</h2>
+    <p>Du darfst stolz sein, wenn du was Tolles kannst!<br/>Aber: das musst du nicht laut rufen 🤫 — andere merken's auch so.</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Du kannst was super toll! Aber wie sagst du es? Und wie verhältst du dich, wenn du gewinnst?",
+  "Bescheiden sein heißt: nicht angeben mit dem, was du kannst, auch wenn du stolz bist. Lieber sagen: Ich hab Glück gehabt, das war auch nett von dir!",
+  "Was würdest du tun? Lies die kleine Geschichte und wähl die nette Antwort.",
+  "Warum ist Bescheidenheit toll? Andere fühlen sich nicht klein neben dir. Du wirst zum guten Freund. Du musst nichts beweisen, du bist toll, so wie du bist.",
+  "Stolz ohne Angeben. Du darfst stolz sein, wenn du was Tolles kannst! Aber das musst du nicht laut rufen, andere merken's auch so."
+];
+
+const SCENARIOS = [
+  {
+    q: '🎨 Du hast ein schönes Bild gemalt und alle bewundern es. Was sagst du?',
+    choices: [
+      { text: '"Ich bin der beste Maler hier!"', right: false, feedback: '😅 Hm, das könnte andere traurig machen.' },
+      { text: '"Danke! Magst du auch malen?"', right: true,  feedback: '🌟 Toll! Du teilst die Freude und bist freundlich.' },
+      { text: '"Klar, das war ja auch einfach."', right: false, feedback: '🌥️ Das klingt ein bisschen angeberisch.' }
+    ]
+  },
+  {
+    q: '⚽ Du hast beim Spiel gewonnen. Wie reagierst du?',
+    choices: [
+      { text: '"Haha, ihr habt verloren!"', right: false, feedback: '😢 Aua, das tut den anderen weh.' },
+      { text: '"Gut gespielt, alle!"', right: true,  feedback: '✨ Genau so! Auch die anderen freuen sich mit dir.' }
+    ]
+  },
+  {
+    q: '🏃 Du läufst schneller als Papa. Was sagst du?',
+    choices: [
+      { text: '"Papa ist langsam!"', right: false, feedback: '🙈 Das ist nicht so nett.' },
+      { text: '"Wir hatten beide Spaß!"', right: true, feedback: '💚 Bescheiden und nett — super!' },
+      { text: '"Schau, wie schnell ich bin!"', right: false, feedback: '🤔 Ein bisschen angeben, oder?' }
+    ]
+  },
+  {
+    q: '⭐ Die Lehrerin lobt dich vor allen. Was tust du?',
+    choices: [
+      { text: '"Ich bin echt schlau!"', right: false, feedback: '😬 Das ist nicht nett zu den anderen.' },
+      { text: 'Lächle und sage: "Danke!"', right: true, feedback: '🌟 Perfekt! Lob nehmen und freundlich bleiben.' }
+    ]
+  }
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 2) startGame(); } });
+
+let roundIdx = 0, correctCount = 0;
+
+function startGame() {
+  roundIdx = 0; correctCount = 0;
+  document.getElementById('correct').textContent = '0';
+  document.getElementById('bescheidenNext').style.display = 'none';
+  renderRound();
+}
+
+function renderRound() {
+  document.getElementById('round').textContent = String(roundIdx + 1);
+  const r = SCENARIOS[roundIdx];
+  document.getElementById('scenario').textContent = r.q;
+  const row = document.getElementById('choices');
+  row.innerHTML = '';
+  document.getElementById('feedback').classList.remove('show');
+  r.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.text;
+    btn.onclick = () => pick(btn, c);
+    row.appendChild(btn);
+  });
+}
+
+function pick(btn, choice) {
+  if (choice.right) {
+    btn.classList.add('right');
+    correctCount++;
+    document.getElementById('correct').textContent = String(correctCount);
+    showFeedback(choice.feedback);
+    setTimeout(() => {
+      roundIdx++;
+      if (roundIdx >= SCENARIOS.length) {
+        document.getElementById('scenario').textContent = '🏆 Klasse! Du hast ' + correctCount + ' von ' + SCENARIOS.length + ' richtig.';
+        document.getElementById('choices').innerHTML = '';
+        document.getElementById('bescheidenNext').style.display = 'inline-block';
+      } else renderRound();
+    }, 2000);
+  } else {
+    btn.classList.add('wrong');
+    showFeedback(choice.feedback);
+    setTimeout(() => btn.classList.remove('wrong'), 500);
+  }
+}
+
+function showFeedback(text) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = text;
+  fb.classList.add('show');
+}
+</script>
+</body>
+</html>
