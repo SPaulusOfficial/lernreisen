@@ -35,6 +35,8 @@
     left: 20%;
     font-size: 24px;
     animation: spark 2s ease-in-out infinite;
+    z-index: 3;
+    pointer-events: none;
   }
   .mirror::after {
     content: '✨';
@@ -43,21 +45,56 @@
     right: 18%;
     font-size: 20px;
     animation: spark 2.5s ease-in-out infinite 0.5s;
+    z-index: 3;
+    pointer-events: none;
   }
   @keyframes spark {
     0%, 100% { opacity: 0.4; transform: scale(0.8); }
     50%      { opacity: 1; transform: scale(1.3); }
   }
+  .mirror video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .mirror.live video { opacity: 1; }
   .you-emoji {
     font-size: clamp(140px, 25vw, 200px);
     z-index: 2;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
     animation: gentle-bob 4s ease-in-out infinite;
+    transition: opacity 0.6s ease;
   }
+  .mirror.live .you-emoji { opacity: 0; }
   @keyframes gentle-bob {
     0%, 100% { transform: translateY(0); }
     50%      { transform: translateY(-8px); }
   }
+  .cam-btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .cam-err {
+    background: rgba(255,107,107,0.2);
+    color: #c0392b;
+    padding: 8px 18px;
+    border-radius: 14px;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 6px;
+    display: none;
+  }
+  .cam-err.show { display: inline-block; }
 
   /* Affirmation buttons */
   .affirm-grid {
@@ -165,10 +202,16 @@
     <h2>Schau in den Spiegel</h2>
     <p>Was siehst du?</p>
     <div class="mirror-stage">
-      <div class="mirror">
+      <div class="mirror" id="mirror">
+        <video id="mirrorVideo" autoplay playsinline muted></video>
         <span class="you-emoji">🧒</span>
       </div>
     </div>
+    <div class="cam-btn-row">
+      <button class="purple small" id="camBtn" onclick="startMirror()">📷 Schau dich im Spiegel an!</button>
+      <button class="small secondary" id="camStopBtn" onclick="stopMirror()" style="display:none">⏹️ Spiegel aus</button>
+    </div>
+    <span class="cam-err" id="camErr">😢 Keine Kamera-Erlaubnis. Du kannst trotzdem weitermachen!</span>
     <p style="font-size:20px;max-width:600px;">
       Du siehst <b style="color:#d6336c">DICH</b>!<br/>
       Mit deinen Augen, deinem Lachen, deiner ganz besonderen Art.<br/>
@@ -239,7 +282,42 @@ const SCENE_TEXTS = [
   "Du bist genug. Du musst niemand anders sein. Du musst nichts mehr schaffen. Du bist jetzt schon wundervoll!"
 ];
 
-const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneLeave: (i) => { if (i === 1) stopMirror(); }
+});
+
+// ============ Mirror camera ============
+let mirrorStream = null;
+async function startMirror() {
+  try {
+    mirrorStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    const v = document.getElementById('mirrorVideo');
+    v.srcObject = mirrorStream;
+    await v.play();
+    document.getElementById('mirror').classList.add('live');
+    document.getElementById('camBtn').style.display = 'none';
+    document.getElementById('camStopBtn').style.display = 'inline-block';
+    document.getElementById('camErr').classList.remove('show');
+  } catch (e) {
+    document.getElementById('camErr').classList.add('show');
+  }
+}
+function stopMirror() {
+  if (mirrorStream) {
+    mirrorStream.getTracks().forEach(t => t.stop());
+    mirrorStream = null;
+  }
+  const v = document.getElementById('mirrorVideo');
+  if (v) v.srcObject = null;
+  const m = document.getElementById('mirror');
+  if (m) m.classList.remove('live');
+  const cb = document.getElementById('camBtn');
+  const csb = document.getElementById('camStopBtn');
+  if (cb) cb.style.display = 'inline-block';
+  if (csb) csb.style.display = 'none';
+}
 
 const said = new Set();
 document.querySelectorAll('.affirm').forEach(a => {
