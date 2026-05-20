@@ -96,6 +96,102 @@
   }
   .cam-err.show { display: inline-block; }
 
+  /* Flash effect */
+  .flash {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  .flash.fire { animation: flash-anim 0.6s ease-out; }
+  @keyframes flash-anim {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Photo preview overlay */
+  .photo-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(6px);
+  }
+  .photo-modal.show { display: flex; animation: modal-in 0.4s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes modal-in {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .photo-card {
+    background: linear-gradient(135deg, #ffd700, #ff9eb1);
+    padding: 20px;
+    border-radius: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    max-width: 92vw;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .photo-card h3 {
+    color: #d6336c;
+    text-shadow: 1px 1px 0 #fff;
+    margin: 0;
+    font-size: 26px;
+  }
+  .photo-frame {
+    position: relative;
+    background: #fff;
+    padding: 16px 16px 50px;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    transform: rotate(-2deg);
+    transition: transform 0.3s;
+  }
+  .photo-frame:hover { transform: rotate(0); }
+  .photo-frame canvas, .photo-frame img {
+    display: block;
+    max-width: min(70vw, 420px);
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .photo-caption {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #d6336c;
+    font-weight: bold;
+    font-size: 18px;
+    font-family: 'Comic Sans MS', cursive;
+  }
+  .photo-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .photo-sparkle {
+    position: absolute;
+    font-size: 30px;
+    pointer-events: none;
+    animation: photo-sparkle-pop 1.4s ease-out forwards;
+  }
+  @keyframes photo-sparkle-pop {
+    0%   { transform: scale(0) rotate(0); opacity: 0; }
+    30%  { transform: scale(1.4) rotate(120deg); opacity: 1; }
+    100% { transform: scale(0.6) rotate(360deg) translateY(-40px); opacity: 0; }
+  }
+
   /* Affirmation buttons */
   .affirm-grid {
     display: grid;
@@ -209,9 +305,28 @@
     </div>
     <div class="cam-btn-row">
       <button class="purple small" id="camBtn" onclick="startMirror()">📷 Schau dich im Spiegel an!</button>
+      <button class="green small" id="snapBtn" onclick="snapPhoto()" style="display:none">📸 Foto machen!</button>
       <button class="small secondary" id="camStopBtn" onclick="stopMirror()" style="display:none">⏹️ Spiegel aus</button>
     </div>
     <span class="cam-err" id="camErr">😢 Keine Kamera-Erlaubnis. Du kannst trotzdem weitermachen!</span>
+
+    <!-- Hidden capture canvas + photo modal -->
+    <canvas id="snapCanvas" style="display:none"></canvas>
+    <div class="flash" id="flash"></div>
+    <div class="photo-modal" id="photoModal">
+      <div class="photo-card">
+        <h3>✨ Schönes Foto von dir! ✨</h3>
+        <div class="photo-frame" id="photoFrame">
+          <canvas id="photoCanvas"></canvas>
+          <div class="photo-caption">💖 Ich bin wundervoll 💖</div>
+        </div>
+        <div class="photo-actions">
+          <button class="green" onclick="downloadPhoto()">💾 Foto speichern</button>
+          <button class="secondary" onclick="closePhoto()">🔁 Neues Foto</button>
+          <button class="purple" onclick="closePhoto()">Schließen</button>
+        </div>
+      </div>
+    </div>
     <p style="font-size:20px;max-width:600px;">
       Du siehst <b style="color:#d6336c">DICH</b>!<br/>
       Mit deinen Augen, deinem Lachen, deiner ganz besonderen Art.<br/>
@@ -299,6 +414,7 @@ async function startMirror() {
     document.getElementById('mirror').classList.add('live');
     document.getElementById('camBtn').style.display = 'none';
     document.getElementById('camStopBtn').style.display = 'inline-block';
+    document.getElementById('snapBtn').style.display = 'inline-block';
     document.getElementById('camErr').classList.remove('show');
   } catch (e) {
     document.getElementById('camErr').classList.add('show');
@@ -315,8 +431,125 @@ function stopMirror() {
   if (m) m.classList.remove('live');
   const cb = document.getElementById('camBtn');
   const csb = document.getElementById('camStopBtn');
+  const sb = document.getElementById('snapBtn');
   if (cb) cb.style.display = 'inline-block';
   if (csb) csb.style.display = 'none';
+  if (sb) sb.style.display = 'none';
+}
+
+// ============ Photo capture ============
+const CAPTIONS = [
+  '💖 Ich bin wundervoll 💖',
+  '🌟 Ich bin liebenswert 🌟',
+  '✨ Ich bin genau richtig ✨',
+  '🌈 So wie ich bin, bin ich gut 🌈',
+  '💕 Ich hab mich lieb 💕'
+];
+
+function snapPhoto() {
+  const v = document.getElementById('mirrorVideo');
+  if (!v.videoWidth) return;
+
+  // Flash
+  const flash = document.getElementById('flash');
+  flash.classList.remove('fire');
+  void flash.offsetWidth;
+  flash.classList.add('fire');
+
+  // Shutter sound
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    // Click
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'square'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(400, t+0.06);
+    g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.08);
+    o.start(t); o.stop(t+0.09);
+    // Whoosh
+    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+    o2.connect(g2); g2.connect(ctx.destination);
+    o2.type = 'sine'; o2.frequency.setValueAtTime(800, t+0.1); o2.frequency.linearRampToValueAtTime(1400, t+0.25);
+    g2.gain.setValueAtTime(0.2, t+0.1); g2.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+    o2.start(t+0.1); o2.stop(t+0.32);
+  } catch(e){}
+
+  // Draw video frame to canvas (mirrored)
+  const canvas = document.getElementById('photoCanvas');
+  const w = v.videoWidth;
+  const h = v.videoHeight;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx2d = canvas.getContext('2d');
+  ctx2d.save();
+  ctx2d.scale(-1, 1);
+  ctx2d.drawImage(v, -w, 0, w, h);
+  ctx2d.restore();
+
+  // Pick a random caption
+  document.querySelector('.photo-caption').textContent =
+    CAPTIONS[Math.floor(Math.random() * CAPTIONS.length)];
+
+  // Show modal with delay (let flash play first)
+  setTimeout(() => {
+    const modal = document.getElementById('photoModal');
+    modal.classList.add('show');
+    // Spawn sparkles around the photo
+    const frame = document.getElementById('photoFrame');
+    for (let i = 0; i < 10; i++) {
+      const s = document.createElement('span');
+      s.className = 'photo-sparkle';
+      s.textContent = ['✨','💖','🌟','💕'][i%4];
+      const angle = (i / 10) * Math.PI * 2;
+      const r = 180;
+      s.style.left = (50 + Math.cos(angle)*40) + '%';
+      s.style.top = (50 + Math.sin(angle)*40) + '%';
+      s.style.animationDelay = (i*0.05) + 's';
+      frame.appendChild(s);
+      setTimeout(() => s.remove(), 1500);
+    }
+  }, 350);
+}
+
+function closePhoto() {
+  document.getElementById('photoModal').classList.remove('show');
+}
+
+function downloadPhoto() {
+  const canvas = document.getElementById('photoCanvas');
+  // Composite onto a larger canvas with frame + caption
+  const w = canvas.width;
+  const h = canvas.height;
+  const padTop = Math.round(h * 0.05);
+  const padBottom = Math.round(h * 0.18);
+  const padX = Math.round(h * 0.05);
+  const out = document.createElement('canvas');
+  out.width = w + padX*2;
+  out.height = h + padTop + padBottom;
+  const ctx = out.getContext('2d');
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, out.width, out.height);
+  grad.addColorStop(0, '#ffd700');
+  grad.addColorStop(1, '#ff9eb1');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, out.width, out.height);
+  // Photo
+  ctx.drawImage(canvas, padX, padTop, w, h);
+  // Caption
+  const caption = document.querySelector('.photo-caption').textContent;
+  ctx.fillStyle = '#d6336c';
+  ctx.font = 'bold ' + Math.round(h * 0.06) + 'px "Comic Sans MS", cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText(caption, out.width/2, h + padTop + padBottom*0.6);
+  // Download
+  out.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ich-bin-wundervoll-' + new Date().toISOString().slice(0,10) + '.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
 }
 
 const said = new Set();
