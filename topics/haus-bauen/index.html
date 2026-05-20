@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Woher kommt das Baumaterial?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #b5e8ff 0%, #fff8c8 50%, #d4ffd6 100%); }
+  h1, h2 { color: #6a3a00; text-shadow: 2px 2px 0 #fff; }
+
+  .house-parts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .part {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .house-parts .part:nth-child(2) { animation-delay: 0.3s; }
+  .house-parts .part:nth-child(3) { animation-delay: 0.6s; }
+  .house-parts .part:nth-child(4) { animation-delay: 0.9s; }
+  .house-parts .part:nth-child(5) { animation-delay: 1.2s; }
+  .part .emoji { font-size: 54px; display: block; }
+  .part h3 { color: #6a3a00; margin: 4px 0; font-size: 16px; }
+
+  /* Material origin cards */
+  .mat-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 14px 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 700px;
+    width: 95vw;
+    margin: 6px 0;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .mat-row:hover { transform: translateX(8px); }
+  .mat-row .from { font-size: 56px; }
+  .mat-row .arrow { font-size: 30px; color: #d2691e; flex-shrink: 0; }
+  .mat-row .to { font-size: 48px; }
+  .mat-row .label {
+    color: #6a3a00;
+    font-weight: bold;
+    flex: 1;
+  }
+  .mat-row .label .big { font-size: 18px; display: block; }
+  .mat-row .label .small { font-size: 14px; color: #888; }
+
+  /* House builder game */
+  .house-stage {
+    position: relative;
+    width: min(95vw, 480px);
+    height: 360px;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d4ffd6 70%, #7ec850 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    margin: 10px 0;
+  }
+  .house-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .house-svg .slot {
+    fill: rgba(255,255,255,0.35);
+    stroke: #6a3a00;
+    stroke-width: 3;
+    stroke-dasharray: 6;
+    cursor: pointer;
+    transition: fill 0.3s;
+  }
+  .house-svg .slot:hover { fill: rgba(255,255,255,0.6); }
+  .house-svg .slot.filled { stroke-dasharray: 0; opacity: 1; }
+
+  .material-picker {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: rgba(255,255,255,0.7);
+    padding: 12px;
+    border-radius: 22px;
+    max-width: 700px;
+  }
+  .mat-btn {
+    background: rgba(255,255,255,0.95);
+    border: 3px solid #d2691e;
+    border-radius: 16px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #6a3a00;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .mat-btn:hover { transform: translateY(-3px) scale(1.05); }
+  .mat-btn.selected { border-color: #ffd700; background: #fff8c8; box-shadow: 0 0 14px rgba(255,215,0,0.6); }
+  .mat-btn .em { font-size: 28px; }
+
+  .builder-info {
+    background: rgba(255,255,255,0.92);
+    padding: 10px 22px;
+    border-radius: 18px;
+    color: #6a3a00;
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🏠🔨</div>
+    <h1>Woher kommt ein Haus?</h1>
+    <p>Du wohnst in einem Haus.<br/>Aber woher kommt das ganze <b style="color:#d2691e">Material</b>?</p>
+    <button class="orange" onclick="engine.next()">Schauen wir! 🔧</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Ein Haus hat viele Teile</h2>
+    <div class="house-parts">
+      <div class="part"><span class="emoji">🟫</span><h3>Fundament</h3><p style="margin:0;font-size:13px">Das Haus steht drauf</p></div>
+      <div class="part"><span class="emoji">🧱</span><h3>Wände</h3><p style="margin:0;font-size:13px">Aus Steinen</p></div>
+      <div class="part"><span class="emoji">🪟</span><h3>Fenster</h3><p style="margin:0;font-size:13px">Aus Glas</p></div>
+      <div class="part"><span class="emoji">🚪</span><h3>Tür</h3><p style="margin:0;font-size:13px">Aus Holz</p></div>
+      <div class="part"><span class="emoji">🏠</span><h3>Dach</h3><p style="margin:0;font-size:13px">Schützt vor Regen</p></div>
+    </div>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Jedes Material kommt von woher</h2>
+    <div class="mat-row">
+      <span class="from">🌳</span><span class="arrow">→</span><span class="to">🪵</span>
+      <div class="label"><span class="big">Holz</span><span class="small">Aus Bäumen im Wald</span></div>
+    </div>
+    <div class="mat-row">
+      <span class="from">⛰️</span><span class="arrow">→</span><span class="to">🪨</span>
+      <div class="label"><span class="big">Steine</span><span class="small">Aus dem Berg (Steinbruch)</span></div>
+    </div>
+    <div class="mat-row">
+      <span class="from">🏖️</span><span class="arrow">→</span><span class="to">🪟</span>
+      <div class="label"><span class="big">Glas</span><span class="small">Aus Sand — heiß gemacht und geschmolzen!</span></div>
+    </div>
+    <div class="mat-row">
+      <span class="from">🌍</span><span class="arrow">→</span><span class="to">🔩</span>
+      <div class="label"><span class="big">Metall</span><span class="small">Tief aus der Erde gegraben</span></div>
+    </div>
+    <div class="mat-row">
+      <span class="from">🪨💧</span><span class="arrow">→</span><span class="to">🧱</span>
+      <div class="label"><span class="big">Beton</span><span class="small">Steinmehl + Wasser → wird hart!</span></div>
+    </div>
+    <button class="orange" onclick="engine.next()">Selber bauen! 🔨</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Bau ein Haus!</h2>
+    <p>Wähl ein Material und klick auf den passenden Platz!</p>
+    <div class="material-picker">
+      <button class="mat-btn selected" data-mat="stein"><span class="em">🧱</span>Steine (Wand)</button>
+      <button class="mat-btn" data-mat="holz"><span class="em">🪵</span>Holz (Tür)</button>
+      <button class="mat-btn" data-mat="glas"><span class="em">🪟</span>Glas (Fenster)</button>
+      <button class="mat-btn" data-mat="dach"><span class="em">🔺</span>Ziegel (Dach)</button>
+      <button class="mat-btn" data-mat="beton"><span class="em">🟫</span>Beton (Fundament)</button>
+    </div>
+    <div class="house-stage" id="houseStage">
+      <svg class="house-svg" viewBox="0 0 480 360">
+        <!-- Grass -->
+        <rect x="0" y="320" width="480" height="40" fill="#4a8030"/>
+        <!-- Foundation slot -->
+        <rect class="slot" data-slot="beton" x="80" y="300" width="320" height="20"/>
+        <!-- Wall slot -->
+        <rect class="slot" data-slot="stein" x="80" y="180" width="320" height="120"/>
+        <!-- Roof slot -->
+        <polygon class="slot" data-slot="dach" points="60,180 240,80 420,180"/>
+        <!-- Door slot -->
+        <rect class="slot" data-slot="holz" x="200" y="220" width="80" height="80"/>
+        <!-- Window slots -->
+        <rect class="slot" data-slot="glas" x="110" y="200" width="60" height="60"/>
+        <rect class="slot" data-slot="glas" x="310" y="200" width="60" height="60"/>
+      </svg>
+    </div>
+    <div class="builder-info" id="builderInfo">🧱 Klick auf die Wand!</div>
+    <button class="small secondary" onclick="resetHouse()">🔁 Von vorn</button>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Wer baut alles? 👷</h2>
+    <p>Ein Haus baut man nicht alleine — viele Menschen helfen!</p>
+    <div class="house-parts">
+      <div class="part"><span class="emoji">👷</span><h3>Bauarbeiter</h3></div>
+      <div class="part"><span class="emoji">📐</span><h3>Architekt</h3><p style="margin:0;font-size:13px">Plant alles</p></div>
+      <div class="part"><span class="emoji">🔧</span><h3>Installateur</h3><p style="margin:0;font-size:13px">Wasser, Strom</p></div>
+      <div class="part"><span class="emoji">🎨</span><h3>Maler</h3></div>
+    </div>
+    <p>Es dauert <b style="color:#d2691e">viele Monate</b>, bis ein Haus fertig ist!</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">🏠💚</div>
+    <h2>Dein Zuhause kommt aus der Natur</h2>
+    <p>Wald 🌳, Berg ⛰️, Sand 🏖️ und Erde 🌍 — alles war mal in der Natur.<br/>
+       Menschen haben es zu deinem schönen Zuhause gemacht! ✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Du wohnst in einem Haus. Aber woher kommt das ganze Material?",
+  "Ein Haus hat viele Teile: Fundament, Wände, Fenster, Tür und Dach. Jedes Teil hat eine wichtige Aufgabe!",
+  "Jedes Material kommt von woher. Holz kommt aus dem Wald, Steine kommen aus dem Berg, Glas wird aus Sand gemacht, Metall wird aus der Erde gegraben, und Beton wird aus Steinmehl und Wasser gemischt!",
+  "Bau ein Haus! Wähl ein Material und klick auf den passenden Platz!",
+  "Wer baut alles? Ein Haus baut man nicht alleine. Viele Menschen helfen: Bauarbeiter, Architekt, Installateur und Maler. Es dauert viele Monate, bis ein Haus fertig ist!",
+  "Dein Zuhause kommt aus der Natur! Wald, Berg, Sand und Erde, alles war mal in der Natur. Menschen haben es zu deinem schönen Zuhause gemacht!"
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 3) resetHouse(); } });
+
+const MAT_FILLS = {
+  stein: 'url(#brick)',
+  holz: '#8b4513',
+  glas: '#a8e6ff',
+  dach: '#c0392b',
+  beton: '#888'
+};
+const HINTS = {
+  stein: '🧱 Klick auf die Wand!',
+  holz: '🪵 Klick auf die Tür!',
+  glas: '🪟 Klick auf ein Fenster!',
+  dach: '🔺 Klick auf das Dach!',
+  beton: '🟫 Klick auf das Fundament!'
+};
+
+let currentMat = 'stein';
+
+function resetHouse() {
+  document.querySelectorAll('.house-svg .slot').forEach(s => {
+    s.classList.remove('filled');
+    s.setAttribute('fill', 'rgba(255,255,255,0.35)');
+  });
+  document.getElementById('builderInfo').textContent = HINTS[currentMat];
+}
+
+document.querySelectorAll('.mat-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.mat-btn').forEach(x => x.classList.remove('selected'));
+    b.classList.add('selected');
+    currentMat = b.dataset.mat;
+    document.getElementById('builderInfo').textContent = HINTS[currentMat];
+  });
+});
+
+document.querySelectorAll('.house-svg .slot').forEach(slot => {
+  slot.addEventListener('click', () => {
+    if (slot.dataset.slot === currentMat) {
+      slot.classList.add('filled');
+      slot.setAttribute('fill', MAT_FILLS[currentMat]);
+      document.getElementById('builderInfo').textContent = '✅ Super! Was kommt als nächstes?';
+      // Check if all filled
+      const all = document.querySelectorAll('.house-svg .slot');
+      const filled = document.querySelectorAll('.house-svg .slot.filled');
+      if (filled.length >= all.length) {
+        document.getElementById('builderInfo').textContent = '🏆 Fertig! Das ist DEIN Haus!';
+      }
+    } else {
+      slot.setAttribute('stroke', '#c0392b');
+      setTimeout(() => slot.setAttribute('stroke', '#6a3a00'), 500);
+      document.getElementById('builderInfo').textContent = '🙈 Hier passt das nicht! ' + HINTS[currentMat];
+    }
+  });
+});
+</script>
+</body>
+</html>

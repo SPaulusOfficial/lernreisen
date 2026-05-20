@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie funktioniert eine Geburt?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffe5e0 0%, #ffd6e8 50%, #b5e8ff 100%); }
+  h1, h2 { color: #c44569; text-shadow: 2px 2px 0 #fff; }
+
+  .belly-svg { width: min(80vw, 360px); height: auto; }
+  .grow-belly {
+    transform-origin: 180px 200px;
+    transition: transform 1s ease;
+  }
+
+  .wave-stage {
+    position: relative;
+    width: min(80vw, 360px);
+    margin: 14px 0;
+    text-align: center;
+  }
+  .mama-emoji {
+    font-size: clamp(140px, 28vw, 200px);
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.5s;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.15));
+  }
+  .mama-emoji.wave { animation: belly-wave 1.5s ease-in-out infinite; }
+  @keyframes belly-wave {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.06) rotate(-2deg); }
+  }
+  .wave-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: 3px solid rgba(196,69,105,0.6);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: wave-out 1.5s ease-out infinite;
+    display: none;
+  }
+  .wave-stage.active .wave-ring { display: block; }
+  .wave-stage.active .wave-ring:nth-child(2) { animation-delay: 0.5s; }
+  .wave-stage.active .wave-ring:nth-child(3) { animation-delay: 1s; }
+  @keyframes wave-out {
+    0%   { width: 80px; height: 80px; opacity: 1; border-width: 4px; }
+    100% { width: 240px; height: 240px; opacity: 0; border-width: 1px; }
+  }
+
+  .step-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .step {
+    background: rgba(255,255,255,0.92);
+    border-radius: 22px;
+    padding: 16px;
+    text-align: center;
+    width: 140px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .step-row .step:nth-child(2) { animation-delay: 0.3s; }
+  .step-row .step:nth-child(3) { animation-delay: 0.6s; }
+  .step-row .step:nth-child(4) { animation-delay: 0.9s; }
+  .step .emoji { font-size: 56px; display: block; }
+  .step h3 { color: #c44569; margin: 4px 0; font-size: 18px; }
+  .arrow { font-size: 32px; color: #c44569; }
+
+  .first-cry {
+    background: rgba(255,255,255,0.92);
+    padding: 22px 30px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 8px 22px rgba(196,69,105,0.25);
+    max-width: 600px;
+  }
+  .first-cry .baby {
+    font-size: 110px;
+    display: inline-block;
+    animation: baby-wail 1.5s ease-in-out infinite;
+  }
+  @keyframes baby-wail {
+    0%, 100% { transform: scale(1) rotate(-3deg); }
+    50%      { transform: scale(1.1) rotate(3deg); }
+  }
+
+  .ways-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    max-width: 800px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .way-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: 24px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  }
+  .way-card .emoji { font-size: 70px; display: block; }
+  .way-card h3 { color: #c44569; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🤰👶</div>
+    <h1>Wie kommt das Baby raus?</h1>
+    <p>Das Baby ist 9 Monate in Mamas Bauch gewachsen.<br/>Aber wie kommt es dann auf die Welt?</p>
+    <button class="purple" onclick="engine.next()">Erzähl mir! 💕</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Der Bauch wird kugelrund</h2>
+    <p>Je länger das Baby wächst, desto größer wird Mamas Bauch! 🤰<br/>
+       Nach 9 Monaten ist er <b style="color:#c44569">kugelrund</b> — und das Baby will raus!</p>
+    <div style="display:flex;gap:24px;align-items:flex-end;justify-content:center;flex-wrap:wrap;font-size:60px;margin:14px 0;">
+      <div style="text-align:center;"><span style="font-size:80px;">👩</span><br/><small>1. Monat</small></div>
+      <span style="font-size:30px;">→</span>
+      <div style="text-align:center;"><span style="font-size:90px;">🤰</span><br/><small>5. Monat</small></div>
+      <span style="font-size:30px;">→</span>
+      <div style="text-align:center;"><span style="font-size:110px;">🤰</span><br/><small>9. Monat — bereit!</small></div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Es geht los! 🌊</h2>
+    <p>Wenn das Baby bereit ist, schickt Mamas Körper <b style="color:#c44569">Wellen</b>:<br/>
+       Der Bauch zieht sich kurz zusammen und entspannt sich wieder — immer wieder!<br/>Das tut weh, ist aber <b>wichtig</b>.</p>
+    <div class="wave-stage active" id="waveStage">
+      <span class="mama-emoji wave">🤰</span>
+      <div class="wave-ring"></div>
+      <div class="wave-ring"></div>
+      <div class="wave-ring"></div>
+    </div>
+    <p>Mama merkt: <b>„Jetzt geht's los!"</b> 🏥</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Schnell ins Krankenhaus!</h2>
+    <p>Mama und Papa fahren ins <b style="color:#c44569">Krankenhaus</b> 🏥 — dort hilft eine <b>Hebamme</b> 👩‍⚕️.<br/>
+       Sie passt auf, dass alles gut geht.</p>
+    <div class="step-row">
+      <div class="step"><span class="emoji">🤰</span><h3>Mama</h3></div>
+      <span class="arrow">🚗</span>
+      <div class="step"><span class="emoji">🏥</span><h3>Krankenhaus</h3></div>
+      <span class="arrow">🤝</span>
+      <div class="step"><span class="emoji">👩‍⚕️</span><h3>Hebamme hilft</h3></div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Zwei Wege auf die Welt</h2>
+    <p>Es gibt zwei Wege, wie ein Baby auf die Welt kommt:</p>
+    <div class="ways-row">
+      <div class="way-card">
+        <span class="emoji">👶</span>
+        <h3>Natürlich</h3>
+        <p style="margin:0;font-size:15px">Mama drückt — und das Baby rutscht durch eine besondere Öffnung raus. 💪</p>
+      </div>
+      <div class="way-card">
+        <span class="emoji">✂️🩹</span>
+        <h3>Kaiserschnitt</h3>
+        <p style="margin:0;font-size:15px">Der Doktor macht im Bauch eine kleine Tür und holt das Baby vorsichtig raus. 🥼</p>
+      </div>
+    </div>
+    <p style="font-size:18px;">Beide Wege sind gut. Was zählt: <b style="color:#c44569">das Baby ist da!</b> 💕</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <h2>Der erste Schrei! 👶</h2>
+    <p>Wenn das Baby auf der Welt ist, macht es das erste mal etwas ganz Neues:<br/>
+       <b style="color:#c44569">Es atmet!</b> Und dann schreit es ganz laut.</p>
+    <div class="first-cry">
+      <span class="baby">👶</span>
+      <p style="font-size:28px;color:#c44569;font-weight:bold;margin:6px 0">WÄÄÄÄH! 🔊</p>
+      <p style="margin:0;color:#2a2a4a">Das ist das schönste Geräusch für Mama und Papa! 💖</p>
+    </div>
+    <p>Dann wird das Baby getrocknet, gewärmt — und Mama darf es das erste mal <b>kuscheln</b>! 🤗</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="6">
+    <div class="big-emoji pulse">👶💕🎉</div>
+    <h2>Willkommen, kleines Baby!</h2>
+    <p>Eine Geburt ist anstrengend — aber das größte Glück der Welt!<br/>
+       Genau so warst auch <b style="color:#c44569">DU</b> auf die Welt gekommen. ✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Das Baby ist neun Monate in Mamas Bauch gewachsen. Aber wie kommt es dann auf die Welt?",
+  "Je länger das Baby wächst, desto größer wird Mamas Bauch! Nach neun Monaten ist er kugelrund, und das Baby will raus!",
+  "Es geht los! Wenn das Baby bereit ist, schickt Mamas Körper Wellen. Der Bauch zieht sich kurz zusammen und entspannt sich wieder, immer wieder. Das tut weh, ist aber wichtig. Mama merkt: Jetzt geht's los!",
+  "Schnell ins Krankenhaus! Mama und Papa fahren ins Krankenhaus, dort hilft eine Hebamme. Sie passt auf, dass alles gut geht.",
+  "Es gibt zwei Wege, wie ein Baby auf die Welt kommt: Natürlich, da drückt Mama und das Baby rutscht durch eine besondere Öffnung raus. Oder per Kaiserschnitt: Der Doktor macht im Bauch eine kleine Tür und holt das Baby vorsichtig raus. Beide Wege sind gut. Was zählt: das Baby ist da!",
+  "Der erste Schrei! Wenn das Baby auf der Welt ist, macht es das erste mal etwas ganz Neues: Es atmet! Und dann schreit es ganz laut. Das ist das schönste Geräusch für Mama und Papa. Dann wird das Baby getrocknet, gewärmt, und Mama darf es das erste mal kuscheln!",
+  "Willkommen, kleines Baby! Eine Geburt ist anstrengend, aber das größte Glück der Welt! Genau so warst auch DU auf die Welt gekommen."
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+</script>
+</body>
+</html>

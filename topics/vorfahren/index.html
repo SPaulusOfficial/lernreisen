@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wo kommen Eltern her?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #fff5e1 0%, #d4ffd6 50%, #b5e8ff 100%); }
+  h1, h2 { color: #6a3a00; text-shadow: 2px 2px 0 #fff; }
+
+  /* Family tree */
+  .tree-stage {
+    position: relative;
+    width: min(95vw, 800px);
+    min-height: 420px;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d4ffd6 50%, #fff5e1 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.08), 0 8px 22px rgba(0,0,0,0.12);
+    margin: 12px 0;
+    padding: 20px 10px;
+  }
+  .generation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    position: relative;
+    z-index: 2;
+  }
+  .person {
+    background: rgba(255,255,255,0.92);
+    border-radius: 18px;
+    padding: 8px 12px 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    min-width: 60px;
+    animation: person-pop 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes person-pop {
+    0%   { transform: translateY(-30px) scale(0.5); opacity: 0; }
+    60%  { transform: translateY(8px) scale(1.15); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .person .em {
+    font-size: 40px;
+    display: block;
+    line-height: 1;
+  }
+  .person .label {
+    font-size: 12px;
+    color: #6a3a00;
+    font-weight: bold;
+    display: block;
+    margin-top: 2px;
+  }
+  .person.you {
+    background: linear-gradient(135deg, #ffd700, #ff9eb1);
+    border: 3px solid #d6336c;
+  }
+  .person.you .em { font-size: 60px; }
+  .person.you .label { color: #d6336c; font-size: 16px; }
+  .person.ancestor { background: rgba(255,255,255,0.7); }
+  .person.ancestor .em { font-size: 24px; opacity: 0.7; }
+  .person.ancestor .label { font-size: 10px; opacity: 0.7; }
+
+  /* Connector lines drawn via SVG overlay */
+  .tree-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+
+  .info-bar {
+    background: rgba(255,255,255,0.92);
+    padding: 12px 24px;
+    border-radius: 18px;
+    color: #6a3a00;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+    max-width: 700px;
+  }
+  .info-bar .big-num {
+    font-size: 36px;
+    color: #d81b60;
+    display: inline-block;
+    margin: 0 6px;
+  }
+
+  /* Counter scene */
+  .counter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .gen-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .counter-row .gen-card:nth-child(2) { animation-delay: 0.25s; }
+  .counter-row .gen-card:nth-child(3) { animation-delay: 0.5s; }
+  .counter-row .gen-card:nth-child(4) { animation-delay: 0.75s; }
+  .counter-row .gen-card:nth-child(5) { animation-delay: 1s; }
+  .gen-card:hover { transform: translateY(-6px) scale(1.05); }
+  .gen-card .num {
+    font-size: 42px;
+    font-weight: bold;
+    color: #d81b60;
+    display: block;
+  }
+  .gen-card .label {
+    color: #6a3a00;
+    font-weight: bold;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">👵👴👩👨🧒</div>
+    <h1>Wo kommen Eltern her?</h1>
+    <p>Mama und Papa sind erwachsen.<br/>Aber wer waren <b>ihre Mama und ihr Papa</b>?</p>
+    <button class="orange" onclick="engine.next()">Schauen wir! 🌳</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Alle haben einen Anfang</h2>
+    <p>Jeder Mensch hatte mal eine <b style="color:#d81b60">Mama</b> und einen <b style="color:#d81b60">Papa</b>!<br/>
+       Auch deine Mama und dein Papa — die hatten auch welche.<br/>Wir nennen sie <b style="color:#6a3a00">Oma und Opa</b>! 👵👴</p>
+    <div style="display:flex;gap:20px;font-size:60px;align-items:center;flex-wrap:wrap;justify-content:center;margin:14px 0;">
+      <span class="floaty">👵</span>
+      <span class="floaty" style="animation-delay:0.2s">👴</span>
+      <span style="font-size:30px;">⬇️</span>
+      <span class="floaty" style="animation-delay:0.4s">👩</span>
+      <span style="font-size:30px;">+</span>
+      <span class="floaty" style="animation-delay:0.6s">👨</span>
+      <span style="font-size:30px;">⬇️</span>
+      <span class="floaty" style="animation-delay:0.8s">🧒</span>
+    </div>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Bau deinen Familien-Baum 🌳</h2>
+    <p>Klick „Eine Generation weiter" — und sieh, wie weit dein Baum reicht!</p>
+    <div class="tree-stage" id="treeStage">
+      <svg class="tree-lines" id="treeLines" preserveAspectRatio="none"></svg>
+      <!-- generations filled by JS, oldest at top -->
+    </div>
+    <div class="controls">
+      <button class="small green" onclick="addGeneration()">⬆️ Eine Generation weiter</button>
+      <button class="small secondary" onclick="resetTree()">🔁 Von vorn</button>
+    </div>
+    <div class="info-bar" id="genInfo">Du brauchst <span class="big-num">2</span> Eltern, um da zu sein!</div>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Riesig viele Vorfahren!</h2>
+    <p>Jede Generation: doppelt so viele Menschen.<br/>Schau, wie schnell das wächst:</p>
+    <div class="counter-row">
+      <div class="gen-card"><span class="num">2</span><span class="label">Eltern</span></div>
+      <div class="gen-card"><span class="num">4</span><span class="label">Großeltern (Oma+Opa)</span></div>
+      <div class="gen-card"><span class="num">8</span><span class="label">Urgroßeltern</span></div>
+      <div class="gen-card"><span class="num">16</span><span class="label">Ururgroßeltern</span></div>
+      <div class="gen-card"><span class="num">1024</span><span class="label">vor 10 Generationen</span></div>
+    </div>
+    <p style="font-size:18px;max-width:700px;">Vor 20 Generationen hattest du <b style="color:#d81b60">über eine Million</b> Vorfahren! 🤯</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Eine lange, lange Linie 🔗</h2>
+    <p>Vor Millionen Jahren — alle Menschen kamen <b style="color:#d81b60">aus Afrika</b>! 🌍<br/>
+       Heute leben Menschen überall — aber wir sind alle <b>miteinander verwandt</b>.</p>
+    <div style="display:flex;gap:14px;font-size:50px;align-items:center;justify-content:center;flex-wrap:wrap;margin:14px 0;">
+      <span class="floaty">👶</span>
+      <span style="font-size:24px;">→</span>
+      <span class="floaty" style="animation-delay:0.2s">🧒</span>
+      <span style="font-size:24px;">→</span>
+      <span class="floaty" style="animation-delay:0.4s">🧑</span>
+      <span style="font-size:24px;">→</span>
+      <span class="floaty" style="animation-delay:0.6s">👵</span>
+      <span style="font-size:24px;">→</span>
+      <span class="floaty" style="animation-delay:0.8s">👶</span>
+      <span style="font-size:24px;">→</span>
+      <span class="floaty" style="animation-delay:1s">...</span>
+    </div>
+    <p>Jeder gibt das Leben weiter — wie eine ganz große Kette voller Liebe! ❤️</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">🌳❤️</div>
+    <h2>Du bist Teil von etwas Großem</h2>
+    <p>Ganz, ganz viele Menschen haben gelebt, damit du heute hier bist! ✨<br/>
+       Und du bist der Anfang von etwas Neuem.</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Mama und Papa sind erwachsen. Aber wer waren ihre Mama und ihr Papa?",
+  "Jeder Mensch hatte mal eine Mama und einen Papa! Auch deine Mama und dein Papa, die hatten auch welche. Wir nennen sie Oma und Opa!",
+  "Bau deinen Familien-Baum! Klick Eine Generation weiter, und sieh, wie weit dein Baum reicht!",
+  "Riesig viele Vorfahren! Jede Generation doppelt so viele Menschen. Du hast zwei Eltern, vier Großeltern, acht Urgroßeltern, sechzehn Ururgroßeltern. Vor zwanzig Generationen waren es über eine Million!",
+  "Eine lange, lange Linie. Vor Millionen Jahren kamen alle Menschen aus Afrika. Heute leben Menschen überall, aber wir sind alle miteinander verwandt. Jeder gibt das Leben weiter, wie eine ganz große Kette voller Liebe!",
+  "Du bist Teil von etwas Großem. Ganz, ganz viele Menschen haben gelebt, damit du heute hier bist! Und du bist der Anfang von etwas Neuem."
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 2) resetTree(); } });
+
+// ============ Family tree ============
+const stage = document.getElementById('treeStage');
+const lines = document.getElementById('treeLines');
+let currentGen = 0; // 0 = just you, 1 = +parents, 2 = +grandparents, etc.
+
+const GEN_LABELS = ['', 'Eltern', 'Großeltern', 'Urgroßeltern', 'Ururgroßeltern', 'Vorfahren'];
+
+function ancestorEmoji() {
+  // Mix of grandparent-style emojis
+  return ['👵','👴','👵🏽','👴🏽','👵🏾','👴🏾','👵🏻','👴🏻'][Math.floor(Math.random()*8)];
+}
+function youngerEmoji() {
+  return ['👩','👨','👩🏽','👨🏽','👩🏾','👨🏾','👩🏻','👨🏻'][Math.floor(Math.random()*8)];
+}
+
+function buildGenerations() {
+  // Remove existing
+  stage.querySelectorAll('.generation').forEach(g => g.remove());
+  // Build top-down: oldest first, you at bottom
+  for (let level = currentGen; level >= 0; level--) {
+    const row = document.createElement('div');
+    row.className = 'generation';
+    row.dataset.level = String(level);
+    if (level === 0) {
+      const p = document.createElement('div');
+      p.className = 'person you';
+      p.innerHTML = '<span class="em">🧒</span><span class="label">Du</span>';
+      row.appendChild(p);
+    } else {
+      const count = Math.pow(2, level);
+      const isAncestor = level >= 3;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'person' + (isAncestor ? ' ancestor' : '');
+        const isFemale = i % 2 === 0;
+        const em = level >= 2 ? ancestorEmoji() : (isFemale ? youngerEmoji().replace('👨','👩') : youngerEmoji());
+        let label = '';
+        if (level === 1) label = isFemale ? 'Mama' : 'Papa';
+        else if (level === 2) label = isFemale ? 'Oma' : 'Opa';
+        else if (level === 3) label = isFemale ? 'Uroma' : 'Uropa';
+        else label = (level - 2) + '-fach Uroma/Opa';
+        p.innerHTML = '<span class="em">' + em + '</span><span class="label">' + label + '</span>';
+        row.appendChild(p);
+      }
+    }
+    stage.appendChild(row);
+  }
+}
+
+function addGeneration() {
+  if (currentGen >= 6) {
+    document.getElementById('genInfo').innerHTML = 'Mehr passt nicht mehr rein! Klick auf „Von vorn", oder geh weiter zur nächsten Szene.';
+    return;
+  }
+  currentGen++;
+  buildGenerations();
+  const total = Math.pow(2, currentGen + 1) - 2; // sum 2+4+8+...
+  const thisGen = Math.pow(2, currentGen);
+  const label = currentGen <= 5 ? GEN_LABELS[currentGen] : 'Vorfahren';
+  document.getElementById('genInfo').innerHTML =
+    'Du hast <span class="big-num">' + thisGen + '</span> ' + label +
+    ' — insgesamt <span class="big-num">' + total + '</span> Menschen in deinem Baum!';
+}
+
+function resetTree() {
+  currentGen = 0;
+  buildGenerations();
+  document.getElementById('genInfo').innerHTML = 'Du brauchst <span class="big-num">2</span> Eltern, um da zu sein!';
+}
+</script>
+</body>
+</html>

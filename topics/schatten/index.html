@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wo kommen Schatten her?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #74b9ff 0%, #ffeaa7 60%, #ffd166 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  /* Shadow stage */
+  .shadow-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 340px;
+    background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 60%, #7ec850 60%, #4a8030 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    margin: 12px 0;
+  }
+  .sun-mover {
+    position: absolute;
+    font-size: 60px;
+    transition: left 0.4s cubic-bezier(.45,.05,.55,.95), top 0.4s cubic-bezier(.45,.05,.55,.95);
+    z-index: 3;
+    filter: drop-shadow(0 0 24px rgba(255,200,80,0.7));
+    pointer-events: none;
+  }
+  .object {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 80px;
+    z-index: 2;
+    transition: transform 0.4s;
+  }
+  .shadow-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .shadow-poly {
+    fill: rgba(50,30,80,0.5);
+    transition: all 0.4s ease;
+  }
+
+  .slider-row {
+    width: min(95vw, 700px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.85);
+    padding: 12px 20px;
+    border-radius: 24px;
+    margin: 8px 0;
+  }
+  .slider-row input { flex: 1; height: 12px; }
+  .slider-row .icon { font-size: 26px; }
+  .time-pill {
+    background: linear-gradient(135deg, #ffd166, #f59e0b);
+    color: #fff;
+    font-weight: bold;
+    padding: 8px 18px;
+    border-radius: 18px;
+    min-width: 130px;
+    text-align: center;
+  }
+
+  .ingredients {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .ing {
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 18px;
+    width: 160px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .ingredients .ing:nth-child(2) { animation-delay: 0.4s; }
+  .ingredients .ing:nth-child(3) { animation-delay: 0.8s; }
+  .ing .emoji { font-size: 60px; display: block; }
+  .ing h3 { color: #6a1b9a; margin: 4px 0; }
+
+  .shadow-pick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: rgba(255,255,255,0.7);
+    padding: 10px;
+    border-radius: 20px;
+    max-width: 700px;
+    margin: 4px 0;
+  }
+  .shadow-pick button {
+    background: #fff;
+    border: 3px solid #6a1b9a;
+    border-radius: 14px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 28px;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .shadow-pick button:hover { transform: scale(1.15) rotate(-6deg); }
+  .shadow-pick button.active { border-color: #ffd700; background: #fff8c8; }
+
+  .hand-game {
+    background: rgba(255,255,255,0.85);
+    padding: 16px 24px;
+    border-radius: 20px;
+    text-align: center;
+    color: #6a1b9a;
+    font-weight: bold;
+    max-width: 600px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">☀️👤</div>
+    <h1>Wo kommen Schatten her?</h1>
+    <p>Wenn die Sonne scheint, hast du einen dunklen <b style="color:#6a1b9a">Schatten</b> hinter dir.<br/>Aber was ist das?</p>
+    <button class="purple" onclick="engine.next()">Erzähl mir! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Drei Zutaten für einen Schatten</h2>
+    <div class="ingredients">
+      <div class="ing"><span class="emoji">☀️</span><h3>1. Licht</h3><p style="margin:0;font-size:14px">Sonne, Lampe, Taschenlampe</p></div>
+      <div class="ing"><span class="emoji">🧒</span><h3>2. Etwas</h3><p style="margin:0;font-size:14px">Das das Licht blockiert</p></div>
+      <div class="ing"><span class="emoji">⬛</span><h3>3. Eine Wand</h3><p style="margin:0;font-size:14px">Oder Boden, wo der Schatten ankommt</p></div>
+    </div>
+    <p>Wenn alles drei da ist → <b style="color:#6a1b9a">SCHATTEN!</b> 👻</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Schieb die Sonne!</h2>
+    <p>Schau, wie sich der Schatten verändert:</p>
+    <div class="shadow-stage" id="stage">
+      <span class="sun-mover" id="sun" style="left:50%;top:10%;">☀️</span>
+      <svg class="shadow-svg" id="shadowSvg" viewBox="0 0 700 340" preserveAspectRatio="none">
+        <polygon class="shadow-poly" id="shadowPoly" points="0,0 0,0 0,0"/>
+      </svg>
+      <span class="object" id="object">🌳</span>
+    </div>
+    <div class="slider-row">
+      <span class="icon">🌅</span>
+      <input type="range" id="sunSlider" min="0" max="100" value="50"/>
+      <span class="icon">🌇</span>
+      <span class="time-pill" id="timePill">Mittag</span>
+    </div>
+    <div class="shadow-pick">
+      <button class="active" data-obj="🌳" onclick="setObject(this, '🌳')">🌳</button>
+      <button data-obj="🏠" onclick="setObject(this, '🏠')">🏠</button>
+      <button data-obj="🧒" onclick="setObject(this, '🧒')">🧒</button>
+      <button data-obj="🐶" onclick="setObject(this, '🐶')">🐶</button>
+      <button data-obj="🚗" onclick="setObject(this, '🚗')">🚗</button>
+      <button data-obj="🦒" onclick="setObject(this, '🦒')">🦒</button>
+    </div>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Schatten ändern sich!</h2>
+    <p>Morgens und abends, wenn die Sonne <b style="color:#6a1b9a">tief</b> steht — Schatten sind <b>lang</b>! 📏<br/>
+       Mittags, wenn die Sonne <b>hoch</b> ist — Schatten sind <b>kurz</b>. ⬇️</p>
+    <div style="display:flex;gap:30px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin:14px 0;">
+      <div style="text-align:center;"><span style="font-size:80px">🌳</span><br/><div style="background:#3a2510;width:180px;height:12px;border-radius:6px;margin-top:-6px;"></div><small>Morgens — langer Schatten</small></div>
+      <div style="text-align:center;"><span style="font-size:80px">🌳</span><br/><div style="background:#3a2510;width:40px;height:12px;border-radius:6px;margin-top:-6px;"></div><small>Mittag — kurzer Schatten</small></div>
+    </div>
+    <p>Probier's draußen aus! Steh in die Sonne und schau auf deinen Schatten zu verschiedenen Zeiten. ⏰</p>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Schatten-Theater 🤲</h2>
+    <p>Mit den Händen kannst du <b style="color:#6a1b9a">Schatten-Tiere</b> machen!<br/>Halt eine Hand vor eine Lampe und probier diese aus:</p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;font-size:60px;margin:14px 0;">
+      <div style="text-align:center;background:rgba(255,255,255,0.7);padding:14px;border-radius:18px;width:120px;">
+        <span>🐰</span><br/><small style="font-size:14px">Hase: 2 Finger hoch</small>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,0.7);padding:14px;border-radius:18px;width:120px;">
+        <span>🐺</span><br/><small style="font-size:14px">Wolf: Hand auf</small>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,0.7);padding:14px;border-radius:18px;width:120px;">
+        <span>🦋</span><br/><small style="font-size:14px">Schmetterling: 2 Hände</small>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,0.7);padding:14px;border-radius:18px;width:120px;">
+        <span>🐦</span><br/><small style="font-size:14px">Vogel: Daumen verschränken</small>
+      </div>
+    </div>
+    <button class="purple" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">👻☀️</div>
+    <h2>Schatten sind Beweise für Licht!</h2>
+    <p>Wo Licht ist, sind auch Schatten.<br/>Wenn alles dunkel ist (in der Nacht) — keine Schatten!<br/>
+       Schatten sind also <b style="color:#6a1b9a">Freunde vom Licht</b> ✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Wenn die Sonne scheint, hast du einen dunklen Schatten hinter dir. Aber was ist das?",
+  "Drei Zutaten für einen Schatten: Erstens Licht, von der Sonne oder einer Lampe. Zweitens etwas, das das Licht blockiert. Drittens eine Wand oder ein Boden, wo der Schatten ankommt. Wenn alles drei da ist, gibt es einen Schatten!",
+  "Schieb die Sonne und schau, wie sich der Schatten verändert! Du kannst auch verschiedene Sachen ausprobieren.",
+  "Schatten ändern sich! Morgens und abends, wenn die Sonne tief steht, sind Schatten lang! Mittags, wenn die Sonne hoch ist, sind Schatten kurz. Probier es draußen aus, steh in die Sonne und schau auf deinen Schatten zu verschiedenen Zeiten.",
+  "Schatten-Theater! Mit den Händen kannst du Schatten-Tiere machen! Halt eine Hand vor eine Lampe und probier mal: Hase, Wolf, Schmetterling oder Vogel.",
+  "Schatten sind Beweise für Licht! Wo Licht ist, sind auch Schatten. Wenn alles dunkel ist, in der Nacht, gibt es keine Schatten. Schatten sind also Freunde vom Licht!"
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 2) updateShadow(); } });
+
+const slider = document.getElementById('sunSlider');
+const sun = document.getElementById('sun');
+const obj = document.getElementById('object');
+const poly = document.getElementById('shadowPoly');
+const timePill = document.getElementById('timePill');
+
+// Stage is 700x340 in viewBox. Object is at center bottom of grass region (50%, ~70% = y~238).
+// Grass starts at 60% = y ~204, ends at bottom 340.
+// Object foot point in viewBox approximately (350, 238).
+
+function updateShadow() {
+  const v = parseFloat(slider.value);
+  const angle = (v / 100) * Math.PI; // 0=horizon left, π=horizon right, π/2=top
+  // Sun position
+  const sx = (Math.cos(Math.PI - angle)) * 45 + 50; // % 5..95
+  const sy = (1 - Math.sin(angle)) * 50 + 5; // % 5..55
+  sun.style.left = `calc(${sx}% - 30px)`;
+  sun.style.top = `${sy}%`;
+  // Shadow direction: opposite of sun on the ground.
+  // Object foot in viewBox: (350, 238). Sun above ground, light goes from sun to object foot, shadow extends in opposite direction (along ground).
+  // height factor for shadow length: lower sun → longer shadow.
+  const sunHeight = Math.sin(angle); // 0..1
+  const shadowLen = Math.max(20, (1 - sunHeight) * 360);
+  // direction: positive x → right, negative x → left
+  const dirX = Math.cos(Math.PI - angle); // -1..+1 (left to right)
+  // foot point in viewBox
+  const fx = 350;
+  const fy = 250;
+  // Shadow polygon: from (fx-30, fy) to (fx+30, fy) extending to far point
+  const farX = fx + dirX * shadowLen;
+  const farYTop = fy;
+  // Polygon: base around object foot, far point thinner
+  const points = [
+    (fx - 25) + ',' + fy,
+    (fx + 25) + ',' + fy,
+    (farX + 10) + ',' + (fy + 10),
+    (farX - 10) + ',' + (fy + 10)
+  ].join(' ');
+  poly.setAttribute('points', points);
+  // Time label
+  let label;
+  if (v < 15)      label = '🌅 Sonnenaufgang';
+  else if (v < 35) label = '☀️ Morgen';
+  else if (v < 65) label = '🌞 Mittag';
+  else if (v < 85) label = '☀️ Nachmittag';
+  else             label = '🌇 Sonnenuntergang';
+  timePill.textContent = label;
+}
+slider.addEventListener('input', updateShadow);
+
+function setObject(btn, em) {
+  obj.textContent = em;
+  document.querySelectorAll('.shadow-pick button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
