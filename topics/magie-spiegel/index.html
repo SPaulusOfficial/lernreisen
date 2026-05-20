@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Magie-Spiegel</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #2a1a4e 0%, #6a1b9a 50%, #ec407a 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #2a1a4e; }
+  p { color: #fff8e1; }
+  .scene { background: transparent; }
+
+  .magic-stage {
+    position: relative;
+    width: min(95vw, 640px);
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 30px;
+    overflow: hidden;
+    margin: 12px 0;
+    border: 6px solid #ffd700;
+    box-shadow: 0 0 40px rgba(255,215,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  #video { display: none; }
+  #canvas { width: 100%; height: 100%; display: block; }
+
+  .effect-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    width: min(95vw, 800px);
+    margin: 8px 0;
+  }
+  .ebtn {
+    padding: 14px;
+    font-size: 17px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .info-box {
+    background: rgba(255,255,255,0.18);
+    padding: 12px 20px;
+    border-radius: 18px;
+    color: #fff;
+    font-weight: bold;
+    backdrop-filter: blur(6px);
+    text-align: center;
+    max-width: 600px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🪞✨</div>
+    <h1>Magie-Spiegel</h1>
+    <p>Ein Zauberer hat einen Spiegel verhext!<br/>Schau rein — und sieh, wie er dich verwandelt 🌀</p>
+    <button class="purple" onclick="engine.next()">Magie an! ✨</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <div class="magic-stage">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+    <button class="small green" id="startBtn" onclick="startCam()">📷 Spiegel anmachen</button>
+    <div class="effect-grid" id="effectGrid" style="display:none">
+      <button class="ebtn secondary active-mode" onclick="setEffect('normal')">👀 Normal</button>
+      <button class="ebtn secondary" onclick="setEffect('wave')">🌊 Welle</button>
+      <button class="ebtn secondary" onclick="setEffect('pixel')">🟦 Pixel</button>
+      <button class="ebtn secondary" onclick="setEffect('kaleidoscope')">🔮 Kaleidoskop</button>
+      <button class="ebtn secondary" onclick="setEffect('ghost')">👻 Geist</button>
+      <button class="ebtn secondary" onclick="setEffect('comic')">💥 Comic</button>
+      <button class="ebtn secondary" onclick="setEffect('rainbow')">🌈 Regenbogen</button>
+      <button class="ebtn secondary" onclick="setEffect('alien')">👽 Alien</button>
+    </div>
+    <div class="info-box" id="effectInfo">Klick „Spiegel anmachen", um den Zauber zu starten!</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🪞🌀</div>
+    <h2>Computer-Magie!</h2>
+    <p>Der Computer rechnet ganz schnell jedes Bild um — viele Male pro Sekunde.<br/>
+       So wird der Spiegel verzaubert! 💫</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Ein Zauberer hat einen Spiegel verhext! Schau rein und sieh, wie er dich verwandelt!",
+  "Probier alle Effekte aus! Welle, Pixel, Kaleidoskop, Geist, Comic, Regenbogen, oder Alien. Welcher ist dein Lieblings-Zauber?",
+  "Computer-Magie! Der Computer rechnet ganz schnell jedes Bild um, viele Male pro Sekunde. So wird der Spiegel verzaubert!"
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneLeave: (i) => { if (i === 1) stopCam(); }
+});
+
+const INFO = {
+  normal: '👀 So sieht es normal aus.',
+  wave: '🌊 Wellen verzerren dich!',
+  pixel: '🟦 Du bist aus großen Pixeln!',
+  kaleidoscope: '🔮 Viermal du — Kaleidoskop!',
+  ghost: '👻 Geister-Modus — sehr durchsichtig!',
+  comic: '💥 Comic-Bild — wenige Farben!',
+  rainbow: '🌈 Regenbogen-Farben überall!',
+  alien: '👽 Grüner Alien-Modus!'
+};
+
+let stream = null, rafId = null, effect = 'normal';
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+let lastFrame = null; // for ghost
+
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('effectGrid').style.display = 'grid';
+    setEffect('normal');
+    drawLoop();
+  } catch (e) {
+    document.getElementById('effectInfo').textContent = '😢 Keine Kamera-Erlaubnis.';
+  }
+}
+
+function stopCam() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+}
+
+function setEffect(e) {
+  effect = e;
+  document.querySelectorAll('#effectGrid .ebtn').forEach(b => b.classList.remove('active-mode'));
+  document.querySelectorAll('#effectGrid .ebtn').forEach(b => {
+    if (b.getAttribute('onclick').includes("'" + e + "'")) b.classList.add('active-mode');
+  });
+  document.getElementById('effectInfo').textContent = INFO[e];
+}
+
+function drawLoop() {
+  if (!video.videoWidth) { rafId = requestAnimationFrame(drawLoop); return; }
+  if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
+  const w = canvas.width, h = canvas.height;
+
+  if (effect === 'ghost') {
+    // Fade old frame slightly
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.save();
+    ctx.scale(-1, 1);
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(video, -w, 0, w, h);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    rafId = requestAnimationFrame(drawLoop);
+    return;
+  }
+
+  // Default: mirror the frame
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -w, 0, w, h);
+  ctx.restore();
+
+  if (effect === 'wave') {
+    const out = document.createElement('canvas');
+    out.width = w; out.height = h;
+    const octx = out.getContext('2d');
+    const t = performance.now() / 600;
+    const sliceH = 6;
+    for (let y = 0; y < h; y += sliceH) {
+      const dx = Math.sin(y/30 + t) * 24;
+      octx.drawImage(canvas, 0, y, w, sliceH, dx, y, w, sliceH);
+    }
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(out, 0, 0);
+  } else if (effect === 'pixel') {
+    const small = document.createElement('canvas');
+    small.width = w/14; small.height = h/14;
+    small.getContext('2d').drawImage(canvas, 0, 0, small.width, small.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(small, 0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
+  } else if (effect === 'kaleidoscope') {
+    const half = document.createElement('canvas');
+    half.width = w/2; half.height = h/2;
+    half.getContext('2d').drawImage(canvas, 0, 0, w/2, h/2, 0, 0, w/2, h/2);
+    ctx.clearRect(0, 0, w, h);
+    // 4 quadrants mirrored
+    ctx.drawImage(half, 0, 0);
+    ctx.save(); ctx.scale(-1, 1); ctx.drawImage(half, -w, 0); ctx.restore();
+    ctx.save(); ctx.scale(1, -1); ctx.drawImage(half, 0, -h); ctx.restore();
+    ctx.save(); ctx.scale(-1, -1); ctx.drawImage(half, -w, -h); ctx.restore();
+  } else if (effect === 'comic') {
+    // Posterize
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      d[i]   = Math.round(d[i]/64)*64;
+      d[i+1] = Math.round(d[i+1]/64)*64;
+      d[i+2] = Math.round(d[i+2]/64)*64;
+    }
+    ctx.putImageData(img, 0, 0);
+  } else if (effect === 'rainbow') {
+    // Hue shift over time
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    const shift = (performance.now() / 30) % 360;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255;
+      // RGB → HSL approx
+      const mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+      const l = (mx+mn)/2;
+      let s = mx === mn ? 0 : (l>0.5 ? (mx-mn)/(2-mx-mn) : (mx-mn)/(mx+mn));
+      let hue = 0;
+      if (mx === mn) hue = 0;
+      else if (mx === r) hue = ((g-b)/(mx-mn) + (g<b?6:0))*60;
+      else if (mx === g) hue = ((b-r)/(mx-mn) + 2)*60;
+      else hue = ((r-g)/(mx-mn) + 4)*60;
+      hue = (hue + shift) % 360;
+      // HSL → RGB
+      const c = (1 - Math.abs(2*l-1))*s;
+      const x = c * (1 - Math.abs(((hue/60)%2)-1));
+      const m = l - c/2;
+      let nr=0,ng=0,nb=0;
+      if (hue<60){nr=c;ng=x;}
+      else if (hue<120){nr=x;ng=c;}
+      else if (hue<180){ng=c;nb=x;}
+      else if (hue<240){ng=x;nb=c;}
+      else if (hue<300){nr=x;nb=c;}
+      else {nr=c;nb=x;}
+      d[i] = (nr+m)*255;
+      d[i+1] = (ng+m)*255;
+      d[i+2] = (nb+m)*255;
+    }
+    ctx.putImageData(img, 0, 0);
+  } else if (effect === 'alien') {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114;
+      d[i] = gray * 0.3;
+      d[i+1] = Math.min(255, gray * 1.5);
+      d[i+2] = gray * 0.5;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  rafId = requestAnimationFrame(drawLoop);
+}
+</script>
+</body>
+</html>

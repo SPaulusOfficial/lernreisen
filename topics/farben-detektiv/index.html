@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Farben-Detektiv</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffd6e8 0%, #ffeaa7 30%, #b5e8ff 70%, #d4ffd6 100%); }
+  h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
+
+  .detective-stage {
+    position: relative;
+    width: min(95vw, 640px);
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    margin: 12px 0;
+    border: 4px solid #fff;
+  }
+  #video { display: none; }
+  #canvas { width: 100%; height: 100%; display: block; }
+  .focus-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 5px dashed #fff;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: ring-pulse 1.6s ease-in-out infinite;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
+  }
+  @keyframes ring-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%      { transform: translate(-50%, -50%) scale(1.1); }
+  }
+
+  .color-display {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: rgba(255,255,255,0.92);
+    padding: 14px 26px;
+    border-radius: 24px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    margin: 8px 0;
+  }
+  .color-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #ccc;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.3);
+    transition: background 0.3s ease;
+    border: 4px solid #fff;
+  }
+  .color-name {
+    font-size: 38px;
+    font-weight: bold;
+    color: #6a1b9a;
+    min-width: 180px;
+    text-align: left;
+    line-height: 1.1;
+  }
+  .color-name .emoji { font-size: 50px; display: inline-block; margin-right: 8px; }
+
+  .palette {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 6px 0;
+  }
+  .pal {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .pal.matched { transform: scale(1.4); box-shadow: 0 0 18px rgba(255,215,0,0.8); border-color: #ffd700; }
+
+  .tip {
+    background: rgba(255,255,255,0.85);
+    padding: 10px 22px;
+    border-radius: 18px;
+    color: #6a1b9a;
+    font-weight: bold;
+    max-width: 600px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🔍🌈</div>
+    <h1>Farben-Detektiv</h1>
+    <p>Halt etwas Buntes vor die Kamera —<br/>sie sagt dir, welche Farbe es ist! 🌈</p>
+    <button class="purple" onclick="engine.next()">Spielen! 🎨</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <div class="detective-stage">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" width="640" height="480"></canvas>
+      <div class="focus-ring"></div>
+    </div>
+    <button class="small green" id="startBtn" onclick="startCam()">📷 Kamera an</button>
+    <div class="color-display" id="display" style="display:none">
+      <div class="color-circle" id="colorCircle"></div>
+      <div class="color-name" id="colorName"><span class="emoji">🎨</span>?</div>
+    </div>
+    <div class="palette" id="palette"></div>
+    <div class="tip" id="tip">Halt etwas in den weißen Kreis — was siehst du?</div>
+    <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🌈🔍</div>
+    <h2>Farben-Profi!</h2>
+    <p>Geh durchs Haus und such jede Farbe — die Kamera erkennt sie alle! 🏠✨</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Halt etwas Buntes vor die Kamera. Sie sagt dir, welche Farbe es ist!",
+  "Halt etwas in den weißen Kreis in der Mitte! Die Kamera erkennt die Farbe und sagt sie dir!",
+  "Farben-Profi! Geh durchs Haus und such jede Farbe, die Kamera erkennt sie alle!"
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneLeave: (i) => { if (i === 1) stopCam(); } });
+
+const COLORS = [
+  { name: 'Rot',     hex: '#e74c3c', r: 231, g: 76,  b: 60,  emoji: '🔴' },
+  { name: 'Orange',  hex: '#ff8800', r: 255, g: 136, b: 0,   emoji: '🟠' },
+  { name: 'Gelb',    hex: '#fde047', r: 253, g: 224, b: 71,  emoji: '🟡' },
+  { name: 'Grün',    hex: '#27ae60', r: 39,  g: 174, b: 96,  emoji: '🟢' },
+  { name: 'Blau',    hex: '#3498db', r: 52,  g: 152, b: 219, emoji: '🔵' },
+  { name: 'Lila',    hex: '#9b59b6', r: 155, g: 89,  b: 182, emoji: '🟣' },
+  { name: 'Rosa',    hex: '#ff6b9d', r: 255, g: 107, b: 157, emoji: '💗' },
+  { name: 'Braun',   hex: '#8b4513', r: 139, g: 69,  b: 19,  emoji: '🟤' },
+  { name: 'Schwarz', hex: '#222',    r: 30,  g: 30,  b: 30,  emoji: '⚫' },
+  { name: 'Weiß',    hex: '#fff',    r: 240, g: 240, b: 240, emoji: '⚪' },
+  { name: 'Grau',    hex: '#888',    r: 130, g: 130, b: 130, emoji: '🩶' }
+];
+
+let stream = null, rafId = null, sampleTimer = null;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+let lastSpoken = null;
+
+// Build palette
+const palette = document.getElementById('palette');
+COLORS.forEach(c => {
+  const p = document.createElement('div');
+  p.className = 'pal';
+  p.dataset.name = c.name;
+  p.style.background = c.hex;
+  p.title = c.name;
+  palette.appendChild(p);
+});
+
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('display').style.display = 'flex';
+    drawLoop();
+    sampleTimer = setInterval(sample, 600);
+  } catch (e) {
+    document.getElementById('tip').textContent = '😢 Keine Kamera-Erlaubnis.';
+  }
+}
+
+function stopCam() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (sampleTimer) { clearInterval(sampleTimer); sampleTimer = null; }
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+}
+
+function drawLoop() {
+  if (!video.videoWidth) { rafId = requestAnimationFrame(drawLoop); return; }
+  if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+  ctx.restore();
+  rafId = requestAnimationFrame(drawLoop);
+}
+
+function sample() {
+  if (!video.videoWidth) return;
+  // Sample center region
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const s = Math.min(60, Math.floor(canvas.width / 10));
+  const img = ctx.getImageData(cx - s, cy - s, s*2, s*2);
+  const d = img.data;
+  let r = 0, g = 0, b = 0, count = 0;
+  for (let i = 0; i < d.length; i += 16) { // sample sparsely
+    r += d[i]; g += d[i+1]; b += d[i+2]; count++;
+  }
+  r /= count; g /= count; b /= count;
+  // Find nearest color
+  let best = null, bestD = Infinity;
+  COLORS.forEach(c => {
+    const dist = Math.hypot(c.r-r, c.g-g, c.b-b);
+    if (dist < bestD) { bestD = dist; best = c; }
+  });
+  // Update display
+  document.getElementById('colorCircle').style.background = 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
+  document.getElementById('colorName').innerHTML = '<span class="emoji">' + best.emoji + '</span>' + best.name;
+  document.querySelectorAll('.pal').forEach(p => p.classList.toggle('matched', p.dataset.name === best.name));
+  document.getElementById('tip').textContent = '👀 Ich sehe: ' + best.name + '!';
+  if (best.name !== lastSpoken) {
+    speak(best.name);
+    lastSpoken = best.name;
+  }
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.2;
+  const voices = speechSynthesis.getVoices();
+  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
+  if (de) u.voice = de;
+  speechSynthesis.speak(u);
+}
+</script>
+</body>
+</html>

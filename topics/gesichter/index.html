@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gesichter-Spiel</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #ffeaa7 0%, #ffd6e8 50%, #d4ffd6 100%); }
+  h1, h2 { color: #d81b60; text-shadow: 2px 2px 0 #fff; }
+
+  .game-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+    align-items: stretch;
+  }
+  @media (max-width: 700px) { .game-row { grid-template-columns: 1fr; } }
+  .target-card {
+    background: linear-gradient(135deg, #fff8c8, #ffd6e8);
+    border-radius: 24px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(216,27,96,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .target-emoji {
+    font-size: clamp(120px, 25vw, 200px);
+    line-height: 1;
+    animation: target-bob 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.18));
+  }
+  @keyframes target-bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-10px) rotate(3deg); }
+  }
+  .target-label { font-size: 22px; color: #d81b60; font-weight: bold; margin-top: 6px; }
+
+  .cam-card {
+    background: #000;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 4px solid #d81b60;
+    position: relative;
+    aspect-ratio: 1;
+  }
+  #video { display: none; }
+  #canvas { width: 100%; height: 100%; display: block; }
+  .cam-placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px; background: #2a2a4e;
+  }
+
+  .score-bar {
+    background: rgba(255,255,255,0.92);
+    padding: 10px 26px;
+    border-radius: 18px;
+    color: #d81b60;
+    font-weight: bold;
+    font-size: 22px;
+  }
+
+  .compare-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+  }
+  .compare-modal.show { display: flex; animation: m-in 0.4s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes m-in { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  .compare-card {
+    background: linear-gradient(135deg, #ffd700, #ff9eb1);
+    padding: 24px;
+    border-radius: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    max-width: 92vw;
+    text-align: center;
+    color: #d6336c;
+  }
+  .compare-card .row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .compare-card .row > div {
+    background: #fff;
+    padding: 14px;
+    border-radius: 18px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+  }
+  .compare-card .row .big-em { font-size: 110px; line-height: 1; }
+  .compare-card canvas { display: block; width: 200px; height: 200px; object-fit: cover; border-radius: 12px; }
+  .compare-card .equals { font-size: 60px; color: #d6336c; }
+  .compare-card .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+  .feedback-big {
+    font-size: 30px;
+    color: #d6336c;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">😄😢😯😠</div>
+    <h1>Gesichter-Spiel</h1>
+    <p>Schau das Emoji an — und mach <b>dasselbe Gesicht</b>!<br/>Dann klick „Foto" und vergleich's. 📸</p>
+    <button class="purple" onclick="engine.next()">Spielen! 🎭</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <div class="game-row">
+      <div class="target-card">
+        <div class="target-emoji" id="targetEmoji">😄</div>
+        <div class="target-label" id="targetLabel">Mach: Fröhlich!</div>
+      </div>
+      <div class="cam-card">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas" width="480" height="480"></canvas>
+        <div class="cam-placeholder" id="placeholder">📷 Drück „Kamera an"</div>
+      </div>
+    </div>
+    <div class="score-bar">⭐ Runde: <span id="round">1</span> / 7 • 🏆 Geschafft: <span id="score">0</span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px;">
+      <button class="small green" id="startBtn" onclick="startCam()">📷 Kamera an</button>
+      <button class="green" id="snapBtn" onclick="snap()" style="display:none">📸 Foto machen!</button>
+      <button class="small secondary" onclick="nextFace(true)">⏭️ Anderes Gesicht</button>
+    </div>
+    <button class="purple" onclick="engine.next()" style="margin-top:10px">Weiter ➡️</button>
+
+    <div class="compare-modal" id="modal">
+      <div class="compare-card">
+        <h3 style="margin:0;color:#d6336c">Wie gut hast du das gemacht?</h3>
+        <div class="row">
+          <div><div class="big-em" id="modalEmoji">😄</div></div>
+          <span class="equals">↔️</span>
+          <div><canvas id="snapCanvas"></canvas></div>
+        </div>
+        <div class="feedback-big" id="feedback">🌟 Super gemacht!</div>
+        <div class="actions">
+          <button class="green" onclick="downloadCompare()">💾 Speichern</button>
+          <button class="purple" onclick="closeModal()">Weiter</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <div class="big-emoji pulse">🎭✨</div>
+    <h2>Du bist ein Gesichts-Künstler!</h2>
+    <p>Du kannst so viele verschiedene Gefühle zeigen!<br/>Deine Gefühle sind erlaubt — alle! 💕</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Schau das Emoji an und mach das selbe Gesicht! Dann klick Foto und vergleich es.",
+  "Mach das Gesicht zum Emoji oben! Wenn dein Gesicht fertig ist, drück Foto machen!",
+  "Du bist ein Gesichts-Künstler! Du kannst so viele verschiedene Gefühle zeigen! Deine Gefühle sind erlaubt, alle!"
+];
+
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneLeave: (i) => { if (i === 1) stopCam(); } });
+
+const FACES = [
+  { emoji: '😄', label: 'Fröhlich!',     speak: 'Mach ein fröhliches Gesicht!' },
+  { emoji: '😢', label: 'Traurig...',    speak: 'Mach ein trauriges Gesicht.' },
+  { emoji: '😯', label: 'Überrascht!',   speak: 'Mach ein überraschtes Gesicht!' },
+  { emoji: '😠', label: 'Wütend!',       speak: 'Mach ein wütendes Gesicht!' },
+  { emoji: '😴', label: 'Müde',          speak: 'Mach ein müdes Gesicht.' },
+  { emoji: '😘', label: 'Kuss-Mund',     speak: 'Mach ein Kuss-Gesicht!' },
+  { emoji: '🤪', label: 'Quatsch!',      speak: 'Mach ein Quatsch-Gesicht!' }
+];
+
+const FEEDBACK = [
+  '🌟 Super gemacht!', '✨ Wow, perfekt!', '💖 Genau richtig!',
+  '🎉 Klasse!', '👏 Toll!', '🦋 Wunderschön!'
+];
+
+let stream = null, rafId = null;
+let roundIdx = 0, score = 0;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function pickFace() {
+  return FACES[Math.floor(Math.random()*FACES.length)];
+}
+let currentFace = pickFace();
+
+function updateTarget() {
+  document.getElementById('targetEmoji').textContent = currentFace.emoji;
+  document.getElementById('targetLabel').textContent = 'Mach: ' + currentFace.label;
+  document.getElementById('round').textContent = String(roundIdx + 1);
+  document.getElementById('score').textContent = String(score);
+  speak(currentFace.speak);
+}
+updateTarget();
+
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    canvas.width = canvas.height = 480;
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('snapBtn').style.display = 'inline-block';
+    document.getElementById('placeholder').style.display = 'none';
+    drawLoop();
+  } catch (e) {
+    document.getElementById('placeholder').textContent = '😢 Keine Kamera-Erlaubnis.';
+  }
+}
+
+function stopCam() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+}
+
+function drawLoop() {
+  if (!video.videoWidth) { rafId = requestAnimationFrame(drawLoop); return; }
+  // Square crop center of video
+  const vw = video.videoWidth, vh = video.videoHeight;
+  const size = Math.min(vw, vh);
+  const sx = (vw - size)/2, sy = (vh - size)/2;
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, sx, sy, size, size, -canvas.width, 0, canvas.width, canvas.height);
+  ctx.restore();
+  rafId = requestAnimationFrame(drawLoop);
+}
+
+function snap() {
+  // Draw current canvas frame to snap canvas
+  const sn = document.getElementById('snapCanvas');
+  sn.width = 200; sn.height = 200;
+  sn.getContext('2d').drawImage(canvas, 0, 0, sn.width, sn.height);
+  document.getElementById('modalEmoji').textContent = currentFace.emoji;
+  document.getElementById('feedback').textContent = FEEDBACK[Math.floor(Math.random()*FEEDBACK.length)];
+  document.getElementById('modal').classList.add('show');
+  score++;
+  document.getElementById('score').textContent = String(score);
+  // Shutter
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'square'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(400, t+0.07);
+    g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.08);
+    o.start(t); o.stop(t+0.1);
+  } catch(e){}
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  nextFace();
+}
+
+function nextFace(force) {
+  if (!force) {
+    roundIdx++;
+    if (roundIdx >= 7) {
+      document.getElementById('targetLabel').textContent = '🏆 ' + score + ' / 7 — super!';
+      return;
+    }
+  }
+  currentFace = pickFace();
+  updateTarget();
+}
+
+function downloadCompare() {
+  const out = document.createElement('canvas');
+  out.width = 500; out.height = 300;
+  const c = out.getContext('2d');
+  const grad = c.createLinearGradient(0, 0, 500, 300);
+  grad.addColorStop(0, '#ffd700');
+  grad.addColorStop(1, '#ff9eb1');
+  c.fillStyle = grad; c.fillRect(0, 0, 500, 300);
+  // Emoji
+  c.font = '130px serif';
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(currentFace.emoji, 125, 130);
+  // Snap
+  c.drawImage(document.getElementById('snapCanvas'), 280, 50, 180, 180);
+  // Caption
+  c.fillStyle = '#d6336c';
+  c.font = 'bold 24px "Comic Sans MS", cursive';
+  c.fillText(currentFace.label, 250, 270);
+  out.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'gesicht-' + currentFace.label.replace(/\W/g,'') + '.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.2;
+  const voices = speechSynthesis.getVoices();
+  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
+  if (de) u.voice = de;
+  speechSynthesis.speak(u);
+}
+</script>
+</body>
+</html>

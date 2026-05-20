@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wie funktioniert eine Kamera?</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #2a2a4e 0%, #4a4a8e 50%, #74b9ff 100%); color: #fff; }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #2a2a4e; }
+  p { color: #fff8e1; }
+  .scene { background: transparent; }
+
+  .demo-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    margin: 12px 0;
+    border: 4px solid #fff;
+  }
+  #video { display: none; }
+  #canvas { width: 100%; height: 100%; display: block; }
+
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .filter-btn {
+    padding: 12px 18px;
+    font-size: 16px;
+  }
+  .filter-info {
+    background: rgba(255,255,255,0.18);
+    padding: 12px 20px;
+    border-radius: 18px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+    backdrop-filter: blur(6px);
+    text-align: center;
+    max-width: 700px;
+  }
+
+  .anatomy-svg { width: min(95vw, 700px); height: auto; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.3)); }
+
+  .step-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    max-width: 900px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .step {
+    background: rgba(255,255,255,0.18);
+    border-radius: 22px;
+    padding: 16px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .step-grid .step:nth-child(2) { animation-delay: 0.3s; }
+  .step-grid .step:nth-child(3) { animation-delay: 0.6s; }
+  .step-grid .step:nth-child(4) { animation-delay: 0.9s; }
+  .step .emoji { font-size: 56px; display: block; }
+  .step h3 { color: #fff8c8; margin: 4px 0; font-size: 18px; }
+
+  .pixel-zoom {
+    position: relative;
+    width: min(90vw, 500px);
+    margin: 12px 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">📷✨</div>
+    <h1>Wie funktioniert eine Kamera?</h1>
+    <p>Klick — und dein Foto ist da! 📸<br/>Aber wie macht die Kamera aus Licht ein Bild?</p>
+    <button class="orange" onclick="engine.next()">Komm mit! 🔍</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Vor langer Zeit: die Lochkamera</h2>
+    <p>Die erste Kamera war einfach: eine Kiste mit einem winzigen Loch!</p>
+    <svg class="anatomy-svg" viewBox="0 0 700 320">
+      <!-- Tree (object) -->
+      <text x="80" y="200" font-size="100" text-anchor="middle">🌳</text>
+      <text x="80" y="240" font-size="14" fill="#fff" text-anchor="middle">Baum (steht aufrecht)</text>
+      <!-- Box -->
+      <rect x="320" y="60" width="280" height="180" rx="14" fill="rgba(0,0,0,0.7)" stroke="#fff" stroke-width="3"/>
+      <!-- Pinhole -->
+      <circle cx="320" cy="150" r="6" fill="#fdcb6e"/>
+      <text x="320" y="270" font-size="13" fill="#fdcb6e" text-anchor="middle">winziges Loch</text>
+      <!-- Light rays -->
+      <line x1="130" y1="160" x2="320" y2="150" stroke="#fdcb6e" stroke-width="2"/>
+      <line x1="130" y1="220" x2="320" y2="150" stroke="#fdcb6e" stroke-width="2"/>
+      <line x1="320" y1="150" x2="560" y2="110" stroke="#fdcb6e" stroke-width="2"/>
+      <line x1="320" y1="150" x2="560" y2="200" stroke="#fdcb6e" stroke-width="2"/>
+      <!-- Image flipped -->
+      <text x="560" y="120" font-size="60" text-anchor="middle" transform="rotate(180 560 110)">🌳</text>
+      <text x="560" y="270" font-size="13" fill="#fff" text-anchor="middle">Bild: kopfüber! 🙃</text>
+    </svg>
+    <p>Lustig: das Bild kommt <b style="color:#fdcb6e">auf dem Kopf</b> an! Aber unser Gehirn dreht es wieder um.</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Heute: Linse + Sensor</h2>
+    <p>Heutige Kameras haben eine <b style="color:#fdcb6e">Linse</b>, die das Licht <b>scharfstellt</b>.<br/>
+       Hinter der Linse: ein <b style="color:#fdcb6e">Sensor</b> mit Millionen winziger Punkte.</p>
+    <svg class="anatomy-svg" viewBox="0 0 700 280">
+      <!-- Object -->
+      <text x="60" y="170" font-size="80" text-anchor="middle">🌸</text>
+      <!-- Light rays through lens -->
+      <line x1="100" y1="140" x2="320" y2="100" stroke="#ffd700" stroke-width="2"/>
+      <line x1="100" y1="160" x2="320" y2="140" stroke="#ffd700" stroke-width="2"/>
+      <line x1="100" y1="180" x2="320" y2="160" stroke="#ffd700" stroke-width="2"/>
+      <line x1="100" y1="200" x2="320" y2="180" stroke="#ffd700" stroke-width="2"/>
+      <!-- Lens -->
+      <ellipse cx="340" cy="140" rx="20" ry="80" fill="rgba(180,220,255,0.5)" stroke="#fff" stroke-width="3"/>
+      <text x="340" y="250" font-size="14" fill="#fff" text-anchor="middle">Linse 👓</text>
+      <!-- Focused rays -->
+      <line x1="360" y1="100" x2="500" y2="140" stroke="#ffd700" stroke-width="2"/>
+      <line x1="360" y1="140" x2="500" y2="140" stroke="#ffd700" stroke-width="2"/>
+      <line x1="360" y1="160" x2="500" y2="140" stroke="#ffd700" stroke-width="2"/>
+      <line x1="360" y1="180" x2="500" y2="140" stroke="#ffd700" stroke-width="2"/>
+      <!-- Sensor -->
+      <rect x="500" y="60" width="160" height="160" fill="#2a2a4e" stroke="#fff" stroke-width="3"/>
+      <g>
+        <rect x="510" y="70" width="20" height="20" fill="#e74c3c"/>
+        <rect x="535" y="70" width="20" height="20" fill="#2ecc71"/>
+        <rect x="560" y="70" width="20" height="20" fill="#3498db"/>
+        <rect x="585" y="70" width="20" height="20" fill="#e74c3c"/>
+        <rect x="610" y="70" width="20" height="20" fill="#2ecc71"/>
+        <rect x="635" y="70" width="20" height="20" fill="#3498db"/>
+        <rect x="510" y="95" width="20" height="20" fill="#2ecc71"/>
+        <rect x="535" y="95" width="20" height="20" fill="#3498db"/>
+        <rect x="560" y="95" width="20" height="20" fill="#e74c3c"/>
+        <rect x="585" y="95" width="20" height="20" fill="#2ecc71"/>
+        <rect x="610" y="95" width="20" height="20" fill="#3498db"/>
+        <rect x="635" y="95" width="20" height="20" fill="#e74c3c"/>
+      </g>
+      <text x="580" y="250" font-size="14" fill="#fff" text-anchor="middle">Sensor (R, G, B Pixel)</text>
+    </svg>
+    <p>Jeder Punkt misst <b style="color:#e74c3c">Rot</b>, <b style="color:#2ecc71">Grün</b> oder <b style="color:#3498db">Blau</b>. Zusammen ergibt das dein Foto! 🎨</p>
+    <button class="orange" onclick="engine.next()">Probier es selbst! 📷</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Was die Kamera kann</h2>
+    <p>Drück Knöpfe — sieh, was die Kamera mit dem Bild macht!</p>
+    <div class="demo-stage">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+    <button class="small green" id="startBtn" onclick="startCam()">📷 Kamera an</button>
+    <div class="filter-row" id="filterRow" style="display:none">
+      <button class="filter-btn secondary active-mode" onclick="setMode('normal')">👀 Normal</button>
+      <button class="filter-btn secondary" onclick="setMode('pixel')">🟦 Pixel-Sensor</button>
+      <button class="filter-btn secondary" onclick="setMode('bw')">⚫⚪ Schwarz-Weiß</button>
+      <button class="filter-btn secondary" onclick="setMode('dark')">🌑 Wenig Licht</button>
+      <button class="filter-btn secondary" onclick="setMode('bright')">☀️ Viel Licht</button>
+      <button class="filter-btn secondary" onclick="setMode('blur')">😵 Unscharf</button>
+      <button class="filter-btn secondary" onclick="setMode('rgb')">🔴🟢🔵 Nur Farbkanäle</button>
+    </div>
+    <div class="filter-info" id="filterInfo">Drück „Kamera an", um zu starten!</div>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Der Weg vom Licht zum Bild</h2>
+    <div class="step-grid">
+      <div class="step"><span class="emoji">💡</span><h3>1. Licht</h3><p style="margin:0;font-size:14px">fliegt von allem</p></div>
+      <div class="step"><span class="emoji">👓</span><h3>2. Linse</h3><p style="margin:0;font-size:14px">macht es scharf</p></div>
+      <div class="step"><span class="emoji">🔳</span><h3>3. Sensor</h3><p style="margin:0;font-size:14px">misst R, G, B</p></div>
+      <div class="step"><span class="emoji">🖼️</span><h3>4. Bild!</h3><p style="margin:0;font-size:14px">in Sekunden</p></div>
+    </div>
+    <p>Genau wie dein Auge! 👁️ Linse + Netzhaut + Gehirn → Bild im Kopf.</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">📷👁️</div>
+    <h2>Kamera = künstliches Auge</h2>
+    <p>Die Kamera ist wie ein Auge, das sich an Sachen <b style="color:#fdcb6e">erinnern</b> kann — als Bild!<br/>
+       Jedes Foto ist ein kleines Stück Erinnerung. 💫</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Klick, und dein Foto ist da! Aber wie macht die Kamera aus Licht ein Bild?",
+  "Die erste Kamera war einfach: eine Kiste mit einem winzigen Loch! Lustig: das Bild kommt auf dem Kopf an, aber unser Gehirn dreht es wieder um.",
+  "Heutige Kameras haben eine Linse, die das Licht scharf stellt. Hinter der Linse ist ein Sensor mit Millionen winziger Punkte. Jeder Punkt misst Rot, Grün oder Blau. Zusammen ergibt das dein Foto!",
+  "Probier es selbst! Drück die Knöpfe und sieh, was die Kamera mit dem Bild macht. So sieht ein Sensor mit weniger Pixeln aus, oder bei wenig Licht!",
+  "Der Weg vom Licht zum Bild: Erst fliegt Licht von allem. Die Linse macht es scharf. Der Sensor misst Rot, Grün und Blau. Und dann hast du ein Bild! Genau wie in deinem Auge.",
+  "Die Kamera ist wie ein Auge, das sich an Sachen erinnern kann, als Bild! Jedes Foto ist ein kleines Stück Erinnerung."
+];
+
+const engine = new TopicEngine({
+  audioPath: 'audio',
+  sceneTexts: SCENE_TEXTS,
+  onSceneLeave: (i) => { if (i === 3) stopCam(); }
+});
+
+// ============ Camera demos ============
+let stream = null, rafId = null, mode = 'normal';
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+const INFO = {
+  normal: '👀 So sieht dich die Kamera ganz normal.',
+  pixel:  '🟦 Wenig Pixel = ein kleiner Sensor. So sahen alte Handys aus!',
+  bw:     '⚫⚪ Wenn man die Farben weglässt: nur hell und dunkel.',
+  dark:   '🌑 Wenig Licht — schwer zu erkennen!',
+  bright: '☀️ Sehr viel Licht — alles weiß!',
+  blur:   '😵 Die Linse ist nicht scharf gestellt.',
+  rgb:    '🔴🟢🔵 Sensor sieht nur Rot, Grün, Blau — wie kleine LEGO-Steinchen!'
+};
+
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('filterRow').style.display = 'flex';
+    setMode('normal');
+    drawLoop();
+  } catch (e) {
+    document.getElementById('filterInfo').textContent = '😢 Keine Kamera-Erlaubnis.';
+  }
+}
+
+function stopCam() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+}
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('#filterRow .filter-btn').forEach(b => b.classList.remove('active-mode'));
+  const all = document.querySelectorAll('#filterRow .filter-btn');
+  for (const b of all) if (b.getAttribute('onclick').includes("'" + m + "'")) b.classList.add('active-mode');
+  document.getElementById('filterInfo').textContent = INFO[m];
+}
+
+function drawLoop() {
+  if (!video.videoWidth) { rafId = requestAnimationFrame(drawLoop); return; }
+  if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
+  // Mirror
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  if (mode === 'pixel') {
+    const cw = canvas.width, ch = canvas.height;
+    const size = 16;
+    const small = document.createElement('canvas');
+    small.width = Math.floor(cw / size);
+    small.height = Math.floor(ch / size);
+    const sctx = small.getContext('2d');
+    sctx.drawImage(canvas, 0, 0, small.width, small.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(small, 0, 0, cw, ch);
+    ctx.imageSmoothingEnabled = true;
+  } else if (mode === 'bw') {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const g = d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114;
+      d[i] = d[i+1] = d[i+2] = g;
+    }
+    ctx.putImageData(img, 0, 0);
+  } else if (mode === 'dark') {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] *= 0.25; d[i+1] *= 0.25; d[i+2] *= 0.25;
+    }
+    ctx.putImageData(img, 0, 0);
+  } else if (mode === 'bright') {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = Math.min(255, d[i] + 120);
+      d[i+1] = Math.min(255, d[i+1] + 120);
+      d[i+2] = Math.min(255, d[i+2] + 120);
+    }
+    ctx.putImageData(img, 0, 0);
+  } else if (mode === 'blur') {
+    // Quick blur via downscale/upscale
+    const tmp = document.createElement('canvas');
+    tmp.width = canvas.width / 8;
+    tmp.height = canvas.height / 8;
+    tmp.getContext('2d').drawImage(canvas, 0, 0, tmp.width, tmp.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+  } else if (mode === 'rgb') {
+    // Show only RGB as big colored dots (Bayer-like)
+    const cw = canvas.width, ch = canvas.height;
+    const size = 24;
+    const img = ctx.getImageData(0, 0, cw, ch);
+    const d = img.data;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, cw, ch);
+    for (let y = 0; y < ch; y += size) {
+      for (let x = 0; x < cw; x += size) {
+        const i = (y * cw + x) * 4;
+        const r = d[i], g = d[i+1], b = d[i+2];
+        // RGB block: 3 small circles
+        ctx.fillStyle = 'rgb(' + r + ',0,0)';
+        ctx.fillRect(x, y, size/2, size/2);
+        ctx.fillStyle = 'rgb(0,' + g + ',0)';
+        ctx.fillRect(x + size/2, y, size/2, size/2);
+        ctx.fillStyle = 'rgb(0,0,' + b + ')';
+        ctx.fillRect(x + size/4, y + size/2, size/2, size/2);
+      }
+    }
+  }
+
+  rafId = requestAnimationFrame(drawLoop);
+}
+</script>
+</body>
+</html>
