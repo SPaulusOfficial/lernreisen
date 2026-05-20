@@ -55,7 +55,7 @@
     transition: transform 0.3s;
   }
   .burrow:hover { transform: scale(1.05); }
-  .burrow span {
+  .burrow > .animal {
     position: absolute;
     bottom: 20%;
     left: 50%;
@@ -63,20 +63,22 @@
     font-size: 50px;
     transition: opacity 0.5s;
   }
-  .burrow.revealed span { opacity: 1; }
-  .burrow:not(.revealed) span { opacity: 0.3; }
-  .burrow-label {
+  .burrow.revealed > .animal { opacity: 1; }
+  .burrow:not(.revealed) > .animal { opacity: 0.3; }
+  .burrow > .burrow-label {
     position: absolute;
-    bottom: -22px;
+    bottom: -28px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 14px;
-    background: rgba(255,255,255,0.9);
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-size: 13px;
+    background: rgba(255,255,255,0.95);
+    padding: 3px 10px;
+    border-radius: 12px;
     font-weight: bold;
     color: #1a3a6a;
     white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 5;
   }
 
   .winter-info {
@@ -145,10 +147,10 @@
       <span class="winter-flake" style="left:90%;animation-delay:1.5s">❅</span>
       <div class="snow-floor"></div>
       <div class="underground"></div>
-      <div class="burrow" style="left:5%" onclick="reveal(this, 'Bär')"><span>🐻</span><span class="burrow-label">Bärenhöhle</span></div>
-      <div class="burrow" style="left:30%" onclick="reveal(this, 'Igel')"><span>🦔</span><span class="burrow-label">Laubhaufen</span></div>
-      <div class="burrow" style="left:55%" onclick="reveal(this, 'Hamster')"><span>🐹</span><span class="burrow-label">Bau im Boden</span></div>
-      <div class="burrow" style="left:80%" onclick="reveal(this, 'Frosch')"><span>🐸</span><span class="burrow-label">Im Schlamm</span></div>
+      <div class="burrow" style="left:5%" onclick="reveal(this, 'Bär')"><span class="animal">🐻</span><span class="burrow-label">Bärenhöhle</span></div>
+      <div class="burrow" style="left:30%" onclick="reveal(this, 'Igel')"><span class="animal">🦔</span><span class="burrow-label">Laubhaufen</span></div>
+      <div class="burrow" style="left:55%" onclick="reveal(this, 'Hamster')"><span class="animal">🐹</span><span class="burrow-label">Bau im Boden</span></div>
+      <div class="burrow" style="left:80%" onclick="reveal(this, 'Frosch')"><span class="animal">🐸</span><span class="burrow-label">Im Schlamm</span></div>
     </div>
     <div class="winter-info" id="winterInfo">Tipp eine Höhle an!</div>
     <button class="secondary" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
