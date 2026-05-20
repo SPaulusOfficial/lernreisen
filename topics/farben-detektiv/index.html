@@ -25,13 +25,23 @@
   .focus-ring {
     position: absolute;
     top: 50%; left: 50%;
-    width: 100px; height: 100px;
+    width: 56px; height: 56px;
     border-radius: 50%;
-    border: 5px dashed #fff;
+    border: 4px solid #ffd700;
     transform: translate(-50%, -50%);
     pointer-events: none;
     animation: ring-pulse 1.6s ease-in-out infinite;
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.5), inset 0 0 8px rgba(255,255,255,0.6);
+  }
+  .focus-ring::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ffd700;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px rgba(0,0,0,0.5);
   }
   @keyframes ring-pulse {
     0%, 100% { transform: translate(-50%, -50%) scale(1); }
@@ -71,20 +81,28 @@
 
   .palette {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     justify-content: center;
     margin: 6px 0;
+    max-width: min(95vw, 700px);
   }
   .pal {
-    width: 38px;
-    height: 38px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    border: 3px solid #fff;
+    border: 2px solid #fff;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    cursor: default;
   }
-  .pal.matched { transform: scale(1.4); box-shadow: 0 0 18px rgba(255,215,0,0.8); border-color: #ffd700; }
+  .pal.matched {
+    transform: scale(1.6);
+    box-shadow: 0 0 18px rgba(255,215,0,0.9);
+    border-color: #ffd700;
+    z-index: 5;
+    position: relative;
+  }
 
   .tip {
     background: rgba(255,255,255,0.85);
@@ -145,19 +163,93 @@ const SCENE_TEXTS = [
 
 const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneLeave: (i) => { if (i === 1) stopCam(); } });
 
+// Colors with hue (0-360), sat (0-1), val (0-1) baselines for fine matching.
+// Grayscale (Schwarz/Grau/Weiß) handled separately by value+saturation.
 const COLORS = [
-  { name: 'Rot',     hex: '#e74c3c', r: 231, g: 76,  b: 60,  emoji: '🔴' },
-  { name: 'Orange',  hex: '#ff8800', r: 255, g: 136, b: 0,   emoji: '🟠' },
-  { name: 'Gelb',    hex: '#fde047', r: 253, g: 224, b: 71,  emoji: '🟡' },
-  { name: 'Grün',    hex: '#27ae60', r: 39,  g: 174, b: 96,  emoji: '🟢' },
-  { name: 'Blau',    hex: '#3498db', r: 52,  g: 152, b: 219, emoji: '🔵' },
-  { name: 'Lila',    hex: '#9b59b6', r: 155, g: 89,  b: 182, emoji: '🟣' },
-  { name: 'Rosa',    hex: '#ff6b9d', r: 255, g: 107, b: 157, emoji: '💗' },
-  { name: 'Braun',   hex: '#8b4513', r: 139, g: 69,  b: 19,  emoji: '🟤' },
-  { name: 'Schwarz', hex: '#222',    r: 30,  g: 30,  b: 30,  emoji: '⚫' },
-  { name: 'Weiß',    hex: '#fff',    r: 240, g: 240, b: 240, emoji: '⚪' },
-  { name: 'Grau',    hex: '#888',    r: 130, g: 130, b: 130, emoji: '🩶' }
+  { name: 'Rot',          hex: '#e63946', hue: 354, emoji: '🔴' },
+  { name: 'Dunkelrot',    hex: '#8b1e2d', hue: 354, emoji: '🔴', dark: true },
+  { name: 'Hellrot',      hex: '#ff8a8a', hue: 0,   emoji: '🔴', light: true },
+  { name: 'Orange',       hex: '#ff7b00', hue: 28,  emoji: '🟠' },
+  { name: 'Hellorange',   hex: '#ffb366', hue: 28,  emoji: '🟠', light: true },
+  { name: 'Gelb',         hex: '#fcd116', hue: 50,  emoji: '🟡' },
+  { name: 'Senfgelb',     hex: '#c8a200', hue: 48,  emoji: '🟡', dark: true },
+  { name: 'Hellgelb',     hex: '#fff2a8', hue: 54,  emoji: '🟡', light: true },
+  { name: 'Hellgrün',     hex: '#a8e6a8', hue: 120, emoji: '🟢', light: true },
+  { name: 'Grün',         hex: '#2ecc71', hue: 145, emoji: '🟢' },
+  { name: 'Dunkelgrün',   hex: '#155a30', hue: 145, emoji: '🟢', dark: true },
+  { name: 'Türkis',       hex: '#1abc9c', hue: 168, emoji: '🟢' },
+  { name: 'Hellblau',     hex: '#74b9ff', hue: 210, emoji: '🔵', light: true },
+  { name: 'Blau',         hex: '#0984e3', hue: 210, emoji: '🔵' },
+  { name: 'Dunkelblau',   hex: '#0a3d8e', hue: 215, emoji: '🔵', dark: true },
+  { name: 'Lila',         hex: '#8e44ad', hue: 280, emoji: '🟣' },
+  { name: 'Violett',      hex: '#5e1cab', hue: 270, emoji: '🟣', dark: true },
+  { name: 'Pink',         hex: '#ff4d8d', hue: 335, emoji: '💗' },
+  { name: 'Rosa',         hex: '#ffb1c8', hue: 340, emoji: '💗', light: true },
+  { name: 'Hautfarbe',    hex: '#ffd3b6', hue: 25,  emoji: '🤝', light: true },
+  { name: 'Braun',        hex: '#8b4513', hue: 25,  emoji: '🟤', dark: true },
+  { name: 'Beige',        hex: '#e8d6b5', hue: 38,  emoji: '🟫', light: true },
+  // Greyscale handled separately, but include for swatch display
+  { name: 'Weiß',         hex: '#fafafa', hue: 0,   emoji: '⚪', gray: 'white' },
+  { name: 'Hellgrau',     hex: '#bdbdbd', hue: 0,   emoji: '🩶', gray: 'light' },
+  { name: 'Grau',         hex: '#7c7c7c', hue: 0,   emoji: '🩶', gray: 'mid' },
+  { name: 'Dunkelgrau',   hex: '#3a3a3a', hue: 0,   emoji: '⚫', gray: 'dark' },
+  { name: 'Schwarz',      hex: '#0c0c0c', hue: 0,   emoji: '⚫', gray: 'black' }
 ];
+
+// RGB → HSV (h: 0-360, s: 0-1, v: 0-1)
+function rgbToHsv(r, g, b) {
+  r/=255; g/=255; b/=255;
+  const mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+  const v = mx;
+  const s = mx === 0 ? 0 : (mx - mn) / mx;
+  let h = 0;
+  if (mx === mn) h = 0;
+  else if (mx === r) h = ((g-b)/(mx-mn) + (g<b ? 6 : 0)) * 60;
+  else if (mx === g) h = ((b-r)/(mx-mn) + 2) * 60;
+  else h = ((r-g)/(mx-mn) + 4) * 60;
+  return { h, s, v };
+}
+
+function hueDist(a, b) {
+  const d = Math.abs(a - b);
+  return Math.min(d, 360 - d);
+}
+
+function findColor(r, g, b) {
+  const { h, s, v } = rgbToHsv(r, g, b);
+  // Grayscale: low saturation
+  if (s < 0.18) {
+    if (v < 0.12) return COLORS.find(c => c.gray === 'black');
+    if (v < 0.35) return COLORS.find(c => c.gray === 'dark');
+    if (v < 0.6)  return COLORS.find(c => c.gray === 'mid');
+    if (v < 0.85) return COLORS.find(c => c.gray === 'light');
+    return COLORS.find(c => c.gray === 'white');
+  }
+  // Brown special case: orange/red hue with low brightness
+  if (h >= 10 && h <= 45 && v < 0.45 && s > 0.4) {
+    return COLORS.find(c => c.name === 'Braun');
+  }
+  // Skin / beige special: warm hue with high value, moderate saturation
+  if (h >= 15 && h <= 35 && v > 0.75 && s > 0.18 && s < 0.45) {
+    return COLORS.find(c => c.name === 'Hautfarbe');
+  }
+  // Determine darkness/lightness tag
+  let tag = null;
+  if (v < 0.42) tag = 'dark';
+  else if (v > 0.82 && s < 0.55) tag = 'light';
+  // Find color among non-gray with closest hue, matching tag preference
+  let best = null, bestScore = Infinity;
+  for (const c of COLORS) {
+    if (c.gray) continue;
+    const d = hueDist(h, c.hue);
+    let score = d;
+    if (tag === 'dark' && !c.dark) score += 30;
+    if (tag === 'light' && !c.light) score += 30;
+    if (!tag && (c.dark || c.light)) score += 25;
+    if (score < bestScore) { bestScore = score; best = c; }
+  }
+  return best;
+}
 
 let stream = null, rafId = null, sampleTimer = null;
 const video = document.getElementById('video');
@@ -186,7 +278,7 @@ async function startCam() {
     document.getElementById('startBtn').style.display = 'none';
     document.getElementById('display').style.display = 'flex';
     drawLoop();
-    sampleTimer = setInterval(sample, 600);
+    sampleTimer = setInterval(sample, 250);
   } catch (e) {
     document.getElementById('tip').textContent = '😢 Keine Kamera-Erlaubnis.';
   }
@@ -210,32 +302,53 @@ function drawLoop() {
   rafId = requestAnimationFrame(drawLoop);
 }
 
+const recentSamples = []; // stability: last few detected color names
+const STABILITY_WINDOW = 4; // must be detected this many times before announcing
+
 function sample() {
   if (!video.videoWidth) return;
-  // Sample center region
+  // Tighter center sample: ~6% of frame, only the center circle area
   const cx = canvas.width/2, cy = canvas.height/2;
-  const s = Math.min(60, Math.floor(canvas.width / 10));
-  const img = ctx.getImageData(cx - s, cy - s, s*2, s*2);
+  const radius = Math.max(24, Math.floor(canvas.width / 18));
+  const sx = cx - radius, sy = cy - radius;
+  const sw = radius * 2, sh = radius * 2;
+  const img = ctx.getImageData(sx, sy, sw, sh);
   const d = img.data;
   let r = 0, g = 0, b = 0, count = 0;
-  for (let i = 0; i < d.length; i += 16) { // sample sparsely
-    r += d[i]; g += d[i+1]; b += d[i+2]; count++;
+  const r2 = radius * radius;
+  // Iterate every pixel inside the circle (more accurate average)
+  for (let y = 0; y < sh; y++) {
+    for (let x = 0; x < sw; x++) {
+      const dx = x - radius, dy = y - radius;
+      if (dx*dx + dy*dy > r2) continue;
+      const i = (y * sw + x) * 4;
+      r += d[i]; g += d[i+1]; b += d[i+2]; count++;
+    }
   }
+  if (count === 0) return;
   r /= count; g /= count; b /= count;
-  // Find nearest color
-  let best = null, bestD = Infinity;
-  COLORS.forEach(c => {
-    const dist = Math.hypot(c.r-r, c.g-g, c.b-b);
-    if (dist < bestD) { bestD = dist; best = c; }
-  });
-  // Update display
+
+  const best = findColor(r, g, b);
+  // Show the live raw color in the circle immediately
   document.getElementById('colorCircle').style.background = 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
-  document.getElementById('colorName').innerHTML = '<span class="emoji">' + best.emoji + '</span>' + best.name;
-  document.querySelectorAll('.pal').forEach(p => p.classList.toggle('matched', p.dataset.name === best.name));
-  document.getElementById('tip').textContent = '👀 Ich sehe: ' + best.name + '!';
-  if (best.name !== lastSpoken) {
-    speak(best.name);
-    lastSpoken = best.name;
+
+  // Stability: only commit a name after seeing it consistently
+  recentSamples.push(best.name);
+  if (recentSamples.length > STABILITY_WINDOW) recentSamples.shift();
+  const counts = {};
+  recentSamples.forEach(n => counts[n] = (counts[n] || 0) + 1);
+  let stableName = best.name, stableCount = 0;
+  for (const k in counts) if (counts[k] > stableCount) { stableCount = counts[k]; stableName = k; }
+  // Need at least majority of window for a stable detection
+  if (stableCount < Math.ceil(STABILITY_WINDOW * 0.6)) return;
+  const stable = COLORS.find(c => c.name === stableName);
+
+  document.getElementById('colorName').innerHTML = '<span class="emoji">' + stable.emoji + '</span>' + stable.name;
+  document.querySelectorAll('.pal').forEach(p => p.classList.toggle('matched', p.dataset.name === stable.name));
+  document.getElementById('tip').textContent = '👀 Ich sehe: ' + stable.name + '!';
+  if (stable.name !== lastSpoken) {
+    speak(stable.name);
+    lastSpoken = stable.name;
   }
 }
 
