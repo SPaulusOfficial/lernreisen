@@ -352,15 +352,12 @@ function sample() {
   }
 }
 
-function speak(text) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.2;
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
+const colorAudio = new Audio();
+function speak(colorName) {
+  colorAudio.pause();
+  colorAudio.currentTime = 0;
+  colorAudio.src = 'audio/farbe_' + colorName + '.m4a?v=2';
+  colorAudio.play().catch(() => {});
 }
 </script>
 </body>

@@ -588,48 +588,23 @@ let rafId = null;
 
 // === Speech ===
 let speechOn = true;
-let germanVoice = null;
 const audioEl = new Audio();
 audioEl.preload = 'auto';
-
-function pickVoice() {
-  const voices = speechSynthesis.getVoices();
-  germanVoice =
-    voices.find(v => v.lang === 'de-DE' && /sandy|shelley|flo|petra|anna|katja|female/i.test(v.name)) ||
-    voices.find(v => v.lang === 'de-DE' && /google/i.test(v.name)) ||
-    voices.find(v => v.lang === 'de-DE') ||
-    voices.find(v => v.lang && v.lang.startsWith('de')) ||
-    null;
-}
-if ('speechSynthesis' in window) {
-  speechSynthesis.onvoiceschanged = pickVoice;
-  pickVoice();
-}
 
 function stopSpeech() {
   audioEl.pause();
   audioEl.currentTime = 0;
+  // Cancel any lingering browser-TTS queue from older builds.
   if ('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
-function speak(audioKey, fallbackText) {
+function speak(audioKey, _fallbackText) {
   if (!speechOn) return;
   stopSpeech();
   audioEl.src = 'audio/' + audioKey + '.m4a?v=2';
   const p = audioEl.play();
-  if (p && p.catch) {
-    p.catch(() => speakBrowser(fallbackText));
-  }
-}
-
-function speakBrowser(text) {
-  if (!text || !('speechSynthesis' in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  if (germanVoice) u.voice = germanVoice;
-  u.lang = 'de-DE';
-  u.rate = 0.9;
-  u.pitch = 1.15;
-  speechSynthesis.speak(u);
+  // No fallback to browser TTS — silence is better than the robot voice.
+  if (p && p.catch) p.catch(() => {});
 }
 
 function toggleSpeech() {

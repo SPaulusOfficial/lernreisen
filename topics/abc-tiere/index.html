@@ -209,7 +209,7 @@ function check(el, animal) {
   if (animal.letter === currentAnswer.letter) {
     el.classList.add('correct');
     document.getElementById('wordDisplay').innerHTML = currentAnswer.letter + ' wie <b>' + currentAnswer.name + '</b>!';
-    sayWord(currentAnswer.letter + ' wie ' + currentAnswer.name);
+    sayTierClip(currentAnswer.name);
     sfx('yes');
     correct++;
     document.getElementById('correct').textContent = String(correct);
@@ -229,24 +229,15 @@ function check(el, animal) {
   }
 }
 
-function sayLetter(letter) {
-  speak(letter);
+const speakAudio = new Audio();
+function playClip(key) {
+  speakAudio.pause();
+  speakAudio.currentTime = 0;
+  speakAudio.src = 'audio/' + key + '.m4a?v=2';
+  speakAudio.play().catch(() => {});
 }
-function sayWord(text) {
-  speak(text);
-}
-function speak(text) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'de-DE';
-  u.rate = 0.85;
-  u.pitch = 1.15;
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
-}
+function sayLetter(letter) { playClip('letter_' + letter); }
+function sayTierClip(animalName) { playClip('tier_' + animalName); }
 
 let ac = null;
 function sfx(type) {

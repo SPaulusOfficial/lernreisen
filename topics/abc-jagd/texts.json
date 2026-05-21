@@ -1,5 +1,12 @@
 {
   "scene_0": "Hör genau hin: welcher Buchstabe ist gemeint? Klick ihn schnell, bevor er wegfliegt!",
   "scene_1": "Schau auf den großen Buchstaben oben. Such ihn unter den fliegenden Buchstaben und klick ihn an!",
-  "scene_2": "Buchstaben-Profi! Du kennst deine Buchstaben schon richtig gut! Bald kannst du lesen!"
+  "scene_2": "Buchstaben-Profi! Du kennst deine Buchstaben schon richtig gut! Bald kannst du lesen!",
+  "letter_A": "A", "letter_B": "Be", "letter_C": "Ce", "letter_D": "De",
+  "letter_E": "E", "letter_F": "Ef", "letter_G": "Ge", "letter_H": "Ha",
+  "letter_I": "I", "letter_J": "Jot", "letter_K": "Ka", "letter_L": "El",
+  "letter_M": "Em", "letter_N": "En", "letter_O": "O", "letter_P": "Pe",
+  "letter_Q": "Ku", "letter_R": "Er", "letter_S": "Es", "letter_T": "Te",
+  "letter_U": "U", "letter_V": "Vau", "letter_W": "We", "letter_X": "Ix",
+  "letter_Y": "Ypsilon", "letter_Z": "Zett"
 }

@@ -507,15 +507,13 @@ function resetCrown() {
   document.querySelectorAll('.placed-jewel').forEach(j => j.remove());
 }
 
+const countAudio = new Audio();
 function countAloud(n) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(String(n));
-  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.25;
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
+  if (n < 1 || n > 10) return;
+  countAudio.pause();
+  countAudio.currentTime = 0;
+  countAudio.src = 'audio/num_' + n + '.m4a?v=2';
+  countAudio.play().catch(() => {});
 }
 
 // =========== Dress matching ===========

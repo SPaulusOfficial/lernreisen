@@ -1,5 +1,12 @@
 {
   "scene_0": "Schau das Emoji an und mach das selbe Gesicht! Dann klick Foto und vergleich es.",
   "scene_1": "Mach das Gesicht zum Emoji oben! Wenn dein Gesicht fertig ist, drück Foto machen!",
-  "scene_2": "Du bist ein Gesichts-Künstler! Du kannst so viele verschiedene Gefühle zeigen! Deine Gefühle sind erlaubt, alle!"
+  "scene_2": "Du bist ein Gesichts-Künstler! Du kannst so viele verschiedene Gefühle zeigen! Deine Gefühle sind erlaubt, alle!",
+  "face_froehlich": "Mach ein fröhliches Gesicht!",
+  "face_traurig": "Mach ein trauriges Gesicht.",
+  "face_ueberrascht": "Mach ein überraschtes Gesicht!",
+  "face_wuetend": "Mach ein wütendes Gesicht!",
+  "face_muede": "Mach ein müdes Gesicht.",
+  "face_kuss": "Mach ein Kuss-Gesicht!",
+  "face_quatsch": "Mach ein Quatsch-Gesicht!"
 }

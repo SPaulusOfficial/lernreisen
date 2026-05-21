@@ -69,39 +69,27 @@ class TopicEngine {
   }
 
   _pickVoice() {
-    if (!('speechSynthesis' in window)) return;
-    const voices = speechSynthesis.getVoices();
-    this.germanVoice =
-      voices.find(v => v.lang === 'de-DE' && /sandy|shelley|flo|petra|anna|katja|female/i.test(v.name)) ||
-      voices.find(v => v.lang === 'de-DE' && /google/i.test(v.name)) ||
-      voices.find(v => v.lang === 'de-DE') ||
-      voices.find(v => v.lang && v.lang.startsWith('de')) ||
-      null;
+    // No longer used — we never fall back to browser TTS. Kept as no-op
+    // for compatibility with old callers.
   }
 
   stopSpeech() {
     this.audioEl.pause();
     this.audioEl.currentTime = 0;
+    // Hard stop the browser TTS in case anything still queued one before
+    // this build was deployed.
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
 
-  speak(audioKey, fallbackText) {
+  speak(audioKey, _fallbackText) {
     if (!this.speechOn) return;
     this.stopSpeech();
     // Cache-bust so refreshed audio files always replace old ones.
     this.audioEl.src = this.audioPath + '/' + audioKey + '.m4a?v=2';
     const p = this.audioEl.play();
-    if (p && p.catch) p.catch(() => this._speakBrowser(fallbackText));
-  }
-
-  _speakBrowser(text) {
-    if (!text || !('speechSynthesis' in window)) return;
-    const u = new SpeechSynthesisUtterance(text);
-    if (this.germanVoice) u.voice = this.germanVoice;
-    u.lang = 'de-DE';
-    u.rate = 0.9;
-    u.pitch = 1.15;
-    speechSynthesis.speak(u);
+    // No fallback. If the file is missing, we stay silent rather than
+    // play the harsh browser robot voice.
+    if (p && p.catch) p.catch(() => {});
   }
 
   toggleSpeech() {

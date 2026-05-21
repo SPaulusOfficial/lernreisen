@@ -339,14 +339,14 @@
     <h2>Sag dir was Liebes!</h2>
     <p>Klick auf einen Spruch — und sag ihn dir selbst! Dein Herz wird warm. 💕</p>
     <div class="affirm-grid" id="affirmGrid">
-      <div class="affirm" data-text="Ich bin wundervoll!"><span class="icon">⭐</span>Ich bin wundervoll!</div>
-      <div class="affirm" data-text="Ich bin mutig!"><span class="icon">🦁</span>Ich bin mutig!</div>
-      <div class="affirm" data-text="Ich darf Fehler machen!"><span class="icon">🤗</span>Ich darf Fehler machen!</div>
-      <div class="affirm" data-text="Ich bin liebenswert!"><span class="icon">💖</span>Ich bin liebenswert!</div>
-      <div class="affirm" data-text="Ich bin klug!"><span class="icon">🧠</span>Ich bin klug!</div>
-      <div class="affirm" data-text="Ich bin genau richtig, wie ich bin!"><span class="icon">🌟</span>Ich bin richtig, so wie ich bin!</div>
-      <div class="affirm" data-text="Ich kann das schaffen!"><span class="icon">💪</span>Ich kann das schaffen!</div>
-      <div class="affirm" data-text="Ich bin geliebt!"><span class="icon">🌈</span>Ich bin geliebt!</div>
+      <div class="affirm" data-key="affirm_wundervoll"><span class="icon">⭐</span>Ich bin wundervoll!</div>
+      <div class="affirm" data-key="affirm_mutig"><span class="icon">🦁</span>Ich bin mutig!</div>
+      <div class="affirm" data-key="affirm_fehler"><span class="icon">🤗</span>Ich darf Fehler machen!</div>
+      <div class="affirm" data-key="affirm_liebenswert"><span class="icon">💖</span>Ich bin liebenswert!</div>
+      <div class="affirm" data-key="affirm_klug"><span class="icon">🧠</span>Ich bin klug!</div>
+      <div class="affirm" data-key="affirm_richtig"><span class="icon">🌟</span>Ich bin richtig, so wie ich bin!</div>
+      <div class="affirm" data-key="affirm_schaffen"><span class="icon">💪</span>Ich kann das schaffen!</div>
+      <div class="affirm" data-key="affirm_geliebt"><span class="icon">🌈</span>Ich bin geliebt!</div>
     </div>
     <div class="affirm-counter">💖 Liebes gesagt: <span id="affirmCount">0</span> / 8</div>
     <button class="purple" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
@@ -559,24 +559,21 @@ document.querySelectorAll('.affirm').forEach(a => {
     a.classList.add('said');
     said.add(a.dataset.text);
     document.getElementById('affirmCount').textContent = String(said.size);
-    sayText(a.dataset.text);
+    playClip(a.dataset.key);
   });
 });
 
-function sayText(text) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.2;
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
+const clipAudio = new Audio();
+function playClip(key) {
+  clipAudio.pause();
+  clipAudio.currentTime = 0;
+  clipAudio.src = 'audio/' + key + '.m4a?v=2';
+  clipAudio.play().catch(() => {});
 }
 
 function hug(btn) {
   document.getElementById('hugMsg').textContent = '💖 Ich hab mich lieb! 💖';
-  sayText('Ich hab mich lieb!');
+  playClip('hab_lieb');
   // Heart burst around button
   const r = btn.getBoundingClientRect();
   const cx = r.left + r.width/2;

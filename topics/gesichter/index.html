@@ -183,13 +183,13 @@ const SCENE_TEXTS = [
 const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneLeave: (i) => { if (i === 1) stopCam(); } });
 
 const FACES = [
-  { emoji: '😄', label: 'Fröhlich!',     speak: 'Mach ein fröhliches Gesicht!' },
-  { emoji: '😢', label: 'Traurig...',    speak: 'Mach ein trauriges Gesicht.' },
-  { emoji: '😯', label: 'Überrascht!',   speak: 'Mach ein überraschtes Gesicht!' },
-  { emoji: '😠', label: 'Wütend!',       speak: 'Mach ein wütendes Gesicht!' },
-  { emoji: '😴', label: 'Müde',          speak: 'Mach ein müdes Gesicht.' },
-  { emoji: '😘', label: 'Kuss-Mund',     speak: 'Mach ein Kuss-Gesicht!' },
-  { emoji: '🤪', label: 'Quatsch!',      speak: 'Mach ein Quatsch-Gesicht!' }
+  { emoji: '😄', label: 'Fröhlich!',     key: 'face_froehlich' },
+  { emoji: '😢', label: 'Traurig...',    key: 'face_traurig' },
+  { emoji: '😯', label: 'Überrascht!',   key: 'face_ueberrascht' },
+  { emoji: '😠', label: 'Wütend!',       key: 'face_wuetend' },
+  { emoji: '😴', label: 'Müde',          key: 'face_muede' },
+  { emoji: '😘', label: 'Kuss-Mund',     key: 'face_kuss' },
+  { emoji: '🤪', label: 'Quatsch!',      key: 'face_quatsch' }
 ];
 
 const FEEDBACK = [
@@ -213,7 +213,7 @@ function updateTarget() {
   document.getElementById('targetLabel').textContent = 'Mach: ' + currentFace.label;
   document.getElementById('round').textContent = String(roundIdx + 1);
   document.getElementById('score').textContent = String(score);
-  speak(currentFace.speak);
+  speak(currentFace.key);
 }
 updateTarget();
 
@@ -318,15 +318,12 @@ function downloadCompare() {
   }, 'image/png');
 }
 
-function speak(text) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'de-DE'; u.rate = 0.9; u.pitch = 1.2;
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
+const faceAudio = new Audio();
+function speak(key) {
+  faceAudio.pause();
+  faceAudio.currentTime = 0;
+  faceAudio.src = 'audio/' + key + '.m4a?v=2';
+  faceAudio.play().catch(() => {});
 }
 </script>
 </body>

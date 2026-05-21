@@ -198,15 +198,12 @@ document.querySelectorAll('.g-item').forEach(item => {
   });
 });
 
+const dankeAudio = new Audio();
 function sayDanke(name) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance('Danke ' + name + '!');
-  u.lang = 'de-DE'; u.rate = 0.95; u.pitch = 1.2;
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
+  dankeAudio.pause();
+  dankeAudio.currentTime = 0;
+  dankeAudio.src = 'audio/danke_' + name + '.m4a?v=2';
+  dankeAudio.play().catch(() => {});
 }
 </script>
 </body>

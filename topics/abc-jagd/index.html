@@ -214,18 +214,12 @@ function check(bubble, letter) {
   }
 }
 
+const letterAudio = new Audio();
 function sayLetter(letter) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(letter);
-  u.lang = 'de-DE';
-  u.rate = 0.8;
-  u.pitch = 1.2;
-  // Try to find a German voice
-  const voices = speechSynthesis.getVoices();
-  const de = voices.find(v => v.lang && v.lang.startsWith('de'));
-  if (de) u.voice = de;
-  speechSynthesis.speak(u);
+  letterAudio.pause();
+  letterAudio.currentTime = 0;
+  letterAudio.src = 'audio/letter_' + letter + '.m4a?v=2';
+  letterAudio.play().catch(() => {});
 }
 
 let ac = null;
