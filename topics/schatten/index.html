@@ -256,8 +256,8 @@ function updateShadow() {
   // height factor for shadow length: lower sun → longer shadow.
   const sunHeight = Math.sin(angle); // 0..1
   const shadowLen = Math.max(20, (1 - sunHeight) * 360);
-  // direction: positive x → right, negative x → left
-  const dirX = Math.cos(Math.PI - angle); // -1..+1 (left to right)
+  // Shadow extends OPPOSITE of the sun: sun left → shadow right, sun right → shadow left.
+  const dirX = -Math.cos(Math.PI - angle); // sun left ⇒ +1 (right), sun right ⇒ -1 (left)
   // foot point in viewBox
   const fx = 350;
   const fy = 250;
