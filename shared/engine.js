@@ -138,6 +138,24 @@ class TopicEngine {
   }
 }
 
+// Tiny build-version badge in bottom-left — useful to know if you're on
+// the latest deploy without checking dev tools.
+function showVersionBadge() {
+  if (!window.__BUILD__) return;
+  if (document.querySelector('.version-badge')) return;
+  const b = document.createElement('div');
+  b.className = 'version-badge';
+  b.textContent = '#' + window.__BUILD__.build + ' • ' + window.__BUILD__.hash;
+  b.title = window.__BUILD__.date;
+  document.body.appendChild(b);
+}
+// Run on DOM ready, regardless of which topic this engine is loaded into.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', showVersionBadge);
+} else {
+  showVersionBadge();
+}
+
 // Helper for topics that want to generate ambient stars on a section.
 function sprinkleStars(container, count = 5, emojis = ['⭐','✨','🌟']) {
   for (let i = 0; i < count; i++) {

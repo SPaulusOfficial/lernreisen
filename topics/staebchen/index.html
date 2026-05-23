@@ -849,5 +849,8 @@ document.addEventListener('click', function bootstrap() {
   if (speechOn && current === 0) speakCurrentScene();
 }, { once: true });
 </script>
+<script src="../../shared/version.js"></script>
+<style>.version-badge{position:fixed;bottom:6px;left:6px;font-size:10px;color:rgba(0,0,0,0.35);font-family:monospace;pointer-events:none;z-index:1000;user-select:none;background:rgba(255,255,255,0.4);padding:2px 6px;border-radius:8px;letter-spacing:0.3px;}</style>
+<script>(function(){if(!window.__BUILD__)return;var b=document.createElement("div");b.className="version-badge";b.textContent="#"+window.__BUILD__.build+" • "+window.__BUILD__.hash;b.title=window.__BUILD__.date;document.body.appendChild(b);})();</script>
 </body>
 </html>

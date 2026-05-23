@@ -259,6 +259,24 @@ button.small {
   filter: drop-shadow(0 0 6px rgba(255,247,0,0.5));
 }
 
+/* Tiny build-version badge in the corner */
+.version-badge {
+  position: fixed;
+  bottom: 6px;
+  left: 6px;
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.35);
+  font-family: 'Courier New', monospace;
+  pointer-events: none;
+  z-index: 1000;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 2px 6px;
+  border-radius: 8px;
+  backdrop-filter: blur(2px);
+  letter-spacing: 0.3px;
+}
+
 /* Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
