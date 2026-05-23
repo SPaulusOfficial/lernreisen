@@ -371,9 +371,10 @@
       </svg>
     </div>
     <div class="clock-controls">
+      <button class="time-preset" onclick="setClock(3,0)">🕒 3:00 Punkt</button>
       <button class="time-preset" onclick="setClock(7,0)">🌅 7:00 Aufstehen</button>
       <button class="time-preset" onclick="setClock(12,0)">🍽️ 12:00 Mittag</button>
-      <button class="time-preset" onclick="setClock(15,30)">🧸 15:30 Spielen</button>
+      <button class="time-preset" onclick="setClock(15,0)">🧸 15:00 Spielen</button>
       <button class="time-preset" onclick="setClock(19,30)">🛁 19:30 Baden</button>
       <button class="time-preset" onclick="setClock(20,0)">🛏️ 20:00 Schlafen</button>
     </div>
@@ -503,12 +504,17 @@ function setClock(h, m) {
   const analogH = h % 12;
   const hourAngle = (analogH * 30 + m * 0.5);
   const minAngle = m * 6;
-  // Rotate the group containing each hand, around (200, 200) which is the
-  // clock center in the 400x400 viewBox. The SVG "rotate(angle cx cy)"
-  // attribute form is the most reliable way — no CSS transform-origin
-  // weirdness.
-  document.getElementById('handHourG').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
-  document.getElementById('handMinG').setAttribute('transform', `rotate(${minAngle} 200 200)`);
+  // translate-rotate-translate is mathematically equivalent to
+  // rotate(angle 200 200) but the most browser-compatible form across
+  // mobile Safari, Firefox and Chrome. No ambiguity about the pivot.
+  document.getElementById('handHourG').setAttribute(
+    'transform',
+    `translate(200 200) rotate(${hourAngle}) translate(-200 -200)`
+  );
+  document.getElementById('handMinG').setAttribute(
+    'transform',
+    `translate(200 200) rotate(${minAngle}) translate(-200 -200)`
+  );
   document.getElementById('digital').textContent =
     String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
