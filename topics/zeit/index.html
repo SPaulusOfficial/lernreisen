@@ -40,13 +40,13 @@
     pointer-events: stroke;
   }
   .hand-hit:active { cursor: grabbing; }
-  /* Rotate the GROUP via SVG attribute transform — no CSS transform-origin
-     to interfere with the rotation center. */
-  .hand-group {
-    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
-    transform-origin: 200px 200px;
-    transform-box: fill-box;
-  }
+  /* Rotate the GROUP via SVG attribute transform="rotate(angle 200 200)".
+     IMPORTANT: no CSS transform-origin/transform-box here — they would
+     override the SVG pivot and shift the rotation centre off the clock
+     face. No CSS transition either: that interpolates via CSS transform
+     rules (which use the wrong origin during the animation). The snap is
+     instant, which is fine for a clock. */
+  .hand-group { transition: none; }
   .digital {
     background: linear-gradient(135deg, #2a2a4e, #1a1a4e);
     color: #00ff88;
