@@ -25,11 +25,17 @@
   .hand {
     transform-origin: 200px 200px;
     cursor: grab;
-    transition: transform 0.2s;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    /* Invisible wide stroke for easier touch grab, drawn first via paint-order */
+    paint-order: stroke;
   }
+  .hand:hover { stroke-width: 22; }
   .hand:active { cursor: grabbing; }
-  .hand-hour { stroke: #6a1b9a; stroke-width: 14; stroke-linecap: round; }
-  .hand-min  { stroke: #d81b60; stroke-width: 8;  stroke-linecap: round; }
+  .hand-hour { stroke: #6a1b9a; stroke-width: 16; stroke-linecap: round; }
+  .hand-min  { stroke: #d81b60; stroke-width: 10; stroke-linecap: round; }
+  /* Hit-area: enlarge clickable surface without changing visible line */
+  .hand-hit { stroke: transparent; stroke-width: 36; cursor: grab; transform-origin: 200px 200px; transition: transform 0.25s cubic-bezier(.34,1.56,.64,1); }
+  .hand-hit:active { cursor: grabbing; }
   .digital {
     background: linear-gradient(135deg, #2a2a4e, #1a1a4e);
     color: #00ff88;
@@ -338,10 +344,13 @@
         <text x="335" y="215" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">3</text>
         <text x="200" y="355" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">6</text>
         <text x="65" y="215" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">9</text>
-        <!-- Hands -->
+        <!-- Hands (visible) + transparent wider hit-areas for easy grabbing -->
+        <line class="hand-hit" id="handHourHit" data-target="handHour" x1="200" y1="200" x2="200" y2="100"/>
         <line class="hand hand-hour" id="handHour" x1="200" y1="200" x2="200" y2="100"/>
+        <line class="hand-hit" id="handMinHit" data-target="handMin" x1="200" y1="200" x2="200" y2="60"/>
         <line class="hand hand-min" id="handMin" x1="200" y1="200" x2="200" y2="60"/>
-        <circle cx="200" cy="200" r="14" fill="#6a1b9a"/>
+        <circle cx="200" cy="200" r="16" fill="#6a1b9a"/>
+        <circle cx="200" cy="200" r="6" fill="#fff"/>
       </svg>
     </div>
     <div class="clock-controls">
@@ -473,36 +482,66 @@ const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, on
 let curHour = 12, curMin = 0;
 function setClock(h, m) {
   curHour = h; curMin = m;
-  // 12-hour for analog
   const analogH = h % 12;
   const hourAngle = (analogH * 30 + m * 0.5);
   const minAngle = m * 6;
   document.getElementById('handHour').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
+  document.getElementById('handHourHit').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
   document.getElementById('handMin').setAttribute('transform', `rotate(${minAngle} 200 200)`);
+  document.getElementById('handMinHit').setAttribute('transform', `rotate(${minAngle} 200 200)`);
   document.getElementById('digital').textContent =
     String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
-// Drag hands
+
+// Drag hands — use document-level listeners so we don't lose the pointer
+// when it slides off the thin SVG line.
 let dragHand = null;
-document.querySelectorAll('.hand').forEach(h => {
-  h.addEventListener('pointerdown', (e) => { dragHand = h; h.setPointerCapture(e.pointerId); });
-  h.addEventListener('pointerup', () => { dragHand = null; });
-  h.addEventListener('pointermove', (e) => {
-    if (dragHand !== h) return;
-    const svg = h.closest('svg');
-    const r = svg.getBoundingClientRect();
-    const cx = r.left + r.width/2;
-    const cy = r.top + r.height/2;
-    const angle = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI + 90;
-    const normalized = (angle + 360) % 360;
-    if (h.id === 'handMin') {
-      curMin = Math.round(normalized / 6) % 60;
-    } else {
-      curHour = Math.floor(normalized / 30) % 12 || 12;
-    }
-    setClock(curHour, curMin);
+const clockSvg = document.querySelector('.clock-svg');
+function angleFromEvent(e) {
+  const r = clockSvg.getBoundingClientRect();
+  const cx = r.left + r.width/2;
+  const cy = r.top + r.height/2;
+  let angle = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI + 90;
+  return (angle + 360) % 360;
+}
+// Use wider hit-area lines as the drag handles
+document.querySelectorAll('.hand-hit, .hand').forEach(h => {
+  h.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Hit-areas know their target via data-target; visible hands use their own id
+    dragHand = h.dataset.target || h.id;
   });
 });
+// Tap anywhere on the clock face (not a hand) to position the minute hand
+clockSvg.addEventListener('pointerdown', (e) => {
+  if (dragHand) return;
+  if (e.target.classList.contains('hand') || e.target.classList.contains('hand-hit')) return;
+  dragHand = 'handMin';
+  updateFromEvent(e);
+});
+function updateFromEvent(e) {
+  const a = angleFromEvent(e);
+  if (dragHand === 'handMin') {
+    curMin = Math.round(a / 6) % 60;
+  } else if (dragHand === 'handHour') {
+    // Keep AM/PM bucket as it was; only update which hour 1-12 in that bucket
+    const isPM = curHour >= 12;
+    let h12 = Math.round(a / 30);
+    if (h12 === 0) h12 = 12;
+    curHour = isPM ? (h12 % 12) + 12 : (h12 % 12);
+    if (curHour === 24) curHour = 12;
+    if (curHour === 0) curHour = 12;
+  }
+  setClock(curHour, curMin);
+}
+document.addEventListener('pointermove', (e) => {
+  if (!dragHand) return;
+  e.preventDefault();
+  updateFromEvent(e);
+}, { passive: false });
+document.addEventListener('pointerup', () => { dragHand = null; });
+document.addEventListener('pointercancel', () => { dragHand = null; });
 
 // === Day timeline drag-drop ===
 let draggedAct = null;
