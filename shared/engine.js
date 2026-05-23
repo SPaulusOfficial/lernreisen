@@ -121,6 +121,9 @@ class TopicEngine {
     this._updateProgress();
     const prevBtn = document.getElementById('prevBtn');
     if (prevBtn) prevBtn.style.display = idx === 0 ? 'none' : 'inline-block';
+    // On mobile, jump to top of the new scene so the user sees the title
+    // first (scenes are now flow content that can be taller than the viewport).
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
     this.speakCurrentScene();
     this.onSceneEnter(idx);
   }

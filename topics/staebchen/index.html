@@ -346,6 +346,50 @@
     margin-right: 10px;
   }
   .replay-btn:active { box-shadow: none; transform: none; }
+
+  /* ============== MOBILE ============== */
+  @media (max-width: 820px), (pointer: coarse) {
+    html, body {
+      height: auto;
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #app { width: 100%; height: auto; min-height: 100vh; overflow: visible; }
+    .scene {
+      position: relative;
+      inset: auto;
+      min-height: 100vh;
+      padding: 88px 14px 120px;
+      justify-content: flex-start;
+      display: none;
+      opacity: 1;
+      pointer-events: auto;
+      transition: none;
+    }
+    .scene.active { display: flex; }
+    button { min-height: 48px; padding: 14px 22px; font-size: 17px; }
+    button.small { min-height: 42px; padding: 10px 16px; font-size: 14px; }
+    button:hover { transform: none; }
+    .home-btn { width: 44px; height: 44px; font-size: 22px; top: 10px; left: 10px; }
+    .sound-btn { right: 10px; left: auto; }
+    .progress { top: 64px; gap: 6px; }
+    .dot { width: 9px; height: 9px; border-width: 1.5px; }
+    .nav { bottom: 12px; left: 12px; z-index: 100; }
+    h1 { font-size: clamp(24px, 7vw, 36px); margin-bottom: 10px; }
+    h2 { font-size: clamp(20px, 5.5vw, 30px); margin-bottom: 8px; }
+    p  { font-size: clamp(15px, 3.8vw, 19px); margin-bottom: 12px; }
+    .big-emoji { font-size: clamp(56px, 16vw, 100px); }
+    #webcam-wrap { width: 95vw; max-width: 95vw; }
+    .mode-buttons { gap: 6px; }
+  }
+  @media (max-width: 380px) {
+    .scene { padding: 78px 10px 110px; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; }
+    p  { font-size: 14px; }
+  }
 </style>
 </head>
 <body>
@@ -648,6 +692,7 @@ function goTo(idx) {
   updateProgress();
   document.getElementById('prevBtn').style.display = idx === 0 ? 'none' : 'inline-block';
   if (idx !== 5) stopCam();
+  try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
   speakCurrentScene();
 }
 function next() { goTo(current + 1); }
