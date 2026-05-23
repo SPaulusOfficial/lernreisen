@@ -25,19 +25,28 @@
     filter: drop-shadow(0 8px 18px rgba(106,27,154,0.18));
   }
   .hand {
-    transform-origin: 200px 200px;
     cursor: grab;
-    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
-    /* Invisible wide stroke for easier touch grab, drawn first via paint-order */
     paint-order: stroke;
+    pointer-events: stroke;
   }
-  .hand:hover { stroke-width: 22; }
   .hand:active { cursor: grabbing; }
   .hand-hour { stroke: #6a1b9a; stroke-width: 16; stroke-linecap: round; }
   .hand-min  { stroke: #d81b60; stroke-width: 10; stroke-linecap: round; }
   /* Hit-area: enlarge clickable surface without changing visible line */
-  .hand-hit { stroke: transparent; stroke-width: 36; cursor: grab; transform-origin: 200px 200px; transition: transform 0.25s cubic-bezier(.34,1.56,.64,1); }
+  .hand-hit {
+    stroke: transparent;
+    stroke-width: 40;
+    cursor: grab;
+    pointer-events: stroke;
+  }
   .hand-hit:active { cursor: grabbing; }
+  /* Rotate the GROUP via SVG attribute transform — no CSS transform-origin
+     to interfere with the rotation center. */
+  .hand-group {
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
+    transform-origin: 200px 200px;
+    transform-box: fill-box;
+  }
   .digital {
     background: linear-gradient(135deg, #2a2a4e, #1a1a4e);
     color: #00ff88;
@@ -346,11 +355,17 @@
         <text x="335" y="215" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">3</text>
         <text x="200" y="355" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">6</text>
         <text x="65" y="215" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">9</text>
-        <!-- Hands (visible) + transparent wider hit-areas for easy grabbing -->
-        <line class="hand-hit" id="handHourHit" data-target="handHour" x1="200" y1="200" x2="200" y2="100"/>
-        <line class="hand hand-hour" id="handHour" x1="200" y1="200" x2="200" y2="100"/>
-        <line class="hand-hit" id="handMinHit" data-target="handMin" x1="200" y1="200" x2="200" y2="60"/>
-        <line class="hand hand-min" id="handMin" x1="200" y1="200" x2="200" y2="60"/>
+        <!-- Each hand wrapped in a <g> that rotates around (200,200).
+             Hit-line first (transparent, wide) so it captures pointer events,
+             visible line on top. -->
+        <g class="hand-group" id="handHourG">
+          <line class="hand-hit" data-target="handHour" x1="200" y1="200" x2="200" y2="105"/>
+          <line class="hand hand-hour" id="handHour" x1="200" y1="200" x2="200" y2="105"/>
+        </g>
+        <g class="hand-group" id="handMinG">
+          <line class="hand-hit" data-target="handMin" x1="200" y1="200" x2="200" y2="65"/>
+          <line class="hand hand-min" id="handMin" x1="200" y1="200" x2="200" y2="65"/>
+        </g>
         <circle cx="200" cy="200" r="16" fill="#6a1b9a"/>
         <circle cx="200" cy="200" r="6" fill="#fff"/>
       </svg>
@@ -487,10 +502,12 @@ function setClock(h, m) {
   const analogH = h % 12;
   const hourAngle = (analogH * 30 + m * 0.5);
   const minAngle = m * 6;
-  document.getElementById('handHour').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
-  document.getElementById('handHourHit').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
-  document.getElementById('handMin').setAttribute('transform', `rotate(${minAngle} 200 200)`);
-  document.getElementById('handMinHit').setAttribute('transform', `rotate(${minAngle} 200 200)`);
+  // Rotate the group containing each hand, around (200, 200) which is the
+  // clock center in the 400x400 viewBox. The SVG "rotate(angle cx cy)"
+  // attribute form is the most reliable way — no CSS transform-origin
+  // weirdness.
+  document.getElementById('handHourG').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
+  document.getElementById('handMinG').setAttribute('transform', `rotate(${minAngle} 200 200)`);
   document.getElementById('digital').textContent =
     String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
