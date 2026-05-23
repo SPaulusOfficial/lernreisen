@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Super-Held</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(135deg, #1a1a4e 0%, #4a4a8e 30%, #ff4d4d 80%, #ffd700 100%); }
+  h1, h2 { color: #fff; text-shadow: 3px 3px 0 #1a1a4e; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  /* Costume pick */
+  .costume-row {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .costume-card {
+    background: rgba(255,255,255,0.95);
+    border: 5px solid transparent;
+    border-radius: 30px;
+    padding: 18px;
+    width: 160px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.3);
+  }
+  .costume-card:hover { transform: translateY(-10px) scale(1.06); border-color: #ffd700; }
+  .costume-card.chosen { border-color: #ffd700; box-shadow: 0 0 40px rgba(255,215,0,0.9); transform: scale(1.05); }
+  .costume-card .em {
+    font-size: 100px;
+    display: block;
+    animation: hero-bounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+  }
+  .costume-card:nth-child(2) .em { animation-delay: 0.3s; }
+  .costume-card:nth-child(3) .em { animation-delay: 0.6s; }
+  .costume-card:nth-child(4) .em { animation-delay: 0.9s; }
+  @keyframes hero-bounce {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-12px) rotate(3deg); }
+  }
+  .costume-card h3 { color: #1a1a4e; margin: 4px 0; }
+  .costume-card .power { font-size: 13px; color: #5d4e8a; }
+
+  /* Web-shooting stage */
+  .city-stage {
+    position: relative;
+    width: min(95vw, 720px);
+    height: 380px;
+    background: linear-gradient(180deg, #4a4a8e 0%, #ff7e5f 60%, #1a1a4e 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.3), 0 8px 22px rgba(0,0,0,0.3);
+    cursor: crosshair;
+  }
+  .skyline {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 80px;
+    background: #1a1a4e;
+    border-top: 4px dashed #ffd700;
+  }
+  .skyline::before {
+    content: '🏢 🏬 🏢 🏬 🏢 🏬 🏢 🏬';
+    position: absolute;
+    bottom: 50px;
+    font-size: 50px;
+    width: 100%;
+    text-align: center;
+    letter-spacing: 6px;
+    filter: drop-shadow(0 0 4px rgba(255,215,0,0.5));
+  }
+  .villain {
+    position: absolute;
+    font-size: 50px;
+    cursor: pointer;
+    user-select: none;
+    animation: villain-move var(--dur, 5s) linear forwards;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    z-index: 2;
+  }
+  @keyframes villain-move {
+    from { left: -80px; }
+    to   { left: 100%; }
+  }
+  .villain.flipped { animation-name: villain-move-rev; transform: scaleX(-1); }
+  @keyframes villain-move-rev {
+    from { right: -80px; left: auto; }
+    to   { right: 100%; left: auto; }
+  }
+  .villain.webbed {
+    animation: webbed 0.5s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes webbed {
+    0%   { transform: scale(1); filter: drop-shadow(0 0 0 #fff); }
+    50%  { transform: scale(1.3) rotate(20deg); filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #ffd700); }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+  .web-trail {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, #fff 30%, rgba(255,255,255,0));
+    animation: web-fade 0.4s ease-out forwards;
+    z-index: 5;
+  }
+  @keyframes web-fade {
+    0%   { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+  .ammo-bar {
+    background: rgba(0,0,0,0.5);
+    color: #ffd700;
+    padding: 8px 20px;
+    border-radius: 18px;
+    font-weight: bold;
+    font-size: 22px;
+    display: inline-block;
+  }
+
+  /* Cat rescue */
+  .rescue-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 400px;
+    background: linear-gradient(180deg, #74b9ff 0%, #d4ffd6 60%, #7ec850 60%, #4a8030 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+  }
+  .tree-big {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 240px;
+    line-height: 1;
+  }
+  .stuck-cat {
+    position: absolute;
+    font-size: 60px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    animation: cat-wobble 2s ease-in-out infinite;
+  }
+  @keyframes cat-wobble {
+    0%, 100% { transform: rotate(-5deg); }
+    50%      { transform: rotate(5deg); }
+  }
+  .stuck-cat.rescued {
+    animation: cat-rescue 1.2s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes cat-rescue {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(0, 100px) scale(1.2) rotate(180deg); }
+    100% { transform: translate(0, 200px) scale(0.7) rotate(360deg); opacity: 0; }
+  }
+  .happy-owner {
+    position: absolute;
+    bottom: 14px;
+    right: 30px;
+    font-size: 60px;
+    animation: floaty 3s ease-in-out infinite;
+  }
+
+  /* Whack-a-villain */
+  .holes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    width: min(95vw, 500px);
+    margin: 12px 0;
+  }
+  .hole {
+    aspect-ratio: 1;
+    background: radial-gradient(ellipse at 50% 30%, #2c1a4e 0%, #0a0420 80%);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 -10px 18px rgba(0,0,0,0.6);
+  }
+  .hole .pop {
+    position: absolute;
+    bottom: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 60px;
+    cursor: pointer;
+    user-select: none;
+    transition: bottom 0.3s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 0 6px rgba(0,0,0,0.5));
+  }
+  .hole.up .pop { bottom: 5%; }
+  .hole .pop.whacked { animation: whack-spin 0.4s ease-out forwards; }
+  @keyframes whack-spin {
+    0%   { transform: translateX(-50%) scale(1); }
+    50%  { transform: translateX(-50%) scale(1.3) rotate(180deg); }
+    100% { transform: translateX(-50%) scale(0); }
+  }
+
+  .hud {
+    background: rgba(0,0,0,0.5);
+    color: #ffd700;
+    padding: 8px 20px;
+    border-radius: 18px;
+    font-weight: bold;
+  }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 6px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🦸🕷️</div>
+    <h1>Super-Held!</h1>
+    <p>Du bist heute der Held der Stadt! 🌃<br/>Schieße Netze, rette Katzen und stoppe die Schurken!</p>
+    <button class="purple" onclick="engine.next()">Auf zur Mission! 💥</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wähle dein Kostüm!</h2>
+    <div class="costume-row" id="costumeRow">
+      <div class="costume-card" data-emoji="🕷️" data-name="Spinnen-Held">
+        <span class="em">🕷️</span><h3>Spinnen-Held</h3><div class="power">Netz-Power</div>
+      </div>
+      <div class="costume-card" data-emoji="🦇" data-name="Fledermaus-Held">
+        <span class="em">🦇</span><h3>Fledermaus-Held</h3><div class="power">Flieger</div>
+      </div>
+      <div class="costume-card" data-emoji="⚡" data-name="Blitz-Held">
+        <span class="em">⚡</span><h3>Blitz-Held</h3><div class="power">Super-schnell</div>
+      </div>
+      <div class="costume-card" data-emoji="🦸‍♀️" data-name="Super-Heldin">
+        <span class="em">🦸‍♀️</span><h3>Super-Heldin</h3><div class="power">Alles!</div>
+      </div>
+    </div>
+    <button class="purple" id="costNext" style="display:none" onclick="engine.next()">Mission 1 starten 💥</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Stoppe die Schurken!</h2>
+    <p style="font-size:18px;">Klick auf die Schurken — du schießt Netze auf sie! 🕸️</p>
+    <div class="city-stage" id="cityStage" data-shoot>
+      <div class="skyline"></div>
+    </div>
+    <div class="stats">
+      <span class="hud">🕸️ Erwischt: <span id="webbed">0</span></span>
+      <span class="hud">😈 Entkommen: <span id="missed">0</span></span>
+    </div>
+    <button class="purple" id="webNext" style="display:none;margin-top:6px" onclick="engine.next()">Katze retten! 🐱</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Rette die Katze vom Baum!</h2>
+    <p style="font-size:18px;">Da oben ist eine Mieze in Not! Klick sie und hol sie runter!</p>
+    <div class="rescue-stage" id="rescueStage">
+      <span class="tree-big">🌳</span>
+      <span class="stuck-cat" id="stuckCat" style="top:18%;left:50%;transform:translateX(-50%)">🐱</span>
+      <span class="happy-owner">👵</span>
+    </div>
+    <div class="hud" id="rescueMsg">🐱 Klick die Katze!</div>
+    <button class="purple" id="catNext" style="display:none;margin-top:6px" onclick="engine.next()">Letzte Mission! 💥</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Whack-a-Schurke! 👊</h2>
+    <p style="font-size:18px;">Schurken popping aus den Löchern — klick sie schnell!</p>
+    <div class="holes-grid" id="holesGrid">
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+      <div class="hole"><span class="pop"></span></div>
+    </div>
+    <div class="stats">
+      <span class="hud">👊 Erwischt: <span id="whacked">0</span></span>
+      <span class="hud">⏱️ Verpasst: <span id="missedPop">0</span></span>
+    </div>
+    <button class="purple" id="whackNext" style="display:none;margin-top:6px" onclick="engine.next()">Mission erfüllt! 🏆</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">🦸🏆</div>
+    <h2>Held des Tages!</h2>
+    <p>Die ganze Stadt jubelt dir zu! 🎉<br/>Du hast die Schurken besiegt, die Katze gerettet — du bist ein echter Super-Held! 💥</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Du bist heute der Held der Stadt! Schieße Netze, rette Katzen und stoppe die Schurken!",
+  "Wähle dein Kostüm! Spinnen-Held mit Netzen, Fledermaus-Held mit Flügeln, Blitz-Held super schnell, oder Super-Heldin mit allen Kräften!",
+  "Stoppe die Schurken! Klick auf sie, dann schießt du Netze auf sie! Lass keinen entkommen!",
+  "Rette die Katze vom Baum! Da oben ist eine Mieze in Not! Klick sie und hol sie runter!",
+  "Whack-a-Schurke! Schurken popping aus den Löchern. Klick sie ganz schnell!",
+  "Held des Tages! Die ganze Stadt jubelt dir zu! Du hast die Schurken besiegt, die Katze gerettet, du bist ein echter Super-Held!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: handleScene, onSceneLeave: (i) => { if (i===2) stopVillains(); if (i===4) stopWhack(); } });
+
+let chosenCostume = '🕷️';
+function handleScene(i) {
+  if (i === 2) startVillains();
+  if (i === 3) resetRescue();
+  if (i === 4) startWhack();
+}
+
+// Costume pick
+document.querySelectorAll('.costume-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.costume-card').forEach(c => c.classList.remove('chosen'));
+    card.classList.add('chosen');
+    chosenCostume = card.dataset.emoji;
+    document.getElementById('costNext').style.display = 'inline-block';
+    sfxChime();
+  });
+});
+
+// Villains shooting
+let villainTimer = null, webbed = 0, missed = 0;
+function startVillains() {
+  stopVillains();
+  webbed = 0; missed = 0;
+  document.getElementById('webbed').textContent = '0';
+  document.getElementById('missed').textContent = '0';
+  document.getElementById('webNext').style.display = 'none';
+  villainTimer = setInterval(spawnVillain, 1100);
+  setTimeout(spawnVillain, 200);
+}
+function stopVillains() {
+  if (villainTimer) clearInterval(villainTimer);
+  villainTimer = null;
+  document.querySelectorAll('#cityStage .villain').forEach(v => v.remove());
+}
+function spawnVillain() {
+  const stage = document.getElementById('cityStage');
+  if (!stage) return;
+  const v = document.createElement('span');
+  v.className = 'villain';
+  v.textContent = ['😈','👹','🦹','🥷','🤖'][Math.floor(Math.random()*5)];
+  v.style.top = (40 + Math.random()*200) + 'px';
+  v.style.setProperty('--dur', (4 + Math.random()*3) + 's');
+  if (Math.random() > 0.5) v.classList.add('flipped');
+  v.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (v.classList.contains('webbed')) return;
+    v.classList.add('webbed');
+    webbed++;
+    document.getElementById('webbed').textContent = String(webbed);
+    zapSfx();
+    if (webbed >= 8) document.getElementById('webNext').style.display = 'inline-block';
+  });
+  v.addEventListener('animationend', () => {
+    if (!v.classList.contains('webbed')) {
+      missed++;
+      document.getElementById('missed').textContent = String(missed);
+    }
+    v.remove();
+  });
+  stage.appendChild(v);
+}
+
+// Web trail on cursor move
+document.getElementById('cityStage').addEventListener('pointerdown', (e) => {
+  if (e.target.classList.contains('villain')) return;
+  const stage = document.getElementById('cityStage');
+  const r = stage.getBoundingClientRect();
+  const trail = document.createElement('div');
+  trail.className = 'web-trail';
+  trail.style.left = (e.clientX - r.left - 9) + 'px';
+  trail.style.top = (e.clientY - r.top - 9) + 'px';
+  stage.appendChild(trail);
+  setTimeout(() => trail.remove(), 400);
+});
+
+// Cat rescue
+function resetRescue() {
+  const cat = document.getElementById('stuckCat');
+  if (!cat) return;
+  cat.classList.remove('rescued');
+  cat.style.top = '18%';
+  document.getElementById('rescueMsg').textContent = '🐱 Klick die Katze!';
+  document.getElementById('catNext').style.display = 'none';
+}
+document.getElementById('stuckCat').addEventListener('click', () => {
+  const cat = document.getElementById('stuckCat');
+  if (cat.classList.contains('rescued')) return;
+  cat.classList.add('rescued');
+  document.getElementById('rescueMsg').textContent = '🎉 Gerettet! Die Oma freut sich!';
+  document.getElementById('catNext').style.display = 'inline-block';
+  sfxWin();
+});
+
+// Whack
+let whackTimer = null, whacked = 0, missedPop = 0;
+function startWhack() {
+  stopWhack();
+  whacked = 0; missedPop = 0;
+  document.getElementById('whacked').textContent = '0';
+  document.getElementById('missedPop').textContent = '0';
+  document.getElementById('whackNext').style.display = 'none';
+  whackTimer = setInterval(popVillain, 900);
+}
+function stopWhack() {
+  if (whackTimer) clearInterval(whackTimer);
+  whackTimer = null;
+  document.querySelectorAll('.hole').forEach(h => h.classList.remove('up'));
+}
+function popVillain() {
+  const holes = document.querySelectorAll('.hole');
+  const free = Array.from(holes).filter(h => !h.classList.contains('up'));
+  if (!free.length) return;
+  const hole = free[Math.floor(Math.random()*free.length)];
+  const pop = hole.querySelector('.pop');
+  pop.textContent = ['😈','👹','🥷','🤖'][Math.floor(Math.random()*4)];
+  pop.classList.remove('whacked');
+  hole.classList.add('up');
+  let hit = false;
+  pop.onclick = () => {
+    if (hit) return;
+    hit = true;
+    pop.classList.add('whacked');
+    whacked++;
+    document.getElementById('whacked').textContent = String(whacked);
+    zapSfx();
+    if (whacked >= 10) {
+      document.getElementById('whackNext').style.display = 'inline-block';
+    }
+  };
+  setTimeout(() => {
+    if (!hit) {
+      missedPop++;
+      document.getElementById('missedPop').textContent = String(missedPop);
+    }
+    hole.classList.remove('up');
+  }, 1100);
+}
+
+// SFX
+function sfxChime() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [800, 1200, 1600].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.18, t+i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.06+0.3);
+      o.start(t+i*0.06); o.stop(t+i*0.06+0.32);
+    });
+  } catch(e){}
+}
+function zapSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(2000, t); o.frequency.exponentialRampToValueAtTime(200, t+0.12);
+    g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.15);
+    o.start(t); o.stop(t+0.18);
+  } catch(e){}
+}
+function sfxWin() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [523, 659, 784, 1047].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.22, t+i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.1+0.3);
+      o.start(t+i*0.1); o.stop(t+i*0.1+0.32);
+    });
+  } catch(e){}
+}
+</script>
+</body>
+</html>

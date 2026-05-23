@@ -6,119 +6,304 @@
 <title>Was ist Zeit?</title>
 <link rel="stylesheet" href="../../shared/styles.css" />
 <style>
-  body { background: linear-gradient(180deg, #ffeaa7 0%, #b5e8ff 50%, #d6a2ff 100%); }
+  body { background: linear-gradient(180deg, #ffeaa7 0%, #d6a2ff 50%, #74b9ff 100%); }
   h1, h2 { color: #6a1b9a; text-shadow: 2px 2px 0 #fff; }
 
-  .clock-host {
+  /* === Interactive clock === */
+  .clock-stage {
     position: relative;
-    margin: 14px 0;
+    width: min(80vw, 340px);
+    aspect-ratio: 1;
+    margin: 14px auto;
+    touch-action: none;
   }
   .clock-svg {
-    width: min(70vw, 280px);
-    height: auto;
-    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.15));
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 8px 18px rgba(106,27,154,0.18));
   }
-  .hand-hour {
-    transform-origin: 100px 100px;
-    animation: hour-tick 60s linear infinite;
+  .hand {
+    transform-origin: 200px 200px;
+    cursor: grab;
+    transition: transform 0.2s;
   }
-  .hand-min {
-    transform-origin: 100px 100px;
-    animation: min-tick 5s linear infinite;
+  .hand:active { cursor: grabbing; }
+  .hand-hour { stroke: #6a1b9a; stroke-width: 14; stroke-linecap: round; }
+  .hand-min  { stroke: #d81b60; stroke-width: 8;  stroke-linecap: round; }
+  .digital {
+    background: linear-gradient(135deg, #2a2a4e, #1a1a4e);
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 36px;
+    font-weight: bold;
+    padding: 12px 28px;
+    border-radius: 18px;
+    box-shadow: inset 0 0 20px rgba(0,255,136,0.3), 0 6px 14px rgba(0,0,0,0.25);
+    letter-spacing: 4px;
+    display: inline-block;
   }
-  @keyframes hour-tick { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-  @keyframes min-tick { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+  .clock-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .time-preset {
+    background: rgba(255,255,255,0.95);
+    border: 3px solid #6a1b9a;
+    border-radius: 18px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #6a1b9a;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .time-preset:hover { transform: translateY(-3px) scale(1.06); background: #f0e6f7; }
 
+  /* === Past/Present/Future === */
   .three-times {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 18px;
+    gap: 16px;
     max-width: 900px;
     width: 95vw;
     margin: 12px 0;
   }
   .t-card {
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.9);
     border-radius: 24px;
-    padding: 18px;
+    padding: 16px;
     text-align: center;
     box-shadow: 0 6px 14px rgba(0,0,0,0.1);
     transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
   }
+  .t-card:hover { transform: translateY(-6px) scale(1.04); }
   .t-card.past { background: linear-gradient(135deg, rgba(214,162,255,0.4), rgba(186,73,200,0.3)); }
-  .t-card.now { background: linear-gradient(135deg, rgba(255,235,59,0.4), rgba(255,152,0,0.3)); transform: scale(1.05); }
+  .t-card.now { background: linear-gradient(135deg, rgba(255,235,59,0.4), rgba(255,152,0,0.3)); transform: scale(1.06); box-shadow: 0 8px 22px rgba(255,152,0,0.3); }
   .t-card.future { background: linear-gradient(135deg, rgba(116,185,255,0.4), rgba(9,132,227,0.3)); }
-  .t-card .e { font-size: 70px; display: block; }
+  .t-card .e { font-size: 60px; display: block; }
   .t-card h3 { color: #6a1b9a; margin: 4px 0; }
 
+  /* === Day timeline drag === */
   .timeline-bar {
     position: relative;
     width: min(95vw, 800px);
-    height: 80px;
-    margin: 14px 0;
+    height: 60px;
+    margin: 12px 0;
+    background: linear-gradient(90deg, #1a1a4e 0%, #ff7e5f 12%, #ffd166 25%, #74b9ff 50%, #ff7e5f 75%, #1a1a4e 100%);
+    border-radius: 30px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
   }
-  .timeline-line {
+  .timeline-bar::after {
+    content: '🌅 ☀️ 🌞 🌇 🌙';
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #d6a2ff 0%, #fdcb6e 50%, #74b9ff 100%);
-    border-radius: 4px;
     transform: translateY(-50%);
-  }
-  .tl-marker {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 40px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    justify-content: space-around;
+    font-size: 28px;
+    text-shadow: 0 0 4px rgba(0,0,0,0.5);
+    pointer-events: none;
   }
-  .tl-marker:hover { transform: translate(-50%, -50%) scale(1.15); }
-  .tl-label {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255,255,255,0.9);
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
+  .activity-zone {
+    width: min(95vw, 800px);
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    padding: 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .activity-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: 70px;
+    align-items: center;
+  }
+  .activity {
+    background: linear-gradient(135deg, #fff, #f0e6f7);
+    border: 3px solid #6a1b9a;
+    border-radius: 18px;
+    padding: 8px 14px;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    font-weight: bold;
+    color: #6a1b9a;
+  }
+  .activity:hover { transform: translateY(-3px) scale(1.06); }
+  .activity:active { cursor: grabbing; }
+  .activity.dragging { opacity: 0.5; }
+  .activity .em { font-size: 32px; display: block; }
+  .drop-zones {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .drop-zone {
+    background: rgba(255,255,255,0.6);
+    border: 3px dashed #6a1b9a;
+    border-radius: 16px;
+    min-height: 80px;
+    padding: 8px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .drop-zone.over { background: #fff8c8; border-color: #ffd700; transform: scale(1.05); }
+  .drop-zone .label { font-size: 12px; color: #6a1b9a; font-weight: bold; }
+  .drop-zone .placed { font-size: 30px; line-height: 1; margin-top: 4px; }
+  .drop-zone.correct { background: rgba(85,239,196,0.4); border-color: #00b894; border-style: solid; }
+  .drop-zone.wrong { animation: zone-shake 0.4s ease-in-out; }
+  @keyframes zone-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+  }
+
+  /* === Duration sort game === */
+  .duration-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    max-width: 800px;
+    width: 95vw;
+    margin: 12px 0;
+  }
+  .duration-cards {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .dur-card {
+    background: rgba(255,255,255,0.92);
+    border: 3px solid #6a1b9a;
+    border-radius: 18px;
+    padding: 12px;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    width: 140px;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
     color: #6a1b9a;
     font-weight: bold;
-    white-space: nowrap;
-    margin-top: 8px;
   }
+  .dur-card:hover { transform: translateY(-4px) scale(1.05); }
+  .dur-card.placed { background: rgba(85,239,196,0.4); border-color: #00b894; cursor: default; }
+  .dur-card .em { font-size: 36px; display: block; }
+  .timeline-slots {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    max-width: 800px;
+    width: 95vw;
+    margin: 8px 0;
+  }
+  .dur-slot {
+    background: rgba(255,255,255,0.6);
+    border: 3px dashed #d81b60;
+    border-radius: 16px;
+    min-height: 100px;
+    padding: 6px;
+    text-align: center;
+    color: #d81b60;
+    font-weight: bold;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .dur-slot.over { background: #fff8c8; border-color: #ffd700; }
+  .dur-slot.filled { background: rgba(85,239,196,0.4); border-color: #00b894; border-style: solid; }
+
+  /* === Scope row === */
   .scope-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 14px;
     max-width: 900px;
     width: 95vw;
-    margin: 10px 0;
+    margin: 12px 0;
   }
   .scope {
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.9);
     border-radius: 22px;
     padding: 14px;
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     animation: floaty 4s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
   }
-  .scope-row .scope:nth-child(2) { animation-delay: 0.25s; }
-  .scope-row .scope:nth-child(3) { animation-delay: 0.5s; }
-  .scope-row .scope:nth-child(4) { animation-delay: 0.75s; }
-  .scope-row .scope:nth-child(5) { animation-delay: 1s; }
+  .scope-row .scope:nth-child(2) { animation-delay: 0.2s; }
+  .scope-row .scope:nth-child(3) { animation-delay: 0.4s; }
+  .scope-row .scope:nth-child(4) { animation-delay: 0.6s; }
+  .scope-row .scope:nth-child(5) { animation-delay: 0.8s; }
+  .scope:hover { transform: translateY(-6px) scale(1.05); }
   .scope .e { font-size: 50px; display: block; }
+
+  /* === Calendar === */
+  .calendar {
+    width: min(95vw, 500px);
+    background: rgba(255,255,255,0.92);
+    border-radius: 22px;
+    padding: 14px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    margin: 8px 0;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    background: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #6a1b9a;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .cal-day:hover { transform: scale(1.15); background: #f0e6f7; }
+  .cal-day.today { background: linear-gradient(135deg, #ffd700, #ff9800); color: #fff; box-shadow: 0 0 14px rgba(255,215,0,0.8); }
+  .cal-day.header { background: transparent; color: #6a1b9a; cursor: default; font-size: 14px; }
+  .cal-day.weekend { background: #f0e6f7; }
+  .month-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .month-nav button {
+    background: #6a1b9a;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .month-title { font-size: 22px; font-weight: bold; color: #6a1b9a; }
+
+  .info-box {
+    background: rgba(255,255,255,0.92);
+    padding: 10px 22px;
+    border-radius: 18px;
+    color: #6a1b9a;
+    font-weight: bold;
+    text-align: center;
+    max-width: 700px;
+  }
 </style>
 </head>
 <body>
@@ -128,59 +313,143 @@
   <div class="progress" id="progress"></div>
 
   <section class="scene active" data-scene="0">
-    <div class="big-emoji floaty">⏰📅</div>
+    <div class="big-emoji floaty">⏰🌅</div>
     <h1>Was ist Zeit?</h1>
-    <p>Gestern, heute, morgen.<br/>Bald, gleich, vor langer Zeit.<br/>Was ist diese Sache, die Zeit?</p>
-    <button class="orange" onclick="engine.next()">Find ich raus! 🕰️</button>
+    <p>Gestern, heute, morgen — bald, gleich, vor langer Zeit.<br/>Was ist diese geheimnisvolle Sache?</p>
+    <button class="orange" onclick="engine.next()">Komm mit! 🕰️</button>
   </section>
 
   <section class="scene" data-scene="1">
-    <h2>Zeit läuft — wie ein Fluss</h2>
-    <p>Zeit kann man nicht sehen oder anfassen. Aber sie geht immer in eine Richtung: <b style="color:#6a1b9a">nach vorne</b>! ➡️</p>
-    <div class="clock-host">
-      <svg class="clock-svg" viewBox="0 0 200 200">
-        <circle cx="100" cy="100" r="90" fill="#fff" stroke="#6a1b9a" stroke-width="6"/>
-        <text x="100" y="35" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">12</text>
-        <text x="170" y="108" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">3</text>
-        <text x="100" y="180" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">6</text>
-        <text x="30" y="108" text-anchor="middle" font-size="20" fill="#6a1b9a" font-weight="bold">9</text>
-        <line class="hand-hour" x1="100" y1="100" x2="100" y2="50" stroke="#6a1b9a" stroke-width="8" stroke-linecap="round"/>
-        <line class="hand-min" x1="100" y1="100" x2="100" y2="25" stroke="#d81b60" stroke-width="5" stroke-linecap="round"/>
-        <circle cx="100" cy="100" r="8" fill="#6a1b9a"/>
+    <h2>Die Uhr — dreh sie!</h2>
+    <p style="font-size:16px;">Klick auf eine Uhrzeit oder zieh die Zeiger! Die digitale Uhr zeigt dir die Zeit.</p>
+    <div class="digital" id="digital">12:00</div>
+    <div class="clock-stage">
+      <svg class="clock-svg" viewBox="0 0 400 400">
+        <circle cx="200" cy="200" r="180" fill="#fff" stroke="#6a1b9a" stroke-width="10"/>
+        <!-- Tick marks -->
+        <g stroke="#6a1b9a" stroke-width="4" stroke-linecap="round">
+          <line x1="200" y1="30" x2="200" y2="50"/>
+          <line x1="370" y1="200" x2="350" y2="200"/>
+          <line x1="200" y1="370" x2="200" y2="350"/>
+          <line x1="30" y1="200" x2="50" y2="200"/>
+        </g>
+        <!-- Numbers -->
+        <text x="200" y="65" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">12</text>
+        <text x="335" y="215" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">3</text>
+        <text x="200" y="355" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">6</text>
+        <text x="65" y="215" text-anchor="middle" font-size="36" fill="#6a1b9a" font-weight="bold">9</text>
+        <!-- Hands -->
+        <line class="hand hand-hour" id="handHour" x1="200" y1="200" x2="200" y2="100"/>
+        <line class="hand hand-min" id="handMin" x1="200" y1="200" x2="200" y2="60"/>
+        <circle cx="200" cy="200" r="14" fill="#6a1b9a"/>
       </svg>
     </div>
-    <p>Die Uhr zeigt uns die Zeit — Sekunde für Sekunde, Stunde für Stunde.</p>
-    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+    <div class="clock-controls">
+      <button class="time-preset" onclick="setClock(7,0)">🌅 7:00 Aufstehen</button>
+      <button class="time-preset" onclick="setClock(12,0)">🍽️ 12:00 Mittag</button>
+      <button class="time-preset" onclick="setClock(15,30)">🧸 15:30 Spielen</button>
+      <button class="time-preset" onclick="setClock(19,30)">🛁 19:30 Baden</button>
+      <button class="time-preset" onclick="setClock(20,0)">🛏️ 20:00 Schlafen</button>
+    </div>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
   </section>
 
   <section class="scene" data-scene="2">
-    <h2>Gestern — Heute — Morgen</h2>
-    <div class="three-times">
-      <div class="t-card past"><span class="e">👈</span><h3>Gestern</h3><p style="margin:0;font-size:14px">War schon. Erinnerungen!</p></div>
-      <div class="t-card now"><span class="e">⭐</span><h3>Jetzt!</h3><p style="margin:0;font-size:14px">Genau in diesem Moment!</p></div>
-      <div class="t-card future"><span class="e">👉</span><h3>Morgen</h3><p style="margin:0;font-size:14px">Kommt noch. Vorfreude!</p></div>
+    <h2>Was passiert wann?</h2>
+    <p style="font-size:16px;">Zieh jede Aktivität in den passenden Tages-Abschnitt!</p>
+    <div class="timeline-bar"></div>
+    <div class="activity-zone">
+      <p style="margin:0 0 6px;font-size:14px;color:#6a1b9a;text-align:center;">📦 Zieh diese in die Felder unten:</p>
+      <div class="activity-row" id="actPool">
+        <div class="activity" draggable="true" data-when="morgen"><span class="em">🥐</span>Frühstück</div>
+        <div class="activity" draggable="true" data-when="vormittag"><span class="em">📚</span>Kindergarten</div>
+        <div class="activity" draggable="true" data-when="mittag"><span class="em">🍝</span>Mittagessen</div>
+        <div class="activity" draggable="true" data-when="abend"><span class="em">📖</span>Geschichte</div>
+        <div class="activity" draggable="true" data-when="nacht"><span class="em">😴</span>Schlafen</div>
+      </div>
     </div>
-    <p style="font-size:18px;">Du lebst immer im <b style="color:#f59e0b">Jetzt</b> — Gestern und Morgen sind nur in deinem Kopf!</p>
-    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+    <div class="drop-zones">
+      <div class="drop-zone" data-when="morgen"><span style="font-size:24px">🌅</span><div class="label">Morgen</div><div class="placed"></div></div>
+      <div class="drop-zone" data-when="vormittag"><span style="font-size:24px">☀️</span><div class="label">Vormittag</div><div class="placed"></div></div>
+      <div class="drop-zone" data-when="mittag"><span style="font-size:24px">🌞</span><div class="label">Mittag</div><div class="placed"></div></div>
+      <div class="drop-zone" data-when="abend"><span style="font-size:24px">🌇</span><div class="label">Abend</div><div class="placed"></div></div>
+      <div class="drop-zone" data-when="nacht"><span style="font-size:24px">🌙</span><div class="label">Nacht</div><div class="placed"></div></div>
+    </div>
+    <div class="info-box" id="dayMsg">👆 Zieh sie zur richtigen Tageszeit!</div>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
   </section>
 
   <section class="scene" data-scene="3">
-    <h2>Zeit in Stücken</h2>
-    <p>Wir teilen die Zeit in <b>Schubladen</b> auf:</p>
-    <div class="scope-row">
-      <div class="scope"><span class="e">⚡</span><p style="margin:0;font-weight:bold">Sekunde</p><p style="margin:0;font-size:13px">Blink mit den Augen!</p></div>
-      <div class="scope"><span class="e">⏱️</span><p style="margin:0;font-weight:bold">Minute</p><p style="margin:0;font-size:13px">60 Sekunden</p></div>
-      <div class="scope"><span class="e">⏰</span><p style="margin:0;font-weight:bold">Stunde</p><p style="margin:0;font-size:13px">60 Minuten</p></div>
-      <div class="scope"><span class="e">📅</span><p style="margin:0;font-weight:bold">Tag</p><p style="margin:0;font-size:13px">24 Stunden</p></div>
-      <div class="scope"><span class="e">🌍</span><p style="margin:0;font-weight:bold">Jahr</p><p style="margin:0;font-size:13px">365 Tage!</p></div>
+    <h2>Wie lange dauert das?</h2>
+    <p style="font-size:16px;">Sortiere von <b>kurz</b> nach <b>lang</b> — kürzeste links!</p>
+    <div class="duration-cards" id="durPool">
+      <div class="dur-card" draggable="true" data-dur="0"><span class="em">👁️</span>Augen blinzeln</div>
+      <div class="dur-card" draggable="true" data-dur="1"><span class="em">🦷</span>Zähne putzen (3 Min)</div>
+      <div class="dur-card" draggable="true" data-dur="2"><span class="em">🍿</span>Film schauen (2 Std)</div>
+      <div class="dur-card" draggable="true" data-dur="3"><span class="em">🌅</span>Ein ganzer Tag</div>
+      <div class="dur-card" draggable="true" data-dur="4"><span class="em">🌳</span>Ein Jahr</div>
     </div>
-    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+    <div class="timeline-slots">
+      <div class="dur-slot" data-dur="0">⚡ Sekunde</div>
+      <div class="dur-slot" data-dur="1">⏱️ Minuten</div>
+      <div class="dur-slot" data-dur="2">⏰ Stunden</div>
+      <div class="dur-slot" data-dur="3">📅 Tag</div>
+      <div class="dur-slot" data-dur="4">🌍 Jahr</div>
+    </div>
+    <div class="info-box" id="durMsg">⏳ Sortier von der kürzesten zur längsten Zeit!</div>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
   </section>
 
   <section class="scene" data-scene="4">
+    <h2>Gestern — Heute — Morgen</h2>
+    <div class="three-times">
+      <div class="t-card past"><span class="e">👈</span><h3>Gestern</h3><p style="margin:0;font-size:14px">War schon. Erinnerungen!</p></div>
+      <div class="t-card now"><span class="e">⭐</span><h3>JETZT!</h3><p style="margin:0;font-size:14px">In diesem Moment!</p></div>
+      <div class="t-card future"><span class="e">👉</span><h3>Morgen</h3><p style="margin:0;font-size:14px">Kommt noch. Vorfreude!</p></div>
+    </div>
+    <p style="font-size:17px;max-width:700px">Du lebst immer im <b style="color:#f59e0b">Jetzt</b> — Gestern und Morgen sind nur in deinem Kopf! 🧠</p>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <h2>Der Kalender 📅</h2>
+    <p style="font-size:16px;">7 Tage = eine Woche. Klick auf Tage!</p>
+    <div class="calendar">
+      <div class="month-nav">
+        <button onclick="changeMonth(-1)">◀</button>
+        <span class="month-title" id="monthTitle">Mai 2025</span>
+        <button onclick="changeMonth(1)">▶</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="info-box" id="calMsg">📅 Klick einen Tag — was machst du heute?</div>
+    <button class="orange" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="6">
+    <h2>Zeit-Bausteine</h2>
+    <p style="font-size:16px;">Klick auf jeden Stein und hör, was er bedeutet:</p>
+    <div class="scope-row">
+      <div class="scope" onclick="explain('sek')"><span class="e">⚡</span><p style="margin:0;font-weight:bold">Sekunde</p><p style="margin:0;font-size:12px">Ein Blinzeln!</p></div>
+      <div class="scope" onclick="explain('min')"><span class="e">⏱️</span><p style="margin:0;font-weight:bold">Minute</p><p style="margin:0;font-size:12px">60 Sekunden</p></div>
+      <div class="scope" onclick="explain('std')"><span class="e">⏰</span><p style="margin:0;font-weight:bold">Stunde</p><p style="margin:0;font-size:12px">60 Minuten</p></div>
+      <div class="scope" onclick="explain('tag')"><span class="e">📅</span><p style="margin:0;font-weight:bold">Tag</p><p style="margin:0;font-size:12px">24 Stunden</p></div>
+      <div class="scope" onclick="explain('woche')"><span class="e">📆</span><p style="margin:0;font-weight:bold">Woche</p><p style="margin:0;font-size:12px">7 Tage</p></div>
+      <div class="scope" onclick="explain('monat')"><span class="e">🌙</span><p style="margin:0;font-weight:bold">Monat</p><p style="margin:0;font-size:12px">~30 Tage</p></div>
+      <div class="scope" onclick="explain('jahr')"><span class="e">🌍</span><p style="margin:0;font-weight:bold">Jahr</p><p style="margin:0;font-size:12px">365 Tage!</p></div>
+    </div>
+    <div class="info-box" id="scopeMsg">👆 Klick einen Zeit-Stein!</div>
+    <button class="orange" onclick="engine.next()">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="7">
     <div class="big-emoji pulse">⏳✨</div>
     <h2>Zeit ist Geschenk!</h2>
-    <p>Du hast nur <b>dein Jetzt</b>. Mach es schön — lach, spiel, kuschel.<br/>Genieß jeden Moment — das ist das echte Geheimnis der Zeit! 💕</p>
+    <p style="font-size:18px;line-height:1.5;">
+      Zeit kann man nicht anhalten, nicht zurückspulen.<br/>
+      Aber du kannst sie <b style="color:#d81b60">schön machen</b>!<br/>
+      Mit Lachen, Spielen, Lernen — und Liebhaben. 💕
+    </p>
     <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
   </section>
 </div>
@@ -189,13 +458,235 @@
 <script src="../../shared/engine.js"></script>
 <script>
 const SCENE_TEXTS = [
-  "Gestern, heute, morgen. Bald, gleich, vor langer Zeit. Was ist diese Sache, die Zeit?",
-  "Zeit kann man nicht sehen oder anfassen. Aber sie geht immer in eine Richtung: nach vorne! Die Uhr zeigt uns die Zeit, Sekunde für Sekunde, Stunde für Stunde.",
-  "Gestern, heute, morgen! Gestern war schon, das sind deine Erinnerungen. Morgen kommt noch, da kannst du dich drauf freuen! Und im Jetzt, in diesem Moment, lebst du. Du lebst immer im Jetzt, Gestern und Morgen sind nur in deinem Kopf!",
-  "Wir teilen die Zeit in Stücke auf: Eine Sekunde, das ist ein Blinzeln. Sechzig Sekunden sind eine Minute. Sechzig Minuten sind eine Stunde. Vierundzwanzig Stunden sind ein Tag. Und dreihundertfünfundsechzig Tage sind ein ganzes Jahr!",
-  "Zeit ist ein Geschenk! Du hast nur dein Jetzt. Mach es schön: lach, spiel, kuschel. Genieß jeden Moment, das ist das echte Geheimnis der Zeit!"
+  "Gestern, heute, morgen. Bald, gleich, vor langer Zeit. Was ist diese geheimnisvolle Sache?",
+  "Die Uhr! Klick auf eine Uhrzeit oder zieh die Zeiger an der großen Uhr! Schau, wie sie sich bewegt.",
+  "Was passiert wann? Zieh jede Aktivität zur richtigen Tageszeit. Frühstück gehört zum Morgen, Schlafen zur Nacht!",
+  "Wie lange dauert das? Sortiere von der kürzesten zur längsten Zeit. Augen blinzeln ist nur eine Sekunde, ein Jahr dauert ganz lang!",
+  "Gestern, heute, morgen! Gestern war schon, das sind deine Erinnerungen. Morgen kommt noch. Und im Jetzt, in diesem Moment, lebst du!",
+  "Der Kalender! Sieben Tage sind eine Woche. Klick auf Tage, und schau, was du an dem Tag machst!",
+  "Zeit-Bausteine! Klick auf jeden Stein und hör, was er bedeutet. Von der kurzen Sekunde bis zum ganzen Jahr!",
+  "Zeit ist ein Geschenk! Sie geht immer weiter. Aber du kannst sie schön machen, mit Lachen, Spielen, Lernen und Liebhaben!"
 ];
-const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS });
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: (i) => { if (i === 1) setClock(12, 0); if (i === 5) buildCalendar(); } });
+
+// === Interactive clock ===
+let curHour = 12, curMin = 0;
+function setClock(h, m) {
+  curHour = h; curMin = m;
+  // 12-hour for analog
+  const analogH = h % 12;
+  const hourAngle = (analogH * 30 + m * 0.5);
+  const minAngle = m * 6;
+  document.getElementById('handHour').setAttribute('transform', `rotate(${hourAngle} 200 200)`);
+  document.getElementById('handMin').setAttribute('transform', `rotate(${minAngle} 200 200)`);
+  document.getElementById('digital').textContent =
+    String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+// Drag hands
+let dragHand = null;
+document.querySelectorAll('.hand').forEach(h => {
+  h.addEventListener('pointerdown', (e) => { dragHand = h; h.setPointerCapture(e.pointerId); });
+  h.addEventListener('pointerup', () => { dragHand = null; });
+  h.addEventListener('pointermove', (e) => {
+    if (dragHand !== h) return;
+    const svg = h.closest('svg');
+    const r = svg.getBoundingClientRect();
+    const cx = r.left + r.width/2;
+    const cy = r.top + r.height/2;
+    const angle = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI + 90;
+    const normalized = (angle + 360) % 360;
+    if (h.id === 'handMin') {
+      curMin = Math.round(normalized / 6) % 60;
+    } else {
+      curHour = Math.floor(normalized / 30) % 12 || 12;
+    }
+    setClock(curHour, curMin);
+  });
+});
+
+// === Day timeline drag-drop ===
+let draggedAct = null;
+document.querySelectorAll('.activity').forEach(a => {
+  a.addEventListener('dragstart', (e) => { draggedAct = a; a.classList.add('dragging'); });
+  a.addEventListener('dragend', () => { draggedAct?.classList.remove('dragging'); draggedAct = null; });
+  a.addEventListener('pointerdown', () => { draggedAct = a; });
+});
+document.querySelectorAll('.drop-zone').forEach(z => {
+  z.addEventListener('dragover', (e) => { e.preventDefault(); z.classList.add('over'); });
+  z.addEventListener('dragleave', () => z.classList.remove('over'));
+  z.addEventListener('drop', (e) => {
+    e.preventDefault();
+    z.classList.remove('over');
+    if (!draggedAct) return;
+    handleDayDrop(z, draggedAct);
+  });
+  // Click variant for touch
+  z.addEventListener('click', () => {
+    if (draggedAct) handleDayDrop(z, draggedAct);
+  });
+});
+function handleDayDrop(zone, act) {
+  if (act.dataset.when === zone.dataset.when) {
+    zone.classList.add('correct');
+    const slot = zone.querySelector('.placed');
+    slot.textContent = act.querySelector('.em').textContent;
+    act.remove();
+    chimeSfx();
+    document.getElementById('dayMsg').textContent = '✨ Genau! ' + (5 - document.querySelectorAll('#actPool .activity').length) + ' / 5';
+    if (document.querySelectorAll('#actPool .activity').length === 0) {
+      document.getElementById('dayMsg').textContent = '🎉 Super! Du kennst den Tag!';
+      winSfx();
+    }
+  } else {
+    zone.classList.add('wrong');
+    setTimeout(() => zone.classList.remove('wrong'), 500);
+    document.getElementById('dayMsg').textContent = '🙈 Hmm, da passt es nicht. Probier nochmal!';
+    nopeSfx();
+  }
+}
+
+// === Duration sort drag-drop ===
+let draggedDur = null;
+document.querySelectorAll('.dur-card').forEach(d => {
+  d.addEventListener('dragstart', () => draggedDur = d);
+  d.addEventListener('dragend', () => draggedDur = null);
+  d.addEventListener('pointerdown', () => draggedDur = d);
+});
+document.querySelectorAll('.dur-slot').forEach(s => {
+  s.addEventListener('dragover', (e) => { e.preventDefault(); s.classList.add('over'); });
+  s.addEventListener('dragleave', () => s.classList.remove('over'));
+  s.addEventListener('drop', (e) => {
+    e.preventDefault();
+    s.classList.remove('over');
+    if (!draggedDur) return;
+    handleDurDrop(s, draggedDur);
+  });
+  s.addEventListener('click', () => { if (draggedDur) handleDurDrop(s, draggedDur); });
+});
+function handleDurDrop(slot, card) {
+  if (slot.classList.contains('filled')) return;
+  if (card.dataset.dur === slot.dataset.dur) {
+    slot.classList.add('filled');
+    slot.innerHTML = card.innerHTML;
+    card.remove();
+    chimeSfx();
+    document.getElementById('durMsg').textContent = '✨ Richtig!';
+    if (document.querySelectorAll('#durPool .dur-card').length === 0) {
+      document.getElementById('durMsg').textContent = '🏆 Alle sortiert! Du bist ein Zeit-Profi!';
+      winSfx();
+    }
+  } else {
+    slot.classList.add('over');
+    setTimeout(() => slot.classList.remove('over'), 300);
+    document.getElementById('durMsg').textContent = '🤔 Probier mal woanders!';
+    nopeSfx();
+  }
+}
+
+// === Calendar ===
+let calDate = new Date(2025, 4, 19); // May 2025
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DAYS_OF_WEEK = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const DAY_ACTIVITIES = ['🌅 Aufstehen', '🥐 Frühstück', '📚 Lesen', '🎨 Malen', '🧸 Spielen', '🍦 Eis essen', '🏞️ Park', '🛁 Baden', '📖 Geschichte', '🌟 Wünsche', '🐶 Spazieren', '🎈 Geburtstag', '🍰 Kuchen', '😴 Schlafen', '☀️ Sonnenbad', '⛹️ Sport', '🎂 Feier'];
+
+function buildCalendar() {
+  const year = calDate.getFullYear();
+  const month = calDate.getMonth();
+  document.getElementById('monthTitle').textContent = MONTHS[month] + ' ' + year;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  // Header row
+  DAYS_OF_WEEK.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-day header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+  const first = new Date(year, month, 1);
+  let startDay = first.getDay() - 1; // Mon=0
+  if (startDay < 0) startDay = 6;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let i = 0; i < startDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day';
+    empty.style.background = 'transparent';
+    grid.appendChild(empty);
+  }
+  const today = new Date();
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    cell.textContent = day;
+    const dow = new Date(year, month, day).getDay();
+    if (dow === 0 || dow === 6) cell.classList.add('weekend');
+    if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+      cell.classList.add('today');
+    }
+    cell.addEventListener('click', () => {
+      const wkName = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][new Date(year, month, day).getDay()];
+      const act = DAY_ACTIVITIES[(day * 7) % DAY_ACTIVITIES.length];
+      document.getElementById('calMsg').textContent = wkName + ', ' + day + '. ' + MONTHS[month] + ' — ' + act;
+      chimeSfx();
+    });
+    grid.appendChild(cell);
+  }
+}
+function changeMonth(d) {
+  calDate.setMonth(calDate.getMonth() + d);
+  buildCalendar();
+}
+
+// === Scope explain ===
+const SCOPE_EXPLAIN = {
+  sek: '⚡ Eine Sekunde ist so kurz wie ein Blinzeln. *Klick!*',
+  min: '⏱️ Eine Minute hat 60 Sekunden. Solange wartest du an der Ampel.',
+  std: '⏰ Eine Stunde hat 60 Minuten. Solange dauert ein Film fast!',
+  tag: '📅 Ein Tag hat 24 Stunden. Aufstehen, spielen, schlafen.',
+  woche: '📆 Eine Woche hat 7 Tage: Mo, Di, Mi, Do, Fr, Sa, So.',
+  monat: '🌙 Ein Monat hat etwa 30 Tage. Der Mond ändert sich einmal.',
+  jahr: '🌍 Ein Jahr hat 365 Tage. Da hat die Erde die Sonne einmal umkreist!'
+};
+function explain(k) {
+  document.getElementById('scopeMsg').textContent = SCOPE_EXPLAIN[k];
+  chimeSfx();
+}
+
+// === SFX ===
+function chimeSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'triangle'; o.frequency.value = 1200;
+    g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+    o.start(t); o.stop(t+0.32);
+  } catch(e){}
+}
+function nopeSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(160, t+0.2);
+    g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.22);
+    o.start(t); o.stop(t+0.24);
+  } catch(e){}
+}
+function winSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [523, 659, 784, 1047, 1319].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.22, t+i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.1+0.3);
+      o.start(t+i*0.1); o.stop(t+i*0.1+0.32);
+    });
+  } catch(e){}
+}
 </script>
 </body>
 </html>

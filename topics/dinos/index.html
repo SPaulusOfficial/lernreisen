@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dino-Park</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #7ec850 0%, #ffeaa7 50%, #ffd166 100%); }
+  h1, h2 { color: #1b5e20; text-shadow: 2px 2px 0 #fff; }
+
+  /* Dino pick */
+  .dino-row {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .dino-card {
+    background: rgba(255,255,255,0.92);
+    border: 5px solid transparent;
+    border-radius: 30px;
+    padding: 18px;
+    width: 170px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 18px rgba(27,94,32,0.2);
+  }
+  .dino-card:hover { transform: translateY(-10px) scale(1.06) rotate(-2deg); border-color: #f59e0b; }
+  .dino-card.chosen { border-color: #ffd700; background: #fffacd; box-shadow: 0 0 30px rgba(255,215,0,0.6); transform: scale(1.05); }
+  .dino-card .em { font-size: 100px; display: block; animation: dino-walk 3s ease-in-out infinite; }
+  .dino-card:nth-child(2) .em { animation-delay: 0.3s; }
+  .dino-card:nth-child(3) .em { animation-delay: 0.6s; }
+  .dino-card:nth-child(4) .em { animation-delay: 0.9s; }
+  @keyframes dino-walk {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-8px) rotate(3deg); }
+  }
+  .dino-card h3 { color: #1b5e20; margin: 4px 0; }
+
+  /* Feeding stage */
+  .feed-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(180deg, #b5e8ff 0%, #d4ffd6 60%, #7ec850 60%, #4a8030 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 8px 22px rgba(0,0,0,0.15);
+    touch-action: none;
+  }
+  .feed-dino {
+    position: absolute;
+    bottom: 60px;
+    right: 80px;
+    font-size: 140px;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.25));
+    user-select: none;
+    transition: transform 0.3s;
+  }
+  .feed-dino.chomp { animation: chomp 0.4s ease-out 2; }
+  @keyframes chomp {
+    0%, 100% { transform: scale(1) rotate(0); }
+    30%      { transform: scale(1.15) rotate(-8deg); }
+    60%      { transform: scale(0.95) rotate(5deg); }
+  }
+  .food-shelf {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: rgba(255,255,255,0.75);
+    padding: 10px;
+    border-radius: 18px;
+  }
+  .food {
+    font-size: 44px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    padding: 4px;
+    border-radius: 12px;
+  }
+  .food:hover { transform: scale(1.2) rotate(-6deg); }
+  .food.dragging { transform: scale(1.3); z-index: 100; cursor: grabbing; opacity: 0.85; }
+  .food.eaten { animation: food-eaten 0.4s ease-in forwards; }
+  @keyframes food-eaten {
+    0%   { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.3); opacity: 0; }
+  }
+  .belly {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.92);
+    padding: 8px 22px;
+    border-radius: 18px;
+    color: #1b5e20;
+    font-weight: bold;
+  }
+
+  /* Egg hunt */
+  .hunt-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(180deg, #87ceeb 0%, #b5e8ff 40%, #4a8030 40%, #2c5a1a 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.15), 0 8px 22px rgba(0,0,0,0.15);
+  }
+  .bush {
+    position: absolute;
+    font-size: 60px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .hidden-egg {
+    position: absolute;
+    font-size: 42px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    opacity: 0.55;
+  }
+  .hidden-egg:hover { transform: scale(1.2); opacity: 1; }
+  .hidden-egg.found {
+    animation: egg-found 0.8s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  @keyframes egg-found {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(2) rotate(360deg); filter: drop-shadow(0 0 20px gold); }
+    100% { transform: scale(0.6) translateY(-200px); opacity: 0; }
+  }
+  .basket {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.92);
+    padding: 8px 22px;
+    border-radius: 18px;
+    color: #5a3a10;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  /* Roar concert */
+  .concert-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: linear-gradient(180deg, #ff7e5f 0%, #feb47b 50%, #4a8030 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 14px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.15), 0 8px 22px rgba(0,0,0,0.15);
+  }
+  .stage-dino {
+    position: absolute;
+    bottom: 20px;
+    font-size: 100px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2));
+  }
+  .stage-dino:hover { transform: scale(1.1); }
+  .stage-dino.roaring { animation: roar 0.5s ease-in-out 2; }
+  @keyframes roar {
+    0%, 100% { transform: scale(1) rotate(0); }
+    25%      { transform: scale(1.25) rotate(-10deg); }
+    75%      { transform: scale(1.25) rotate(10deg); }
+  }
+  .roar-text {
+    position: absolute;
+    font-size: 40px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 0 #c0392b;
+    pointer-events: none;
+    animation: roar-text 1.2s ease-out forwards;
+  }
+  @keyframes roar-text {
+    0%   { transform: scale(0); opacity: 0; }
+    30%  { transform: scale(1.4); opacity: 1; }
+    100% { transform: scale(1) translateY(-80px); opacity: 0; }
+  }
+
+  .stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat {
+    background: rgba(255,255,255,0.92);
+    padding: 8px 18px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #1b5e20;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🦖🦕</div>
+    <h1>Dino-Park</h1>
+    <p>Willkommen im Dino-Park! 🌿<br/>Wähle einen Dino, füttere ihn, finde Eier und hör ihn brüllen!</p>
+    <button class="green" onclick="engine.next()">Los! 🦖</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wähle deinen Dino!</h2>
+    <div class="dino-row" id="dinoRow">
+      <div class="dino-card" data-emoji="🦖" data-name="T-Rex"><span class="em">🦖</span><h3>T-Rex</h3></div>
+      <div class="dino-card" data-emoji="🦕" data-name="Lang-Hals"><span class="em">🦕</span><h3>Lang-Hals</h3></div>
+      <div class="dino-card" data-emoji="🐉" data-name="Drache"><span class="em">🐉</span><h3>Drache</h3></div>
+      <div class="dino-card" data-emoji="🐊" data-name="Croco"><span class="em">🐊</span><h3>Croco</h3></div>
+    </div>
+    <button class="green" id="dinoNext" style="display:none" onclick="engine.next()">Zum Füttern! 🍃</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Füttere deinen Dino!</h2>
+    <p style="font-size:18px;">Zieh das Essen zum Dino's Mund — oder klick einfach drauf!</p>
+    <div class="feed-stage" id="feedStage">
+      <div class="food-shelf">
+        <span class="food" data-food="🥬">🥬</span>
+        <span class="food" data-food="🌿">🌿</span>
+        <span class="food" data-food="🍎">🍎</span>
+        <span class="food" data-food="🥦">🥦</span>
+        <span class="food" data-food="🍖">🍖</span>
+        <span class="food" data-food="🐟">🐟</span>
+        <span class="food" data-food="🥕">🥕</span>
+        <span class="food" data-food="🍌">🍌</span>
+      </div>
+      <span class="feed-dino" id="feedDino">🦖</span>
+      <div class="belly">🍴 Gefüttert: <span id="fedCount">0</span></div>
+    </div>
+    <button class="green" onclick="engine.next()" style="margin-top:8px">Eier suchen! 🥚</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Find die Dino-Eier!</h2>
+    <p style="font-size:18px;">6 Eier sind versteckt — klick sie!</p>
+    <div class="hunt-stage" id="huntStage"></div>
+    <div class="basket">🥚 Gefunden: <span id="eggCount">0</span> / 6</div>
+    <button class="green" id="huntNext" style="display:none;margin-top:8px" onclick="engine.next()">Zum Brüll-Konzert! 🔊</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Brüll-Konzert! 🔊</h2>
+    <p style="font-size:18px;">Klick jeden Dino — und hör ihn brüllen!</p>
+    <div class="concert-stage" id="concertStage">
+      <span class="stage-dino" style="left:8%" data-roar="low">🦖</span>
+      <span class="stage-dino" style="left:28%" data-roar="mid">🦕</span>
+      <span class="stage-dino" style="left:50%" data-roar="high">🐉</span>
+      <span class="stage-dino" style="right:18%" data-roar="grunt">🐊</span>
+      <span class="stage-dino" style="right:2%;font-size:80px" data-roar="squeak">🦖</span>
+    </div>
+    <div class="stats">
+      <span class="stat">🔊 Gebrüllt: <span id="roarCount">0</span></span>
+    </div>
+    <button class="green" onclick="engine.next()" style="margin-top:8px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">🦖🌟</div>
+    <h2>Du bist Dino-Freund!</h2>
+    <p>Alle Dinos haben dich lieb. 💚<br/>Komm jederzeit wieder im Dino-Park vorbei!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Willkommen im Dino-Park! Wähle einen Dino, füttere ihn, finde Eier und hör ihn brüllen!",
+  "Wähle deinen Dino! T-Rex, Lang-Hals, Drache oder Croco. Welcher gefällt dir?",
+  "Füttere deinen Dino! Zieh das Essen zum Dino oder klick einfach drauf!",
+  "Find die Dino-Eier! Sechs Eier sind im Park versteckt. Such sie alle!",
+  "Brüll-Konzert! Klick jeden Dino, und hör ihn brüllen!",
+  "Du bist Dino-Freund! Alle Dinos haben dich lieb. Komm jederzeit wieder!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: handleScene });
+
+let chosenDino = '🦖';
+function handleScene(idx) {
+  if (idx === 2) { document.getElementById('feedDino').textContent = chosenDino; resetFeed(); }
+  if (idx === 3) buildHunt();
+}
+
+// Dino pick
+document.querySelectorAll('.dino-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.dino-card').forEach(c => c.classList.remove('chosen'));
+    card.classList.add('chosen');
+    chosenDino = card.dataset.emoji;
+    document.getElementById('dinoNext').style.display = 'inline-block';
+    roar('mid');
+  });
+});
+
+// Feed
+let fedCount = 0;
+function resetFeed() {
+  fedCount = 0;
+  document.getElementById('fedCount').textContent = '0';
+  document.querySelectorAll('.food').forEach(f => { f.classList.remove('eaten'); f.style.opacity = '1'; });
+}
+document.querySelectorAll('.food').forEach(food => {
+  food.addEventListener('click', () => eat(food));
+  let dragging = false, startX, startY;
+  food.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    food.classList.add('dragging');
+    food.setPointerCapture(e.pointerId);
+    startX = e.clientX; startY = e.clientY;
+  });
+  food.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    food.style.position = 'fixed';
+    food.style.left = (e.clientX - 22) + 'px';
+    food.style.top = (e.clientY - 22) + 'px';
+  });
+  food.addEventListener('pointerup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    food.classList.remove('dragging');
+    const dino = document.getElementById('feedDino').getBoundingClientRect();
+    if (e.clientX >= dino.left && e.clientX <= dino.right && e.clientY >= dino.top && e.clientY <= dino.bottom) {
+      eat(food);
+    } else {
+      food.style.position = '';
+      food.style.left = '';
+      food.style.top = '';
+    }
+  });
+});
+function eat(food) {
+  if (food.classList.contains('eaten')) return;
+  food.classList.add('eaten');
+  food.style.position = '';
+  food.style.left = '';
+  food.style.top = '';
+  const dino = document.getElementById('feedDino');
+  dino.classList.remove('chomp');
+  void dino.offsetWidth;
+  dino.classList.add('chomp');
+  fedCount++;
+  document.getElementById('fedCount').textContent = String(fedCount);
+  // chomp sound
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine'; o.frequency.setValueAtTime(200, t); o.frequency.exponentialRampToValueAtTime(80, t+0.18);
+    g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+    o.start(t); o.stop(t+0.22);
+  } catch(e){}
+}
+
+// Egg hunt
+function buildHunt() {
+  const stage = document.getElementById('huntStage');
+  stage.innerHTML = '';
+  // Bushes
+  for (let i = 0; i < 6; i++) {
+    const b = document.createElement('span');
+    b.className = 'bush';
+    b.textContent = ['🌳','🌲','🌴','🌵'][i%4];
+    b.style.left = (10 + Math.random()*80) + '%';
+    b.style.bottom = (10 + Math.random()*30) + '%';
+    b.style.fontSize = (50 + Math.random()*40) + 'px';
+    stage.appendChild(b);
+  }
+  // 6 hidden eggs
+  let found = 0;
+  document.getElementById('eggCount').textContent = '0';
+  document.getElementById('huntNext').style.display = 'none';
+  for (let i = 0; i < 6; i++) {
+    const e = document.createElement('span');
+    e.className = 'hidden-egg';
+    e.textContent = ['🥚','🦴','🪨'][i%3];
+    e.style.left = (5 + Math.random()*88) + '%';
+    e.style.bottom = (8 + Math.random()*50) + '%';
+    e.addEventListener('click', () => {
+      if (e.classList.contains('found')) return;
+      e.classList.add('found');
+      found++;
+      document.getElementById('eggCount').textContent = String(found);
+      try {
+        const c = new (window.AudioContext||window.webkitAudioContext)();
+        const t = c.currentTime;
+        [600, 900].forEach((f, i) => {
+          const o = c.createOscillator(); const g = c.createGain();
+          o.connect(g); g.connect(c.destination);
+          o.type = 'triangle'; o.frequency.value = f;
+          g.gain.setValueAtTime(0.25, t+i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.08+0.2);
+          o.start(t+i*0.08); o.stop(t+i*0.08+0.22);
+        });
+      } catch(e){}
+      if (found >= 6) {
+        document.getElementById('huntNext').style.display = 'inline-block';
+      }
+    });
+    stage.appendChild(e);
+  }
+}
+
+// Roar concert
+let roarCount = 0;
+document.querySelectorAll('.stage-dino').forEach(d => {
+  d.addEventListener('click', () => {
+    d.classList.remove('roaring');
+    void d.offsetWidth;
+    d.classList.add('roaring');
+    roar(d.dataset.roar);
+    // Bubble
+    const stage = document.getElementById('concertStage');
+    const r = d.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    const text = document.createElement('span');
+    text.className = 'roar-text';
+    text.textContent = ['ROAR!','GRRR!','RAAAH!','BRÜLL!'][Math.floor(Math.random()*4)];
+    text.style.left = (r.left + r.width/2 - sr.left - 60) + 'px';
+    text.style.top = (r.top - sr.top - 20) + 'px';
+    stage.appendChild(text);
+    setTimeout(() => text.remove(), 1300);
+    roarCount++;
+    document.getElementById('roarCount').textContent = String(roarCount);
+  });
+});
+
+function roar(type) {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sawtooth';
+    let freq = 200;
+    if (type === 'low') freq = 80;
+    else if (type === 'mid') freq = 150;
+    else if (type === 'high') freq = 320;
+    else if (type === 'grunt') freq = 100;
+    else if (type === 'squeak') freq = 600;
+    o.frequency.setValueAtTime(freq, t);
+    o.frequency.exponentialRampToValueAtTime(freq*0.4, t+0.6);
+    g.gain.setValueAtTime(0.35, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+0.7);
+    // Low-pass for growl
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = freq*4;
+    o.disconnect(); o.connect(f); f.connect(g);
+    o.start(t); o.stop(t+0.72);
+  } catch(e){}
+}
+</script>
+</body>
+</html>

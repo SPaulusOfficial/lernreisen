@@ -9,52 +9,134 @@
   html, body {
     min-height: 100%;
     font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
-    background: linear-gradient(135deg, #ffd6e8 0%, #b5e8ff 50%, #d4ffd6 100%);
     color: #2a2a4a;
+    transition: background 0.6s ease;
   }
   body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 36px 20px 60px;
+    padding: 28px 16px 60px;
     min-height: 100vh;
+    background: linear-gradient(135deg, #ffd6e8 0%, #b5e8ff 50%, #d4ffd6 100%);
   }
+  body.spiele-mode {
+    background: linear-gradient(135deg, #ff6b9d 0%, #ffd166 50%, #74b9ff 100%);
+  }
+  body.wissen-mode {
+    background: linear-gradient(135deg, #b5e8ff 0%, #d4ffd6 50%, #fff8c8 100%);
+  }
+
   header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 16px;
   }
   h1 {
-    font-size: clamp(36px, 6vw, 72px);
+    font-size: clamp(38px, 7vw, 80px);
     color: #6a1b9a;
-    text-shadow: 3px 3px 0 #fff;
-    margin-bottom: 12px;
+    text-shadow: 3px 3px 0 #fff, 6px 6px 0 rgba(106,27,154,0.2);
+    margin-bottom: 10px;
+    animation: title-wobble 3s ease-in-out infinite;
+  }
+  @keyframes title-wobble {
+    0%, 100% { transform: rotate(-1deg); }
+    50%      { transform: rotate(1deg); }
   }
   .subtitle {
     font-size: clamp(18px, 2.5vw, 26px);
     color: #d81b60;
   }
-  .topic-section {
-    width: 100%;
-    max-width: 1300px;
-    margin-bottom: 30px;
-  }
-  .section-title {
-    font-size: clamp(20px, 2.4vw, 28px);
-    color: #6a1b9a;
-    margin-bottom: 14px;
-    padding-left: 8px;
+
+  /* === Big switcher === */
+  .switcher {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 18px;
+    margin: 18px 0 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 720px;
   }
+  .switch-btn {
+    flex: 1;
+    min-width: 220px;
+    background: linear-gradient(135deg, #fff, #f0e6f7);
+    border: 6px solid #6a1b9a;
+    color: #6a1b9a;
+    padding: 24px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: clamp(20px, 4vw, 28px);
+    box-shadow: 0 10px 0 rgba(106,27,154,0.3), 0 14px 20px rgba(0,0,0,0.18);
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .switch-btn .icon {
+    font-size: clamp(50px, 10vw, 80px);
+    display: block;
+    line-height: 1;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
+  }
+  .switch-btn:hover { transform: translateY(-4px) scale(1.03); }
+  .switch-btn:active { transform: translateY(6px); box-shadow: 0 4px 0 rgba(106,27,154,0.3); }
+  .switch-btn.spiele.active {
+    background: linear-gradient(135deg, #ff6b9d, #ec407a);
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 10px 0 #8e1f4e, 0 0 30px rgba(255,107,157,0.6);
+    transform: scale(1.05);
+  }
+  .switch-btn.wissen.active {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 10px 0 #074a87, 0 0 30px rgba(116,185,255,0.7);
+    transform: scale(1.05);
+  }
+
+  /* === Tag filter (sub-categories) === */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 18px;
+    max-width: 1100px;
+  }
+  .filter-btn {
+    background: rgba(255,255,255,0.85);
+    border: 3px solid #6a1b9a;
+    color: #6a1b9a;
+    padding: 8px 18px;
+    border-radius: 22px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 15px;
+    transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .filter-btn:hover { transform: translateY(-2px); }
+  .filter-btn.active {
+    background: linear-gradient(135deg, #6a1b9a, #d81b60);
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 4px 0 #3d0a5a;
+  }
+
+  /* === Topic grid === */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 22px;
     width: 100%;
+    max-width: 1280px;
   }
   .card {
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.9);
     border-radius: 30px;
     padding: 22px 16px;
     text-align: center;
@@ -66,47 +148,45 @@
     border: 4px solid transparent;
     position: relative;
     overflow: hidden;
+    animation: card-in 0.5s cubic-bezier(.34,1.56,.64,1) backwards;
   }
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.6) 50%, transparent 70%);
-    transform: translateX(-120%);
-    transition: transform 0.7s cubic-bezier(.45,.05,.55,.95);
-    pointer-events: none;
+  .card:nth-child(2) { animation-delay: 0.05s; }
+  .card:nth-child(3) { animation-delay: 0.1s; }
+  .card:nth-child(4) { animation-delay: 0.15s; }
+  .card:nth-child(5) { animation-delay: 0.2s; }
+  .card:nth-child(6) { animation-delay: 0.25s; }
+  .card:nth-child(7) { animation-delay: 0.3s; }
+  .card:nth-child(8) { animation-delay: 0.35s; }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .card:hover {
     transform: translateY(-10px) scale(1.03) rotate(-1deg);
     box-shadow: 0 18px 0 rgba(106,27,154,0.18), 0 22px 32px rgba(0,0,0,0.18);
     border-color: #ff6b9d;
   }
-  .card:hover::before { transform: translateX(120%); }
   .card-emoji {
-    font-size: 72px;
+    font-size: 80px;
     line-height: 1;
     margin-bottom: 10px;
     display: block;
-    animation: floaty 3.4s cubic-bezier(.45,.05,.55,.95) infinite;
+    animation: floaty 3.4s ease-in-out infinite;
     filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
     transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
   }
   .card:hover .card-emoji {
-    transform: scale(1.15) rotate(-8deg);
+    transform: scale(1.18) rotate(-8deg);
     filter: drop-shadow(0 10px 18px rgba(0,0,0,0.25));
   }
   .card:nth-child(2n) .card-emoji { animation-delay: 0.4s; }
   .card:nth-child(3n) .card-emoji { animation-delay: 0.8s; }
-  .card:nth-child(4n) .card-emoji { animation-delay: 1.2s; }
   @keyframes floaty {
-    0%   { transform: translateY(0) rotate(-2deg); }
-    25%  { transform: translateY(-6px) rotate(1deg); }
-    50%  { transform: translateY(-12px) rotate(2deg); }
-    75%  { transform: translateY(-6px) rotate(-1deg); }
-    100% { transform: translateY(0) rotate(-2deg); }
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-12px) rotate(2deg); }
   }
   .card h2 {
-    font-size: clamp(18px, 2.2vw, 24px);
+    font-size: clamp(18px, 2.4vw, 24px);
     color: #6a1b9a;
     margin-bottom: 6px;
   }
@@ -115,6 +195,29 @@
     color: #2a2a4a;
     line-height: 1.35;
   }
+  .card .tag {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    background: #6a1b9a;
+  }
+  .card[data-tag="game"]    .tag { background: #ec407a; }
+  .card[data-tag="body"]    .tag { background: #ff6b9d; }
+  .card[data-tag="world"]   .tag { background: #74b9ff; }
+  .card[data-tag="nature"]  .tag { background: #00b894; }
+  .card[data-tag="emo"]     .tag { background: #d6a2ff; color: #3d0a5a; }
+  .card[data-tag="abc"]     .tag { background: #f59e0b; }
+  .card[data-tag="cam"]     .tag { background: #6a1b9a; }
+  .card[data-tag="story"]   .tag { background: #5d4e8a; }
+
+  .card[data-cat="spiele"]  { border-top: 8px solid #ec407a; }
+  .card[data-cat="wissen"]  { border-top: 8px solid #74b9ff; }
+  .card.hide { display: none; }
+
   footer {
     margin-top: 40px;
     font-size: 16px;
@@ -122,226 +225,197 @@
     opacity: 0.7;
     text-align: center;
   }
-  .stars-bg {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: -1;
-    overflow: hidden;
+
+  @media (max-width: 600px) {
+    .switch-btn { min-width: 140px; padding: 18px 12px; }
+    h1 { font-size: 32px; }
+    .grid { gap: 14px; }
   }
-  .stars-bg span {
-    position: absolute;
-    font-size: 28px;
-    opacity: 0.4;
-    animation: twinkle 3s ease-in-out infinite, drift-bg 14s ease-in-out infinite;
-    filter: drop-shadow(0 0 8px rgba(255,235,80,0.5));
-  }
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.4; transform: scale(1) rotate(0); }
-    50%      { opacity: 0.85; transform: scale(1.25) rotate(20deg); }
-  }
-  @keyframes drift-bg {
-    0%, 100% { margin-left: 0; }
-    50%      { margin-left: 16px; }
-  }
-  /* Header & section titles get a soft entrance */
-  header {
-    animation: header-enter 0.9s cubic-bezier(.22,1,.36,1) backwards;
-  }
-  @keyframes header-enter {
-    from { opacity: 0; transform: translateY(-20px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  h1 {
-    animation: title-bob 4s ease-in-out 0.9s infinite;
-  }
-  @keyframes title-bob {
-    0%, 100% { transform: translateY(0) rotate(-1deg); }
-    50%      { transform: translateY(-6px) rotate(1deg); }
-  }
-  .topic-section {
-    animation: section-rise 0.8s cubic-bezier(.22,1,.36,1) backwards;
-  }
-  .topic-section:nth-child(2) { animation-delay: 0.1s; }
-  .topic-section:nth-child(3) { animation-delay: 0.2s; }
-  .topic-section:nth-child(4) { animation-delay: 0.3s; }
-  .topic-section:nth-child(5) { animation-delay: 0.4s; }
-  .topic-section:nth-child(6) { animation-delay: 0.5s; }
-  @keyframes section-rise {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.001s !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.05s !important;
-    }
-  }
-  /* Category color accents */
-  .cat-game     { border-top: 8px solid #00b894; }
-  .cat-body     { border-top: 8px solid #ff6b9d; }
-  .cat-world    { border-top: 8px solid #74b9ff; }
-  .cat-nature   { border-top: 8px solid #55efc4; }
-  .cat-feelings { border-top: 8px solid #d6a2ff; }
 </style>
 </head>
 <body>
 
-<div class="stars-bg">
-  <span style="top:8%;left:5%">⭐</span>
-  <span style="top:15%;right:10%;animation-delay:0.5s">✨</span>
-  <span style="top:50%;left:3%;animation-delay:1s">🌟</span>
-  <span style="top:70%;right:5%;animation-delay:0.3s">⭐</span>
-  <span style="bottom:10%;left:50%;animation-delay:0.7s">✨</span>
-  <span style="top:35%;left:50%;animation-delay:1.2s">🌟</span>
-  <span style="bottom:30%;right:25%;animation-delay:1.5s">⭐</span>
-</div>
-
 <header>
   <h1>🌟 Lern-Reisen 🌟</h1>
-  <p class="subtitle">59 Abenteuer warten auf dich!</p>
+  <p class="subtitle">Was möchtest du heute?</p>
 </header>
 
-<div class="topic-section">
-  <h3 class="section-title">👨‍👩‍👧 Familie & Anfänge</h3>
-  <div class="grid">
-    <a class="card cat-feelings" href="topics/vorfahren/index.html"><span class="card-emoji">🌳</span><h2>Woher kommen Eltern?</h2><p>Bau deinen Familienbaum — bis zu den Vorfahren!</p></a>
-    <a class="card cat-feelings" href="topics/geburt/index.html"><span class="card-emoji">🤰</span><h2>Wie funktioniert eine Geburt?</h2><p>Vom Wellen-Bauch bis zum ersten Schrei.</p></a>
-  </div>
+<!-- Big switcher -->
+<div class="switcher">
+  <button class="switch-btn spiele active" onclick="setMode('spiele')">
+    <span class="icon">🎮</span>
+    SPIELEN
+  </button>
+  <button class="switch-btn wissen" onclick="setMode('wissen')">
+    <span class="icon">🧠</span>
+    LERNEN
+  </button>
 </div>
 
-<div class="topic-section">
-  <h3 class="section-title">🏠 Welt der Materialien</h3>
-  <div class="grid">
-    <a class="card cat-nature" href="topics/haus-bauen/index.html"><span class="card-emoji">🏗️</span><h2>Woher kommt ein Haus?</h2><p>Holz, Stein, Glas — und du baust selbst!</p></a>
-    <a class="card cat-nature" href="topics/steine/index.html"><span class="card-emoji">🪨</span><h2>Woher kommen Steine?</h2><p>3 Arten + Steinbruch zum Anklicken.</p></a>
-    <a class="card cat-world" href="topics/schatten/index.html"><span class="card-emoji">👻</span><h2>Wo kommen Schatten her?</h2><p>Schieb die Sonne — schau den Schatten!</p></a>
-  </div>
-</div>
+<!-- Sub-filter -->
+<div class="filter-row" id="filterRow"></div>
 
-<div class="topic-section">
-  <h3 class="section-title">📷 Kamera & Live-Magie</h3>
-  <div class="grid">
-    <a class="card cat-world" href="topics/kamera/index.html"><span class="card-emoji">📷</span><h2>Wie funktioniert eine Kamera?</h2><p>Lochkamera, Linse, Sensor — mit Live-Filtern!</p></a>
-    <a class="card cat-world" href="topics/magie-spiegel/index.html"><span class="card-emoji">🪞</span><h2>Magie-Spiegel</h2><p>8 verzaubernde Effekte: Welle, Pixel, Kaleidoskop…</p></a>
-    <a class="card cat-feelings" href="topics/selfie-studio/index.html"><span class="card-emoji">📸</span><h2>Selfie-Studio</h2><p>14 Sticker ziehen, Foto schießen, speichern.</p></a>
-    <a class="card cat-world" href="topics/farben-detektiv/index.html"><span class="card-emoji">🔍</span><h2>Farben-Detektiv</h2><p>Halt was buntes vor die Kamera — sie sagt die Farbe!</p></a>
-    <a class="card cat-feelings" href="topics/gesichter/index.html"><span class="card-emoji">🎭</span><h2>Gesichter-Spiel</h2><p>Mach das Emoji-Gesicht nach — Foto-Vergleich!</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">👑 Phantasie & Rollenspiel</h3>
-  <div class="grid">
-    <a class="card cat-feelings" href="topics/prinzessin/index.html"><span class="card-emoji">👸</span><h2>Prinzessinnen-Schloss</h2><p>Wähle eine Prinzessin, schmücke die Krone, finde dein Kleid, tanze im Ball.</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🌟 Werte & Charakter</h3>
-  <div class="grid">
-    <a class="card cat-feelings" href="topics/dankbarkeit/index.html"><span class="card-emoji">🙏</span><h2>Dankbarkeit</h2><p>Sag Danke an alles, was du liebhast.</p></a>
-    <a class="card cat-feelings" href="topics/bescheidenheit/index.html"><span class="card-emoji">🌱</span><h2>Bescheidenheit</h2><p>Stolz ohne Angeben — 4 Szenarien.</p></a>
-    <a class="card cat-feelings" href="topics/verantwortung/index.html"><span class="card-emoji">🤝</span><h2>Verantwortung</h2><p>Kümmer dich um deine Pflanze!</p></a>
-    <a class="card cat-feelings" href="topics/selbstliebe/index.html"><span class="card-emoji">💖</span><h2>Selbstliebe</h2><p>Sag dir was Liebes — du bist wundervoll!</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🎮 Maus-Spiele</h3>
-  <div class="grid">
-    <a class="card cat-game" href="topics/maus-spiel/index.html"><span class="card-emoji">🖱️</span><h2>Maus-Schule</h2><p>Sechs Spielstufen: Bewegen, Klicken, Ziehen.</p></a>
-    <a class="card cat-game" href="topics/maus-bahn/index.html"><span class="card-emoji">🐌</span><h2>Maus-Bahn</h2><p>Folge der Bahn — leicht bis schwer!</p></a>
-    <a class="card cat-game" href="topics/maus-memory/index.html"><span class="card-emoji">🃏</span><h2>Maus-Memory</h2><p>Find alle Paare — Tiere, Obst, Fahrzeuge.</p></a>
-    <a class="card cat-game" href="topics/maus-zahlen/index.html"><span class="card-emoji">🔢</span><h2>Zahlen verbinden</h2><p>1, 2, 3 ... und ein Bild wird sichtbar!</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🔤 Buchstaben lernen</h3>
-  <div class="grid">
-    <a class="card cat-game" href="topics/abc-jagd/index.html"><span class="card-emoji">🔍</span><h2>Buchstaben-Jagd</h2><p>Hör den Buchstaben, klick ihn schnell!</p></a>
-    <a class="card cat-game" href="topics/abc-reihenfolge/index.html"><span class="card-emoji">🔤</span><h2>ABC-Reihenfolge</h2><p>Sortiere die Buchstaben — von A bis Z.</p></a>
-    <a class="card cat-game" href="topics/abc-tiere/index.html"><span class="card-emoji">🐵</span><h2>A wie Affe</h2><p>Welches Tier zum Buchstaben passt?</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🧠 Dein Körper</h3>
-  <div class="grid">
-    <a class="card cat-body" href="topics/staebchen/index.html"><span class="card-emoji">👁️</span><h2>Wie sehen wir?</h2><p>Stäbchen, Zäpfchen + Webcam-Labor!</p></a>
-    <a class="card cat-body" href="topics/ohren/index.html"><span class="card-emoji">👂</span><h2>Wie hörst du?</h2><p>Reise durchs Ohr mit Sound-Labor.</p></a>
-    <a class="card cat-body" href="topics/atmen/index.html"><span class="card-emoji">🫁</span><h2>Warum atmen wir?</h2><p>Sauerstoff, Lungen + Atemübung.</p></a>
-    <a class="card cat-body" href="topics/bauchnabel/index.html"><span class="card-emoji">👶</span><h2>Dein Bauchnabel</h2><p>Wie du mit Mama verbunden warst.</p></a>
-    <a class="card cat-body" href="topics/niesen/index.html"><span class="card-emoji">🤧</span><h2>Warum nieste du?</h2><p>Schutz-Trick deines Körpers.</p></a>
-    <a class="card cat-body" href="topics/wunden/index.html"><span class="card-emoji">🩹</span><h2>Wie heilen Wunden?</h2><p>Bau-Phasen der Heilung — klick!</p></a>
-    <a class="card cat-body" href="topics/pipi/index.html"><span class="card-emoji">🚽</span><h2>Warum musst du Pipi?</h2><p>Nieren als Putzmaschine.</p></a>
-    <a class="card cat-body" href="topics/wachsen/index.html"><span class="card-emoji">📏</span><h2>Warum werde ich größer?</h2><p>Alters-Slider durchs ganze Leben.</p></a>
-    <a class="card cat-body" href="topics/wackelzaehne/index.html"><span class="card-emoji">🦷</span><h2>Wackelzähne</h2><p>Wackel und zieh — Zahnfee!</p></a>
-    <a class="card cat-body" href="topics/schluckauf/index.html"><span class="card-emoji">😅</span><h2>Was ist Schluckauf?</h2><p>Trick-Box gegen Hicks!</p></a>
-    <a class="card cat-body" href="topics/lachen/index.html"><span class="card-emoji">😂</span><h2>Warum lachen wir?</h2><p>Witze-Knöpfe und Smiley-Spaß.</p></a>
-    <a class="card cat-body" href="topics/riechen/index.html"><span class="card-emoji">👃</span><h2>Wie riechst du?</h2><p>Gute & böse Gerüche tippen.</p></a>
-    <a class="card cat-body" href="topics/schmecken/index.html"><span class="card-emoji">👅</span><h2>Wie schmeckst du?</h2><p>Süß, sauer, salzig, bitter, umami.</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🌦️ Wetter & Natur</h3>
-  <div class="grid">
-    <a class="card cat-world" href="topics/himmel/index.html"><span class="card-emoji">🌈</span><h2>Himmel blau</h2><p>Sonnen-Slider + Streuung.</p></a>
-    <a class="card cat-world" href="topics/wind/index.html"><span class="card-emoji">🌬️</span><h2>Woher kommt Wind?</h2><p>Wind-Regler mit Blättern.</p></a>
-    <a class="card cat-world" href="topics/wolken/index.html"><span class="card-emoji">☁️</span><h2>Was sind Wolken?</h2><p>5 Wolken-Typen + Tier-Wolken.</p></a>
-    <a class="card cat-world" href="topics/wasser/index.html"><span class="card-emoji">💧</span><h2>Woher kommt Wasser?</h2><p>Klickbarer Wasserkreislauf.</p></a>
-    <a class="card cat-world" href="topics/regenbogen/index.html"><span class="card-emoji">🌈</span><h2>Regenbogen</h2><p>Regen + Sonne = Magie!</p></a>
-    <a class="card cat-world" href="topics/schnee/index.html"><span class="card-emoji">❄️</span><h2>Wie entsteht Schnee?</h2><p>Bau deine eigene Schneeflocke!</p></a>
-    <a class="card cat-world" href="topics/donner/index.html"><span class="card-emoji">⛈️</span><h2>Donner & Blitz</h2><p>Klick die Wolke — bumm!</p></a>
-    <a class="card cat-world" href="topics/vulkan/index.html"><span class="card-emoji">🌋</span><h2>Was ist ein Vulkan?</h2><p>Ausbruchs-Knopf 🔥</p></a>
-    <a class="card cat-world" href="topics/meer/index.html"><span class="card-emoji">🌊</span><h2>Meer salzig?</h2><p>Salz dazu — sieh es auflösen.</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🌌 Weltall & Erde</h3>
-  <div class="grid">
-    <a class="card cat-world" href="topics/tag-nacht/index.html"><span class="card-emoji">🌍</span><h2>Tag und Nacht</h2><p>Dreh die Erde mit dem Schieber.</p></a>
-    <a class="card cat-world" href="topics/sonne-mond/index.html"><span class="card-emoji">🌅</span><h2>Sonne & Mond</h2><p>Mondphasen-Karussell.</p></a>
-    <a class="card cat-world" href="topics/magnete/index.html"><span class="card-emoji">🧲</span><h2>Wie wirken Magnete?</h2><p>Zieh den Magnet durchs Labor!</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🌱 Natur & Essen</h3>
-  <div class="grid">
-    <a class="card cat-nature" href="topics/pflanzen/index.html"><span class="card-emoji">🌱</span><h2>Wie wachsen Pflanzen?</h2><p>Gieß + Sonne = Blume.</p></a>
-    <a class="card cat-nature" href="topics/essen/index.html"><span class="card-emoji">🍞</span><h2>Woher kommt unser Essen?</h2><p>Bau dein Frühstück!</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">🐾 Tiere</h3>
-  <div class="grid">
-    <a class="card cat-nature" href="topics/katzen/index.html"><span class="card-emoji">🐱</span><h2>Katzen miauen</h2><p>6 Miau-Bedeutungen.</p></a>
-    <a class="card cat-nature" href="topics/voegel/index.html"><span class="card-emoji">🐦</span><h2>Vögel singen</h2><p>4 Vögel mit eigenen Liedern.</p></a>
-    <a class="card cat-nature" href="topics/fische/index.html"><span class="card-emoji">🐟</span><h2>Fische schwimmen</h2><p>Aquarium mit allen Tricks.</p></a>
-    <a class="card cat-nature" href="topics/winterschlaf/index.html"><span class="card-emoji">🐻</span><h2>Winterschlaf</h2><p>Find die Tier-Verstecke!</p></a>
-  </div>
-</div>
-
-<div class="topic-section">
-  <h3 class="section-title">💖 Große Fragen</h3>
-  <div class="grid">
-    <a class="card cat-feelings" href="topics/liebe/index.html"><span class="card-emoji">❤️</span><h2>Was ist Liebe?</h2><p>Sende Herzen an alle, die du magst.</p></a>
-    <a class="card cat-feelings" href="topics/schlaf/index.html"><span class="card-emoji">😴</span><h2>Schlaf & Träume</h2><p>Albträume verwandeln + atmen.</p></a>
-    <a class="card cat-feelings" href="topics/babys/index.html"><span class="card-emoji">👶</span><h2>Wo kommen Babys her?</h2><p>9-Monats-Slider im Mama-Bauch.</p></a>
-    <a class="card cat-feelings" href="topics/alter/index.html"><span class="card-emoji">👵</span><h2>Älter werden</h2><p>Liebe bleibt für immer ❤️</p></a>
-    <a class="card cat-feelings" href="topics/zeit/index.html"><span class="card-emoji">⏰</span><h2>Was ist Zeit?</h2><p>Gestern, jetzt, morgen.</p></a>
-  </div>
-</div>
+<!-- Topic grid -->
+<div class="grid" id="grid"></div>
 
 <footer>
-  ✨ 37 Reisen — und es kommen noch mehr! 💫
+  ✨ Such dir aus, was zu deiner Laune passt! 💫
 </footer>
+
+<script>
+const TOPICS = [
+  // === SPIELE (Games) ===
+  // Maus-Spiele
+  { cat: 'spiele', tag: 'game',  filter: 'maus',   href: 'topics/maus-spiel/index.html',     icon: '🖱️', title: 'Maus-Schule',          desc: '6 Spielstufen — bewegen, klicken, ziehen.' },
+  { cat: 'spiele', tag: 'game',  filter: 'maus',   href: 'topics/maus-bahn/index.html',      icon: '🐌', title: 'Maus-Bahn',            desc: 'Folge der Bahn — 3 Schwierigkeiten.' },
+  { cat: 'spiele', tag: 'game',  filter: 'maus',   href: 'topics/maus-memory/index.html',    icon: '🃏', title: 'Memory',               desc: 'Finde alle Paare — Tiere, Obst, Autos.' },
+  { cat: 'spiele', tag: 'game',  filter: 'maus',   href: 'topics/maus-zahlen/index.html',    icon: '🔢', title: 'Zahlen verbinden',     desc: '1, 2, 3 ... ein Bild wird sichtbar!' },
+  // Abenteuer-Spiele
+  { cat: 'spiele', tag: 'story', filter: 'abenteuer', href: 'topics/prinzessin/index.html',  icon: '👸', title: 'Prinzessinnen-Schloss', desc: 'Krone schmücken, Kleid, Ball!' },
+  { cat: 'spiele', tag: 'story', filter: 'abenteuer', href: 'topics/dinos/index.html',       icon: '🦖', title: 'Dino-Park',            desc: 'Füttern, Eier finden, Brüllen!' },
+  { cat: 'spiele', tag: 'story', filter: 'abenteuer', href: 'topics/ritter/index.html',      icon: '🏰', title: 'Ritter-Burg',          desc: 'Drachen abwehren, Schatz finden!' },
+  { cat: 'spiele', tag: 'story', filter: 'abenteuer', href: 'topics/superheld/index.html',   icon: '🦸', title: 'Super-Held',           desc: 'Schurken stoppen, Katze retten!' },
+  { cat: 'spiele', tag: 'story', filter: 'abenteuer', href: 'topics/piraten/index.html',     icon: '🏴‍☠️', title: 'Piraten-Schatzsuche',  desc: 'Sturm, Schatzkarte, Gold!' },
+  // ABC & Zahlen
+  { cat: 'spiele', tag: 'abc',   filter: 'abc',    href: 'topics/abc-jagd/index.html',       icon: '🔍', title: 'Buchstaben-Jagd',     desc: 'Hör den Buchstaben — klick ihn!' },
+  { cat: 'spiele', tag: 'abc',   filter: 'abc',    href: 'topics/abc-reihenfolge/index.html', icon: '🔤', title: 'ABC-Reihenfolge',     desc: 'A bis Z sortieren.' },
+  { cat: 'spiele', tag: 'abc',   filter: 'abc',    href: 'topics/abc-tiere/index.html',      icon: '🐵', title: 'A wie Affe',          desc: 'Tier zum Buchstaben finden.' },
+  // Kamera-Spiele
+  { cat: 'spiele', tag: 'cam',   filter: 'kamera', href: 'topics/selfie-studio/index.html',  icon: '📸', title: 'Selfie-Studio',       desc: '14 Sticker — schick dein Foto!' },
+  { cat: 'spiele', tag: 'cam',   filter: 'kamera', href: 'topics/magie-spiegel/index.html',  icon: '🪞', title: 'Magie-Spiegel',       desc: '8 verzaubernde Effekte!' },
+  { cat: 'spiele', tag: 'cam',   filter: 'kamera', href: 'topics/farben-detektiv/index.html', icon: '🔍', title: 'Farben-Detektiv',     desc: 'Welche Farbe siehst du?' },
+  { cat: 'spiele', tag: 'cam',   filter: 'kamera', href: 'topics/gesichter/index.html',      icon: '🎭', title: 'Gesichter-Spiel',     desc: 'Mach das Emoji nach!' },
+
+  // === WISSEN (Knowledge) ===
+  // Körper
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/staebchen/index.html',       icon: '👁️', title: 'Wie sehen wir?',         desc: 'Stäbchen, Zäpfchen + Webcam-Labor!' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/ohren/index.html',           icon: '👂', title: 'Wie hörst du?',         desc: 'Ohr-Reise mit Sound-Labor.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/atmen/index.html',           icon: '🫁', title: 'Warum atmen wir?',      desc: 'Lungen + Atemübung.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/riechen/index.html',         icon: '👃', title: 'Wie riechst du?',       desc: 'Gerüche und ihre Wirkung.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/schmecken/index.html',       icon: '👅', title: 'Wie schmeckst du?',     desc: '5 Geschmacks-Familien.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/bauchnabel/index.html',      icon: '👶', title: 'Dein Bauchnabel',       desc: 'Wie du mit Mama verbunden warst.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/niesen/index.html',          icon: '🤧', title: 'Warum nieste du?',      desc: 'Schutz-Trick deines Körpers.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/wunden/index.html',          icon: '🩹', title: 'Wie heilen Wunden?',    desc: 'Heilungsphasen klickbar.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/pipi/index.html',            icon: '🚽', title: 'Warum musst du Pipi?',  desc: 'Nieren als Putzmaschine.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/wachsen/index.html',         icon: '📏', title: 'Warum wirst du größer?', desc: 'Alters-Slider durchs Leben.' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/wackelzaehne/index.html',    icon: '🦷', title: 'Wackelzähne',           desc: 'Wackel + zieh — Zahnfee!' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/schluckauf/index.html',      icon: '😅', title: 'Was ist Schluckauf?',   desc: 'Trick-Box gegen Hicks!' },
+  { cat: 'wissen', tag: 'body', filter: 'koerper', href: 'topics/lachen/index.html',          icon: '😂', title: 'Warum lachen wir?',     desc: 'Witze-Knöpfe und Smiley.' },
+
+  // Welt & Wetter & Weltall
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/himmel/index.html',         icon: '🌈', title: 'Himmel blau',           desc: 'Sonnen-Slider + Streuung.' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/wind/index.html',           icon: '🌬️', title: 'Woher kommt Wind?',    desc: 'Wind-Regler mit Sturm.' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/wolken/index.html',         icon: '☁️', title: 'Was sind Wolken?',     desc: '5 Wolken-Typen.' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/wasser/index.html',         icon: '💧', title: 'Wasserkreislauf',       desc: 'Sonne → Wolke → Regen.' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/regenbogen/index.html',     icon: '🌈', title: 'Regenbogen',            desc: 'Regen + Sonne = Magie!' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/schnee/index.html',         icon: '❄️', title: 'Wie entsteht Schnee?', desc: 'Bau deine Schneeflocke!' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/donner/index.html',         icon: '⛈️', title: 'Donner & Blitz',       desc: 'Klick die Wolke!' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/vulkan/index.html',         icon: '🌋', title: 'Was ist ein Vulkan?',   desc: 'Ausbruch klickbar!' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/meer/index.html',           icon: '🌊', title: 'Meer salzig?',          desc: 'Salz dazu — sieh es lösen.' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/tag-nacht/index.html',      icon: '🌍', title: 'Tag und Nacht',         desc: 'Dreh die Erde!' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/sonne-mond/index.html',     icon: '🌅', title: 'Sonne & Mond',          desc: 'Mondphasen-Karussell.' },
+  { cat: 'wissen', tag: 'world', filter: 'welt', href: 'topics/schatten/index.html',       icon: '👻', title: 'Wo kommen Schatten her?', desc: 'Schieb die Sonne!' },
+
+  // Natur & Erde
+  { cat: 'wissen', tag: 'nature', filter: 'natur', href: 'topics/pflanzen/index.html',     icon: '🌱', title: 'Pflanzen wachsen',       desc: 'Gieß + Sonne = Blume.' },
+  { cat: 'wissen', tag: 'nature', filter: 'natur', href: 'topics/essen/index.html',        icon: '🍞', title: 'Woher kommt Essen?',     desc: 'Bau dein Frühstück!' },
+  { cat: 'wissen', tag: 'nature', filter: 'natur', href: 'topics/haus-bauen/index.html',   icon: '🏗️', title: 'Woher kommt ein Haus?',  desc: 'Material + Bauspiel.' },
+  { cat: 'wissen', tag: 'nature', filter: 'natur', href: 'topics/steine/index.html',       icon: '🪨', title: 'Woher kommen Steine?',   desc: '3 Arten + Steinbruch.' },
+  { cat: 'wissen', tag: 'nature', filter: 'natur', href: 'topics/magnete/index.html',      icon: '🧲', title: 'Wie wirken Magnete?',   desc: 'Drag im Labor!' },
+
+  // Tiere
+  { cat: 'wissen', tag: 'nature', filter: 'tiere', href: 'topics/katzen/index.html',       icon: '🐱', title: 'Katzen miauen',          desc: '6 Miau-Bedeutungen.' },
+  { cat: 'wissen', tag: 'nature', filter: 'tiere', href: 'topics/voegel/index.html',       icon: '🐦', title: 'Vögel singen',           desc: '4 Vögel mit Liedern.' },
+  { cat: 'wissen', tag: 'nature', filter: 'tiere', href: 'topics/fische/index.html',       icon: '🐟', title: 'Fische schwimmen',       desc: 'Aquarium-Tricks.' },
+  { cat: 'wissen', tag: 'nature', filter: 'tiere', href: 'topics/winterschlaf/index.html', icon: '🐻', title: 'Winterschlaf',           desc: 'Wo schlafen Tiere?' },
+
+  // Gefühle & Werte
+  { cat: 'wissen', tag: 'emo', filter: 'gefuehle', href: 'topics/liebe/index.html',         icon: '❤️', title: 'Was ist Liebe?',        desc: 'Sende Herzen!' },
+  { cat: 'wissen', tag: 'emo', filter: 'gefuehle', href: 'topics/schlaf/index.html',        icon: '😴', title: 'Schlaf & Träume',       desc: 'Atemübung + Albträume.' },
+  { cat: 'wissen', tag: 'emo', filter: 'gefuehle', href: 'topics/dankbarkeit/index.html',   icon: '🙏', title: 'Dankbarkeit',           desc: 'Sag Danke!' },
+  { cat: 'wissen', tag: 'emo', filter: 'gefuehle', href: 'topics/bescheidenheit/index.html', icon: '🌱', title: 'Bescheidenheit',       desc: 'Stolz ohne Angeben.' },
+  { cat: 'wissen', tag: 'emo', filter: 'gefuehle', href: 'topics/verantwortung/index.html', icon: '🤝', title: 'Verantwortung',         desc: 'Pflanze pflegen!' },
+  { cat: 'wissen', tag: 'emo', filter: 'gefuehle', href: 'topics/selbstliebe/index.html',   icon: '💖', title: 'Selbstliebe',           desc: 'Spiegel + Foto!' },
+
+  // Große Fragen
+  { cat: 'wissen', tag: 'emo', filter: 'fragen', href: 'topics/vorfahren/index.html',      icon: '🌳', title: 'Wo kommen Eltern her?',  desc: 'Familienbaum bauen.' },
+  { cat: 'wissen', tag: 'emo', filter: 'fragen', href: 'topics/babys/index.html',          icon: '👶', title: 'Wo kommen Babys her?',   desc: '9-Monats-Slider.' },
+  { cat: 'wissen', tag: 'emo', filter: 'fragen', href: 'topics/geburt/index.html',         icon: '🤰', title: 'Wie kommt das Baby raus?', desc: 'Sanfte Erklärung.' },
+  { cat: 'wissen', tag: 'emo', filter: 'fragen', href: 'topics/alter/index.html',          icon: '👵', title: 'Älter werden',           desc: 'Liebe bleibt für immer.' },
+  { cat: 'wissen', tag: 'emo', filter: 'fragen', href: 'topics/zeit/index.html',           icon: '⏰', title: 'Was ist Zeit?',         desc: 'Uhr + Kalender + Spiele!' },
+  { cat: 'wissen', tag: 'cam', filter: 'fragen', href: 'topics/kamera/index.html',         icon: '📷', title: 'Wie funktioniert eine Kamera?', desc: 'Linse + Sensor + Live!' }
+];
+
+const FILTERS = {
+  spiele: [
+    { id: 'all', label: '🌈 Alles' },
+    { id: 'maus', label: '🖱️ Maus üben' },
+    { id: 'abenteuer', label: '🦖 Abenteuer' },
+    { id: 'abc', label: '🔤 ABC & Zahlen' },
+    { id: 'kamera', label: '📷 Kamera-Spaß' }
+  ],
+  wissen: [
+    { id: 'all', label: '🌈 Alles' },
+    { id: 'koerper', label: '🧠 Mein Körper' },
+    { id: 'welt', label: '🌍 Welt & Wetter' },
+    { id: 'natur', label: '🌱 Natur & Bauen' },
+    { id: 'tiere', label: '🐾 Tiere' },
+    { id: 'gefuehle', label: '💖 Gefühle & Werte' },
+    { id: 'fragen', label: '🤔 Große Fragen' }
+  ]
+};
+
+let mode = 'spiele';
+let filter = 'all';
+
+function setMode(m) {
+  mode = m;
+  filter = 'all';
+  document.body.classList.toggle('spiele-mode', m === 'spiele');
+  document.body.classList.toggle('wissen-mode', m === 'wissen');
+  document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.switch-btn.' + m).classList.add('active');
+  renderFilters();
+  renderGrid();
+}
+function setFilter(f) {
+  filter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+  renderGrid();
+}
+function renderFilters() {
+  const row = document.getElementById('filterRow');
+  row.innerHTML = '';
+  FILTERS[mode].forEach(f => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn' + (f.id === filter ? ' active' : '');
+    b.dataset.f = f.id;
+    b.textContent = f.label;
+    b.onclick = () => setFilter(f.id);
+    row.appendChild(b);
+  });
+}
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const items = TOPICS.filter(t => t.cat === mode && (filter === 'all' || t.filter === filter));
+  items.forEach(t => {
+    const card = document.createElement('a');
+    card.className = 'card';
+    card.dataset.cat = t.cat;
+    card.dataset.tag = t.tag;
+    card.href = t.href;
+    card.innerHTML =
+      '<span class="card-emoji">' + t.icon + '</span>' +
+      '<h2>' + t.title + '</h2>' +
+      '<p>' + t.desc + '</p>';
+    grid.appendChild(card);
+  });
+}
+
+// Init
+setMode('spiele');
+</script>
 
 </body>
 </html>

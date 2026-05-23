@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ritter-Burg</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #5d4e8a 0%, #b89bc7 50%, #ffd6e8 100%); }
+  h1, h2 { color: #fff; text-shadow: 2px 2px 0 #5d4e8a; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  .hero-row {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .hero-card {
+    background: rgba(255,255,255,0.95);
+    border: 5px solid transparent;
+    border-radius: 30px;
+    padding: 18px;
+    width: 170px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+  }
+  .hero-card:hover { transform: translateY(-10px) scale(1.06); border-color: #ffd700; }
+  .hero-card.chosen { border-color: #ffd700; background: #fff8dc; box-shadow: 0 0 30px rgba(255,215,0,0.7); transform: scale(1.05); }
+  .hero-card .em { font-size: 100px; display: block; animation: hero-stand 3s ease-in-out infinite; }
+  .hero-row .hero-card:nth-child(2) .em { animation-delay: 0.3s; }
+  .hero-row .hero-card:nth-child(3) .em { animation-delay: 0.6s; }
+  .hero-row .hero-card:nth-child(4) .em { animation-delay: 0.9s; }
+  @keyframes hero-stand {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-6px) rotate(2deg); }
+  }
+  .hero-card h3 { color: #5d4e8a; margin: 4px 0; }
+
+  /* Defense stage */
+  .defense-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(180deg, #4a3a7e 0%, #b89bc7 60%, #7ec850 60%, #4a8030 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 8px 22px rgba(0,0,0,0.2);
+  }
+  .castle {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 100px;
+    z-index: 2;
+  }
+  .falling-dragon {
+    position: absolute;
+    font-size: 60px;
+    cursor: pointer;
+    user-select: none;
+    animation: dragon-fall var(--dur, 5s) linear forwards;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  }
+  @keyframes dragon-fall {
+    from { top: -80px; }
+    to   { top: 100%; }
+  }
+  .falling-dragon.zapped {
+    animation: zap 0.5s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes zap {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.5) rotate(180deg); filter: drop-shadow(0 0 20px yellow); }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+  .castle.hit { animation: castle-shake 0.4s ease-in-out; }
+  @keyframes castle-shake {
+    0%, 100% { transform: translateX(-50%); }
+    25%      { transform: translateX(-55%); }
+    75%      { transform: translateX(-45%); }
+  }
+
+  .defense-hud {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 6px 0;
+  }
+  .hud {
+    background: rgba(255,255,255,0.92);
+    padding: 8px 18px;
+    border-radius: 18px;
+    color: #5d4e8a;
+    font-weight: bold;
+  }
+
+  /* Treasure stage */
+  .treasure-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 360px;
+    background: radial-gradient(ellipse at center, #6a4a8a 0%, #3a2510 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 8px 22px rgba(0,0,0,0.3);
+  }
+  .torch {
+    position: absolute;
+    font-size: 40px;
+    animation: flicker 0.5s ease-in-out infinite;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.7; transform: scale(0.95); }
+  }
+  .chest {
+    position: absolute;
+    font-size: 80px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
+  }
+  .chest:hover { transform: scale(1.1) rotate(-6deg); }
+  .chest.opened { animation: chest-open 0.8s ease-out forwards; }
+  @keyframes chest-open {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3) rotate(-10deg); }
+    100% { transform: scale(1.2); }
+  }
+  .gem-fly {
+    position: absolute;
+    font-size: 60px;
+    pointer-events: none;
+    animation: gem-fly 1.5s ease-out forwards;
+  }
+  @keyframes gem-fly {
+    0%   { transform: scale(0); opacity: 0; }
+    30%  { transform: scale(1.4); opacity: 1; }
+    100% { transform: scale(0.8) translateY(-180px); opacity: 0; }
+  }
+
+  /* Feast / celebration */
+  .feast-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 320px;
+    background: linear-gradient(180deg, #ffd700 0%, #ff7e5f 50%, #d6336c 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+  }
+  .feast-row {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    font-size: 80px;
+  }
+  .feast-row span {
+    animation: dance 1s ease-in-out infinite;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.2));
+  }
+  .feast-row span:nth-child(2) { animation-delay: 0.2s; }
+  .feast-row span:nth-child(3) { animation-delay: 0.4s; }
+  .feast-row span:nth-child(4) { animation-delay: 0.6s; }
+  .feast-row span:nth-child(5) { animation-delay: 0.8s; }
+  @keyframes dance {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50%      { transform: translateY(-15px) rotate(5deg); }
+  }
+  .confetti-bit {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    animation: confetti-fall 3s linear forwards;
+  }
+  @keyframes confetti-fall {
+    0%   { transform: translateY(-30px) rotate(0); opacity: 1; }
+    100% { transform: translateY(340px) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🏰⚔️</div>
+    <h1>Ritter-Burg</h1>
+    <p>Willkommen, edler Held!<br/>Heute verteidigst du die Burg, findest Schätze und feierst beim Königsfest! 👑</p>
+    <button class="purple" onclick="engine.next()">Auf zur Burg! 🏰</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wer bist du heute?</h2>
+    <div class="hero-row" id="heroRow">
+      <div class="hero-card" data-emoji="🤴" data-name="Prinz"><span class="em">🤴</span><h3>Prinz</h3></div>
+      <div class="hero-card" data-emoji="👸" data-name="Prinzessin"><span class="em">👸</span><h3>Prinzessin</h3></div>
+      <div class="hero-card" data-emoji="🛡️" data-name="Ritter"><span class="em">🛡️</span><h3>Ritter</h3></div>
+      <div class="hero-card" data-emoji="🧙" data-name="Magier"><span class="em">🧙</span><h3>Magier</h3></div>
+    </div>
+    <button class="purple" id="heroNext" style="display:none" onclick="engine.next()">Burg verteidigen! ⚔️</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Verteidige die Burg!</h2>
+    <p style="font-size:18px;">Klick die Drachen ab, bevor sie die Burg treffen! 🐉</p>
+    <div class="defense-stage" id="defenseStage">
+      <span class="castle" id="castle">🏰</span>
+    </div>
+    <div class="defense-hud">
+      <span class="hud">⚔️ Besiegt: <span id="defeated">0</span></span>
+      <span class="hud">❤️ Burg-Leben: <span id="castleHP">5</span></span>
+    </div>
+    <button class="small secondary" onclick="startDefense()">▶️ Nochmal!</button>
+    <button class="purple" id="defNext" style="display:none;margin-top:6px" onclick="engine.next()">Zum Schatz! 💎</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Die Schatzkammer 💎</h2>
+    <p style="font-size:18px;">Klick alle 5 Truhen — was ist drin?</p>
+    <div class="treasure-stage" id="treasureStage">
+      <span class="torch" style="top:14px;left:20px">🔥</span>
+      <span class="torch" style="top:14px;right:20px;animation-delay:0.2s">🔥</span>
+      <span class="chest" style="left:10%;bottom:30%"  data-loot="💎">📦</span>
+      <span class="chest" style="left:32%;bottom:50%" data-loot="👑">📦</span>
+      <span class="chest" style="left:54%;bottom:25%" data-loot="🏆">📦</span>
+      <span class="chest" style="left:76%;bottom:50%" data-loot="💰">📦</span>
+      <span class="chest" style="left:42%;bottom:8%"  data-loot="🗡️">📦</span>
+    </div>
+    <div class="hud">📦 Geöffnet: <span id="openedCount">0</span> / 5</div>
+    <button class="purple" id="treasureNext" style="display:none;margin-top:6px" onclick="engine.next()">Zum Fest! 🎉</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Königliches Fest! 🎉</h2>
+    <p style="font-size:18px;">Alle tanzen mit dir!</p>
+    <div class="feast-stage" id="feastStage">
+      <div class="feast-row">
+        <span id="feastHero">🤴</span>
+        <span>👸</span>
+        <span>🛡️</span>
+        <span>🧙</span>
+        <span>🐉</span>
+      </div>
+    </div>
+    <button class="small green" onclick="moreConfetti()">🎊 Konfetti!</button>
+    <button class="purple" onclick="engine.next()" style="margin-top:6px">Weiter ➡️</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <div class="big-emoji pulse">👑🏰</div>
+    <h2>Held des Königreichs!</h2>
+    <p>Du hast die Burg gerettet, Schätze gehoben und tüchtig gefeiert! 🎉<br/>Ein Hoch auf den Helden!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Willkommen, edler Held! Heute verteidigst du die Burg, findest Schätze und feierst beim Königsfest!",
+  "Wer bist du heute? Prinz, Prinzessin, Ritter oder Magier?",
+  "Verteidige die Burg! Klick die Drachen ab, bevor sie die Burg treffen!",
+  "Die Schatzkammer! Klick alle Truhen und sieh, was drin ist!",
+  "Königliches Fest! Alle tanzen mit dir! Drück Konfetti für noch mehr Spaß!",
+  "Held des Königreichs! Du hast die Burg gerettet, Schätze gehoben und tüchtig gefeiert! Ein Hoch auf den Helden!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: handleScene, onSceneLeave: (i) => { if (i===2) stopDefense(); if (i===4) stopConfetti(); } });
+
+let chosenHero = '🤴';
+function handleScene(i) {
+  if (i === 2) startDefense();
+  if (i === 3) resetTreasure();
+  if (i === 4) { document.getElementById('feastHero').textContent = chosenHero; startFeast(); }
+}
+
+// Hero pick
+document.querySelectorAll('.hero-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('chosen'));
+    card.classList.add('chosen');
+    chosenHero = card.dataset.emoji;
+    document.getElementById('heroNext').style.display = 'inline-block';
+    sfxChime();
+  });
+});
+
+// Defense
+let defenseTimer = null, defeated = 0, hp = 5;
+function startDefense() {
+  stopDefense();
+  defeated = 0; hp = 5;
+  document.getElementById('defeated').textContent = '0';
+  document.getElementById('castleHP').textContent = '5';
+  document.getElementById('defNext').style.display = 'none';
+  defenseTimer = setInterval(spawnDragon, 1100);
+  setTimeout(spawnDragon, 200);
+}
+function stopDefense() {
+  if (defenseTimer) clearInterval(defenseTimer);
+  defenseTimer = null;
+  const stage = document.getElementById('defenseStage');
+  if (stage) stage.querySelectorAll('.falling-dragon').forEach(d => d.remove());
+}
+function spawnDragon() {
+  if (hp <= 0) return;
+  const stage = document.getElementById('defenseStage');
+  const d = document.createElement('span');
+  d.className = 'falling-dragon';
+  d.textContent = ['🐉','👹','🦇'][Math.floor(Math.random()*3)];
+  d.style.left = (5 + Math.random()*85) + '%';
+  d.style.top = '-80px';
+  const dur = (3.5 + Math.random()*2) + 's';
+  d.style.setProperty('--dur', dur);
+  let hit = false;
+  d.addEventListener('click', () => {
+    if (d.classList.contains('zapped')) return;
+    d.classList.add('zapped');
+    defeated++;
+    document.getElementById('defeated').textContent = String(defeated);
+    zapSfx();
+    if (defeated >= 8) {
+      document.getElementById('defNext').style.display = 'inline-block';
+    }
+  });
+  d.addEventListener('animationend', () => {
+    if (!d.classList.contains('zapped') && hp > 0) {
+      hp--;
+      document.getElementById('castleHP').textContent = String(hp);
+      document.getElementById('castle').classList.remove('hit');
+      void document.getElementById('castle').offsetWidth;
+      document.getElementById('castle').classList.add('hit');
+      if (hp <= 0) stopDefense();
+    }
+    d.remove();
+  });
+  stage.appendChild(d);
+}
+
+// Treasure
+function resetTreasure() {
+  document.querySelectorAll('.chest').forEach(c => {
+    c.classList.remove('opened');
+    c.textContent = '📦';
+    c.dataset.open = '';
+  });
+  document.getElementById('openedCount').textContent = '0';
+  document.getElementById('treasureNext').style.display = 'none';
+}
+document.querySelectorAll('.chest').forEach(chest => {
+  chest.addEventListener('click', () => {
+    if (chest.dataset.open) return;
+    chest.dataset.open = '1';
+    chest.classList.add('opened');
+    chest.textContent = chest.dataset.loot;
+    // Fly gem
+    const stage = document.getElementById('treasureStage');
+    const r = chest.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    const gem = document.createElement('span');
+    gem.className = 'gem-fly';
+    gem.textContent = chest.dataset.loot;
+    gem.style.left = (r.left + r.width/2 - sr.left - 30) + 'px';
+    gem.style.top = (r.top - sr.top) + 'px';
+    stage.appendChild(gem);
+    setTimeout(() => gem.remove(), 1600);
+    treasureChime();
+    const opened = document.querySelectorAll('.chest[data-open="1"]').length;
+    document.getElementById('openedCount').textContent = String(opened);
+    if (opened >= 5) {
+      sfxWin();
+      document.getElementById('treasureNext').style.display = 'inline-block';
+    }
+  });
+});
+
+// Feast
+let confettiTimer = null;
+function startFeast() {
+  moreConfetti();
+  if (confettiTimer) clearInterval(confettiTimer);
+  confettiTimer = setInterval(moreConfetti, 1500);
+}
+function stopConfetti() {
+  if (confettiTimer) clearInterval(confettiTimer);
+  confettiTimer = null;
+}
+function moreConfetti() {
+  const room = document.getElementById('feastStage');
+  if (!room) return;
+  const colors = ['#ff6b9d','#74b9ff','#55efc4','#ffd700','#d6a2ff','#fff'];
+  for (let i = 0; i < 25; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-bit';
+    c.style.background = colors[i % colors.length];
+    if (i % 3 === 0) c.style.borderRadius = '50%';
+    c.style.left = (Math.random() * 100) + '%';
+    c.style.top = '-30px';
+    c.style.animationDelay = (Math.random() * 0.6) + 's';
+    c.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+    room.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+  sfxChime();
+}
+
+// SFX
+function sfxChime() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [1200, 1500, 1800].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.15, t+i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.06+0.4);
+      o.start(t+i*0.06); o.stop(t+i*0.06+0.45);
+    });
+  } catch(e){}
+}
+function zapSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(1600, t); o.frequency.exponentialRampToValueAtTime(300, t+0.15);
+    g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.18);
+    o.start(t); o.stop(t+0.2);
+  } catch(e){}
+}
+function treasureChime() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [800, 1100, 1500].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.2, t+i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.08+0.3);
+      o.start(t+i*0.08); o.stop(t+i*0.08+0.32);
+    });
+  } catch(e){}
+}
+function sfxWin() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [523, 659, 784, 1047, 1319].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.22, t+i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.1+0.3);
+      o.start(t+i*0.1); o.stop(t+i*0.1+0.32);
+    });
+  } catch(e){}
+}
+</script>
+</body>
+</html>

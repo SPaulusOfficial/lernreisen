@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Piraten-Schatzsuche</title>
+<link rel="stylesheet" href="../../shared/styles.css" />
+<style>
+  body { background: linear-gradient(180deg, #0077b6 0%, #00b4d8 50%, #ffd166 100%); }
+  h1, h2 { color: #fff; text-shadow: 3px 3px 0 #0077b6; }
+  p { color: #fff; }
+  .scene { background: transparent; }
+
+  /* Ship pick */
+  .ship-row {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .ship-card {
+    background: rgba(255,255,255,0.95);
+    border: 5px solid transparent;
+    border-radius: 30px;
+    padding: 18px;
+    width: 170px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.3);
+  }
+  .ship-card:hover { transform: translateY(-10px) scale(1.06) rotate(-3deg); border-color: #ffd700; }
+  .ship-card.chosen { border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.8); transform: scale(1.05); }
+  .ship-card .em {
+    font-size: 100px;
+    display: block;
+    animation: ship-sail 3s ease-in-out infinite;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+  }
+  .ship-row .ship-card:nth-child(2) .em { animation-delay: 0.3s; }
+  .ship-row .ship-card:nth-child(3) .em { animation-delay: 0.6s; }
+  @keyframes ship-sail {
+    0%, 100% { transform: rotate(-5deg) translateY(0); }
+    50%      { transform: rotate(5deg) translateY(-8px); }
+  }
+  .ship-card h3 { color: #0077b6; margin: 4px 0; }
+
+  /* Storm stage */
+  .storm-stage {
+    position: relative;
+    width: min(95vw, 720px);
+    height: 380px;
+    background: linear-gradient(180deg, #1a3a5c 0%, #2a5a7c 60%, #0077b6 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.3), 0 8px 22px rgba(0,0,0,0.3);
+  }
+  .storm-rain {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0.15) 0 1px, transparent 1px 8px);
+    animation: rain-move 0.5s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes rain-move {
+    from { background-position: 0 0; }
+    to   { background-position: -100px 100px; }
+  }
+  .storm-ship {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 100px;
+    transition: bottom 0.4s cubic-bezier(.34,1.56,.64,1);
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.5));
+    z-index: 3;
+  }
+  .storm-ship.ducked { bottom: 30px; transform: translateX(-50%) scale(0.9); }
+  .wave {
+    position: absolute;
+    font-size: 70px;
+    bottom: -50px;
+    animation: wave-rise var(--dur, 3s) linear forwards;
+    cursor: pointer;
+    user-select: none;
+    filter: drop-shadow(0 -4px 8px rgba(255,255,255,0.3));
+  }
+  @keyframes wave-rise {
+    from { bottom: -60px; }
+    to   { bottom: 380px; }
+  }
+  .wave.dodged { animation: wave-dodged 0.5s ease-out forwards; }
+  @keyframes wave-dodged {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3) rotate(15deg); filter: drop-shadow(0 0 20px #fff); }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+
+  /* Map stage */
+  .map-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(135deg, #f5deb3 0%, #d2b48c 50%, #8b6f47 100%);
+    background-image:
+      radial-gradient(ellipse 60px 30px at 20% 30%, rgba(139,111,71,0.3), transparent),
+      radial-gradient(ellipse 80px 40px at 70% 60%, rgba(139,111,71,0.3), transparent),
+      linear-gradient(135deg, #f5deb3 0%, #d2b48c 50%, #8b6f47 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    border: 8px dashed #6a3a00;
+    box-shadow: inset 0 0 30px rgba(139,111,71,0.3), 0 8px 22px rgba(0,0,0,0.25);
+    margin: 12px 0;
+  }
+  .map-island {
+    position: absolute;
+    font-size: 50px;
+    opacity: 0.6;
+  }
+  .map-path {
+    stroke: #c0392b;
+    stroke-width: 4;
+    stroke-dasharray: 6;
+    fill: none;
+    animation: dash-flow 1s linear infinite;
+  }
+  @keyframes dash-flow { to { stroke-dashoffset: -20; } }
+  .x-mark {
+    position: absolute;
+    font-size: 50px;
+    cursor: pointer;
+    user-select: none;
+    color: #c0392b;
+    font-weight: bold;
+    text-shadow: 2px 2px 0 #fff8dc;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    z-index: 3;
+  }
+  .x-mark:hover { transform: scale(1.3) rotate(20deg); }
+  .x-mark.found {
+    animation: x-found 0.8s cubic-bezier(.34,1.56,.64,1) forwards;
+    pointer-events: none;
+  }
+  @keyframes x-found {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.8) rotate(720deg); }
+    100% { transform: scale(0); opacity: 0; }
+  }
+
+  /* Dig stage */
+  .dig-stage {
+    position: relative;
+    width: min(95vw, 700px);
+    height: 380px;
+    background: linear-gradient(180deg, #ffd166 0%, #f5deb3 60%, #d2b48c 100%);
+    border-radius: 28px;
+    overflow: hidden;
+    margin: 12px 0;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+  }
+  .sand-spot {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 30%, #8b6f47 0%, #6a3a00 80%);
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: inset 0 -8px 14px rgba(0,0,0,0.3);
+  }
+  .sand-spot:hover { transform: scale(1.08); }
+  .sand-spot.dug {
+    animation: dig-shake 0.4s ease-in-out 2;
+    background: radial-gradient(ellipse at 50% 30%, #5a3a1a 0%, #3a2510 80%);
+  }
+  @keyframes dig-shake {
+    0%, 100% { transform: rotate(0); }
+    25%      { transform: rotate(-8deg); }
+    75%      { transform: rotate(8deg); }
+  }
+  .sand-spot.treasure {
+    animation: treasure-rise 1s ease-out forwards;
+  }
+  @keyframes treasure-rise {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); box-shadow: 0 0 30px gold; }
+    100% { transform: scale(1.1); }
+  }
+  .sand-spot.treasure::after {
+    content: '💰';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 50px;
+    animation: treasure-pop 0.6s cubic-bezier(.34,1.56,.64,1) 0.3s backwards;
+  }
+  @keyframes treasure-pop {
+    0%   { transform: translate(-50%, -50%) scale(0); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+  .digger {
+    position: absolute;
+    bottom: 16px;
+    right: 30px;
+    font-size: 70px;
+    animation: floaty 3s ease-in-out infinite;
+  }
+
+  /* Loot share */
+  .booty-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 14px 0;
+  }
+  .booty {
+    background: rgba(255,255,255,0.92);
+    padding: 14px 18px;
+    border-radius: 22px;
+    text-align: center;
+    color: #6a3a00;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: floaty 4s ease-in-out infinite;
+  }
+  .booty-row .booty:nth-child(2) { animation-delay: 0.3s; }
+  .booty-row .booty:nth-child(3) { animation-delay: 0.6s; }
+  .booty-row .booty:nth-child(4) { animation-delay: 0.9s; }
+  .booty .em { font-size: 60px; display: block; }
+
+  .hud {
+    background: rgba(0,0,0,0.5);
+    color: #ffd700;
+    padding: 8px 18px;
+    border-radius: 18px;
+    font-weight: bold;
+    display: inline-block;
+  }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 6px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <a class="home-btn" href="../../index.html">🏠</a>
+  <button class="home-btn sound-btn" id="soundBtn">🔊</button>
+  <div class="progress" id="progress"></div>
+
+  <section class="scene active" data-scene="0">
+    <div class="big-emoji floaty">🏴‍☠️⚓</div>
+    <h1>Piraten-Schatzsuche</h1>
+    <p>Aaaarrr, Pirat!<br/>Heute segeln wir übers Meer, finden eine Schatzkarte und graben Gold aus! 💰</p>
+    <button class="orange" onclick="engine.next()">Anker hoch! ⚓</button>
+  </section>
+
+  <section class="scene" data-scene="1">
+    <h2>Wähle dein Schiff!</h2>
+    <div class="ship-row" id="shipRow">
+      <div class="ship-card" data-emoji="⛵" data-name="Segelschiff"><span class="em">⛵</span><h3>Segelschiff</h3></div>
+      <div class="ship-card" data-emoji="🚢" data-name="Galeone"><span class="em">🚢</span><h3>Galeone</h3></div>
+      <div class="ship-card" data-emoji="🛶" data-name="Kanu"><span class="em">🛶</span><h3>Kanu</h3></div>
+    </div>
+    <button class="orange" id="shipNext" style="display:none" onclick="engine.next()">In den Sturm! 🌊</button>
+  </section>
+
+  <section class="scene" data-scene="2">
+    <h2>Sturm auf dem Meer!</h2>
+    <p style="font-size:18px;">Klick die Wellen ab, bevor sie das Schiff treffen! 🌊</p>
+    <div class="storm-stage" id="stormStage">
+      <div class="storm-rain"></div>
+      <span class="storm-ship" id="stormShip">⛵</span>
+    </div>
+    <div class="stats">
+      <span class="hud">🌊 Wellen abgewehrt: <span id="wavesDodged">0</span></span>
+      <span class="hud">🛟 Schiff-Leben: <span id="shipHP">5</span></span>
+    </div>
+    <button class="orange" id="stormNext" style="display:none;margin-top:6px" onclick="engine.next()">Insel erreicht! 🏝️</button>
+  </section>
+
+  <section class="scene" data-scene="3">
+    <h2>Die Schatzkarte ⛵🗺️</h2>
+    <p style="font-size:18px;">Folge dem Pfad und klick alle X-Markierungen!</p>
+    <div class="map-stage" id="mapStage">
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 700 380" preserveAspectRatio="none">
+        <polyline class="map-path" points="40,40 180,120 320,80 450,200 580,160 640,300"/>
+      </svg>
+      <span class="map-island" style="top:30%;left:8%">🏝️</span>
+      <span class="map-island" style="top:60%;left:50%">⛰️</span>
+      <span class="map-island" style="bottom:20%;right:6%">🌴</span>
+      <span class="x-mark" style="top:6%;left:5%">✗</span>
+      <span class="x-mark" style="top:26%;left:23%">✗</span>
+      <span class="x-mark" style="top:14%;left:43%">✗</span>
+      <span class="x-mark" style="top:46%;left:60%">✗</span>
+      <span class="x-mark" style="top:36%;left:80%">✗</span>
+      <span class="x-mark" style="bottom:8%;right:6%">✗</span>
+    </div>
+    <div class="hud">🗺️ Punkte besucht: <span id="xCount">0</span> / 6</div>
+    <button class="orange" id="mapNext" style="display:none;margin-top:6px" onclick="engine.next()">Schatz ausgraben! ⛏️</button>
+  </section>
+
+  <section class="scene" data-scene="4">
+    <h2>Grab den Schatz aus!</h2>
+    <p style="font-size:18px;">Klick die Sandkuhlen — wo ist das Gold versteckt? 💰</p>
+    <div class="dig-stage" id="digStage">
+      <span class="digger">🏴‍☠️</span>
+    </div>
+    <div class="hud" id="digMsg">⛏️ Such weiter!</div>
+    <button class="orange" id="digNext" style="display:none;margin-top:6px" onclick="engine.next()">Beute teilen! 🪙</button>
+  </section>
+
+  <section class="scene" data-scene="5">
+    <h2>Aaaarrr, was eine Beute! 🪙</h2>
+    <div class="booty-row">
+      <div class="booty"><span class="em">💰</span><p style="margin:0;font-weight:bold">Goldsack</p></div>
+      <div class="booty"><span class="em">💎</span><p style="margin:0;font-weight:bold">Edelstein</p></div>
+      <div class="booty"><span class="em">👑</span><p style="margin:0;font-weight:bold">Krone</p></div>
+      <div class="booty"><span class="em">🗡️</span><p style="margin:0;font-weight:bold">Schwert</p></div>
+    </div>
+    <p style="font-size:20px;">Eine echte Pirat·in! Lass uns weiter segeln!</p>
+    <button class="green" onclick="engine.goTo(0)">🔁 Nochmal segeln</button>
+  </section>
+</div>
+
+<div class="nav"><button class="secondary" id="prevBtn">⬅️ Zurück</button></div>
+<script src="../../shared/engine.js"></script>
+<script>
+const SCENE_TEXTS = [
+  "Aaaarrr, Pirat! Heute segeln wir übers Meer, finden eine Schatzkarte und graben Gold aus!",
+  "Wähle dein Schiff! Segelschiff, Galeone oder Kanu. Welches segelt mit dir heute?",
+  "Sturm auf dem Meer! Klick die Wellen ab, bevor sie das Schiff treffen!",
+  "Die Schatzkarte! Folge dem Pfad und klick alle X-Markierungen, um den Schatz zu finden!",
+  "Grab den Schatz aus! Klick die Sandkuhlen, wo ist das Gold versteckt?",
+  "Aaaarrr, was eine Beute! Goldsack, Edelstein, Krone und Schwert! Eine echte Piratin oder Pirat! Lass uns weiter segeln!"
+];
+const engine = new TopicEngine({ audioPath: 'audio', sceneTexts: SCENE_TEXTS, onSceneEnter: handleScene, onSceneLeave: (i) => { if (i===2) stopStorm(); } });
+
+let chosenShip = '⛵';
+function handleScene(i) {
+  if (i === 2) { document.getElementById('stormShip').textContent = chosenShip; startStorm(); }
+  if (i === 3) resetMap();
+  if (i === 4) buildDig();
+}
+
+document.querySelectorAll('.ship-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.ship-card').forEach(c => c.classList.remove('chosen'));
+    card.classList.add('chosen');
+    chosenShip = card.dataset.emoji;
+    document.getElementById('shipNext').style.display = 'inline-block';
+    sfxChime();
+  });
+});
+
+// Storm
+let stormTimer = null, wavesDodged = 0, hp = 5;
+function startStorm() {
+  stopStorm();
+  wavesDodged = 0; hp = 5;
+  document.getElementById('wavesDodged').textContent = '0';
+  document.getElementById('shipHP').textContent = '5';
+  document.getElementById('stormNext').style.display = 'none';
+  stormTimer = setInterval(spawnWave, 1000);
+  setTimeout(spawnWave, 200);
+}
+function stopStorm() {
+  if (stormTimer) clearInterval(stormTimer);
+  stormTimer = null;
+  document.querySelectorAll('#stormStage .wave').forEach(w => w.remove());
+}
+function spawnWave() {
+  if (hp <= 0) return;
+  const stage = document.getElementById('stormStage');
+  const w = document.createElement('span');
+  w.className = 'wave';
+  w.textContent = ['🌊','💧','🌊'][Math.floor(Math.random()*3)];
+  w.style.left = (5 + Math.random()*85) + '%';
+  w.style.setProperty('--dur', (3 + Math.random()*1.5) + 's');
+  w.addEventListener('click', () => {
+    if (w.classList.contains('dodged')) return;
+    w.classList.add('dodged');
+    wavesDodged++;
+    document.getElementById('wavesDodged').textContent = String(wavesDodged);
+    splashSfx();
+    const ship = document.getElementById('stormShip');
+    ship.classList.add('ducked');
+    setTimeout(() => ship.classList.remove('ducked'), 300);
+    if (wavesDodged >= 8) document.getElementById('stormNext').style.display = 'inline-block';
+  });
+  w.addEventListener('animationend', () => {
+    if (!w.classList.contains('dodged')) {
+      hp = Math.max(0, hp-1);
+      document.getElementById('shipHP').textContent = String(hp);
+    }
+    w.remove();
+  });
+  stage.appendChild(w);
+}
+
+// Map
+function resetMap() {
+  document.querySelectorAll('.x-mark').forEach(x => {
+    x.classList.remove('found');
+    x.dataset.f = '';
+  });
+  document.getElementById('xCount').textContent = '0';
+  document.getElementById('mapNext').style.display = 'none';
+}
+document.querySelectorAll('.x-mark').forEach(x => {
+  x.addEventListener('click', () => {
+    if (x.dataset.f) return;
+    x.dataset.f = '1';
+    x.classList.add('found');
+    sfxBeep();
+    const found = document.querySelectorAll('.x-mark[data-f="1"]').length;
+    document.getElementById('xCount').textContent = String(found);
+    if (found >= 6) {
+      sfxWin();
+      document.getElementById('mapNext').style.display = 'inline-block';
+    }
+  });
+});
+
+// Dig
+function buildDig() {
+  const stage = document.getElementById('digStage');
+  stage.querySelectorAll('.sand-spot').forEach(s => s.remove());
+  const treasureIdx = Math.floor(Math.random() * 8);
+  document.getElementById('digMsg').textContent = '⛏️ Such weiter!';
+  document.getElementById('digNext').style.display = 'none';
+  let digCount = 0;
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('div');
+    s.className = 'sand-spot';
+    const col = i % 4, row = Math.floor(i / 4);
+    s.style.left = (8 + col * 22) + '%';
+    s.style.top = (15 + row * 30) + '%';
+    s.addEventListener('click', () => {
+      if (s.classList.contains('dug') || s.classList.contains('treasure')) return;
+      digCount++;
+      if (i === treasureIdx) {
+        s.classList.add('treasure');
+        sfxWin();
+        document.getElementById('digMsg').textContent = '💰 GOLD GEFUNDEN! 🎉';
+        document.getElementById('digNext').style.display = 'inline-block';
+      } else {
+        s.classList.add('dug');
+        digSfx();
+        const dist = Math.abs(i - treasureIdx);
+        let hint;
+        if (dist === 1) hint = '🔥 Heiß! Ganz nah!';
+        else if (dist <= 3) hint = '☀️ Warm... weiter graben!';
+        else hint = '🥶 Kalt — woanders!';
+        document.getElementById('digMsg').textContent = hint;
+      }
+    });
+    stage.appendChild(s);
+  }
+}
+
+// SFX
+function sfxChime() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [600, 900, 1200].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.18, t+i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.06+0.3);
+      o.start(t+i*0.06); o.stop(t+i*0.06+0.32);
+    });
+  } catch(e){}
+}
+function splashSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const buf = c.createBuffer(1, c.sampleRate*0.3, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const fade = 1 - i/d.length; d[i] = (Math.random()*2-1) * 0.35 * fade; }
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 800;
+    src.connect(f); f.connect(c.destination); src.start();
+  } catch(e){}
+}
+function sfxBeep() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const o = c.createOscillator(); const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'square'; o.frequency.value = 1500;
+    g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.1);
+    o.start(t); o.stop(t+0.12);
+  } catch(e){}
+}
+function digSfx() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    const buf = c.createBuffer(1, c.sampleRate*0.15, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { d[i] = (Math.random()*2-1) * 0.4; }
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 400;
+    src.connect(f); f.connect(c.destination); src.start();
+  } catch(e){}
+}
+function sfxWin() {
+  try {
+    const c = new (window.AudioContext||window.webkitAudioContext)();
+    const t = c.currentTime;
+    [523, 659, 784, 1047, 1319].forEach((f, i) => {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.22, t+i*0.1); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.1+0.3);
+      o.start(t+i*0.1); o.stop(t+i*0.1+0.32);
+    });
+  } catch(e){}
+}
+</script>
+</body>
+</html>
